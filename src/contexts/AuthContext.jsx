@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { addContactToAudience, RESEND_AUDIENCES } from '../lib/email';
+import { clearReferrer } from '../lib/referral';
 
 const AuthContext = createContext({});
 
@@ -28,6 +29,10 @@ export const AuthProvider = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [enrolledCourse, setEnrolledCourse] = useState(null);
+  // Insider entitlement granted by a referral or a manual comp, as opposed to a
+  // Stripe subscription. Read from public.insider_grants below.
+  const [insiderUntil, setInsiderUntil] = useState(null);
+  const [grantSource, setGrantSource] = useState(null);
 
   useEffect(() => {
     let isSubscribed = true;
@@ -135,11 +140,18 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Fetch user role from database
+  // Fetch user role and Insider grant from database.
+  //
+  // Both live here rather than in the JWT because this effect re-runs on every
+  // auth change and page load, so what it reads is always current. That is what
+  // lets a referral week appear (and lapse) without the user re-authenticating —
+  // unlike user_metadata.is_ad_free, which is stale until the session refreshes.
   useEffect(() => {
     const fetchUserRole = async () => {
       if (!user) {
         setUserRole(null);
+        setInsiderUntil(null);
+        setGrantSource(null);
         return;
       }
 
@@ -161,6 +173,32 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error('Exception fetching user role:', err);
+      }
+
+      // Live Insider grant, if any. Expiry is evaluated here rather than by a
+      // sweeper, so a lapsed week simply stops matching.
+      try {
+        const now = new Date().toISOString();
+        const { data: grant, error: grantError } = await supabase
+          .from('insider_grants')
+          .select('expires_at, source')
+          .eq('user_id', user.id)
+          .lte('starts_at', now)
+          .gt('expires_at', now)
+          .order('expires_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        // migrations/add_referrals.sql is hand-applied — treat "no table" as
+        // "no grant" rather than logging noise on every page load.
+        if (grantError && !['42P01', 'PGRST205', 'PGRST116'].includes(grantError.code)) {
+          console.error('Error fetching insider grant:', grantError);
+        }
+
+        setInsiderUntil(grant?.expires_at || null);
+        setGrantSource(grant?.source || null);
+      } catch (err) {
+        console.error('Exception fetching insider grant:', err);
       }
     };
 
@@ -252,6 +290,10 @@ export const AuthProvider = ({ children }) => {
 
   // Sign out
   const signOut = async () => {
+    // The referral crumb lives in localStorage, which sessionStorage.clear()
+    // below doesn't touch. Drop it here so the next person to sign up on this
+    // machine isn't credited to whoever just left.
+    clearReferrer();
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -343,6 +385,13 @@ export const AuthProvider = ({ children }) => {
     if (session?.user) setUser(session.user);
   };
 
+  // Two independent sources of Insider access; see resolveInsider() in server.js
+  // for the server-side twin. Never read is_ad_free directly for gating — a
+  // referral or comp grant is just as real, and a granted user has no Stripe
+  // customer, so anything billing-related must branch on insiderSource.
+  const hasStripeInsider = !!user?.user_metadata?.is_ad_free;
+  const hasGrantInsider = !!insiderUntil && new Date(insiderUntil) > new Date();
+
   const value = useMemo(() => ({
     user,
     loading,
@@ -357,8 +406,11 @@ export const AuthProvider = ({ children }) => {
     refreshSession,
     firstName: (user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || '').trim() || null,
     lastName: (user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || '').trim() || null,
-    isInsider: user?.user_metadata?.is_ad_free || false,
-    hasUsedTrial: user?.user_metadata?.has_used_trial || false,
+    isInsider: hasStripeInsider || hasGrantInsider,
+    // 'stripe' | 'referral_referee' | 'referral_referrer' | 'comp' | null
+    insiderSource: hasStripeInsider ? 'stripe' : (hasGrantInsider ? grantSource : null),
+    // ISO string, only set for grant-based access
+    insiderUntil: hasStripeInsider ? null : (hasGrantInsider ? insiderUntil : null),
     profilePicture: getHighResProfilePicture(
       user?.user_metadata?.custom_avatar_url
       || user?.user_metadata?.avatar_url
@@ -371,7 +423,7 @@ export const AuthProvider = ({ children }) => {
     ),
     userRole,
     enrolledCourse,
-  }), [user, loading, isInitialized, userRole, enrolledCourse]);
+  }), [user, loading, isInitialized, userRole, enrolledCourse, hasStripeInsider, hasGrantInsider, grantSource, insiderUntil]);
 
   return (
     <AuthContext.Provider value={value}>

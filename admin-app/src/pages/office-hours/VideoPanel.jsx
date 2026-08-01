@@ -69,7 +69,7 @@ const ControlBar = ({ onLeave }) => {
   const btnClass = (active, danger) =>
     `w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 cursor-pointer ${
       danger ? 'bg-red-500 text-white' :
-      active ? 'bg-red-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+      active ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-900 hover:bg-gray-100'
     }`;
 
   return (
@@ -81,10 +81,10 @@ const ControlBar = ({ onLeave }) => {
         {isCameraOff ? <VideoOff size={16} /> : <Video size={16} />}
       </button>
       <button onClick={toggleScreen} title={isSharingScreen ? 'Stop sharing' : 'Share screen'}
-        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 cursor-pointer ${isSharingScreen ? 'bg-purple-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 cursor-pointer ${isSharingScreen ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-900 hover:bg-gray-100'}`}>
         <Monitor size={16} />
       </button>
-      <div className="w-px h-6 bg-white/15 mx-1" />
+      <div className="w-px h-6 bg-gray-200 mx-1" />
       <button onClick={onLeave} title="End session"
         className="w-11 h-10 rounded-full bg-red-500 text-white flex items-center justify-center transition-all hover:scale-105 cursor-pointer">
         <Phone size={16} style={{ transform: 'rotate(135deg)' }} />
@@ -131,7 +131,7 @@ const ChatPanel = ({ coachName, onMessagesChange }) => {
 
   return (
     <div className="flex flex-col min-h-0 flex-1">
-      <h4 className="text-sm font-medium text-gray-400 mb-2 flex-shrink-0">Chat</h4>
+      <h4 className="text-sm font-medium text-gray-600 mb-2 flex-shrink-0">Chat</h4>
       <div className="flex-1 overflow-y-auto space-y-2 min-h-0 scrollbar-thin">
         {messages.length === 0 && (
           <p className="text-gray-600 text-xs">No messages yet</p>
@@ -140,7 +140,7 @@ const ChatPanel = ({ coachName, onMessagesChange }) => {
           <div key={i} className={`flex flex-col ${msg.isLocal ? 'items-end' : 'items-start'}`}>
             {!msg.isLocal && <span className="text-[10px] text-gray-500 mb-0.5">{msg.sender}</span>}
             <div className={`px-3 py-1.5 rounded-lg text-sm max-w-[85%] break-words ${
-              msg.isLocal ? 'bg-purple-600/30 text-gray-200' : 'bg-gray-700 text-gray-200'
+              msg.isLocal ? 'bg-purple-600/30 text-gray-800' : 'bg-gray-100 text-gray-800'
             }`}>
               {msg.text}
             </div>
@@ -152,18 +152,18 @@ const ChatPanel = ({ coachName, onMessagesChange }) => {
         <div ref={messagesEndRef} />
       </div>
       <div className="flex-shrink-0 pt-2">
-        <div className="flex items-center gap-1.5 bg-gray-700 rounded-lg px-3 py-1.5">
+        <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg px-3 py-1.5">
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder="Type a message..."
-            className="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+            className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="text-gray-400 hover:text-purple-400 transition-colors disabled:opacity-30"
+            className="text-gray-600 hover:text-purple-700 transition-colors disabled:opacity-30"
           >
             <ArrowUp size={16} strokeWidth={2.5} />
           </button>
@@ -182,7 +182,7 @@ const VideoPanel = ({ onLeave, coachName, onChatMessagesChange, connectedStudent
   // Call is already joined by createCall() in index.jsx
 
   return (
-    <div className="rounded-xl border border-gray-700/50 bg-gray-800/50 overflow-hidden flex flex-col" style={{ height: '520px' }}>
+    <div className="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex flex-col" style={{ height: '520px' }}>
       {/* Video tiles */}
       <div className="flex-1 min-h-0 grid grid-cols-2 gap-1 p-1">
         {localParticipant && (
@@ -198,7 +198,7 @@ const VideoPanel = ({ onLeave, coachName, onChatMessagesChange, connectedStudent
             <VideoTile key={id} sessionId={id} userName={connectedStudent ? `${connectedStudent.firstName} ${connectedStudent.lastName}`.trim() : 'Student'} isLarge />
           ))
         ) : (
-          <div className="rounded-xl bg-gray-900 flex items-center justify-center text-gray-600 text-sm">
+          <div className="rounded-xl bg-gray-900 flex items-center justify-center text-gray-400 text-sm">
             Waiting for student...
           </div>
         )}
@@ -208,7 +208,7 @@ const VideoPanel = ({ onLeave, coachName, onChatMessagesChange, connectedStudent
       <ControlBar onLeave={onLeave} />
 
       {/* Chat */}
-      <div className="border-t border-gray-700/50 px-3 py-2 flex flex-col" style={{ height: '180px' }}>
+      <div className="border-t border-gray-200 px-3 py-2 flex flex-col" style={{ height: '180px' }}>
         <ChatPanel coachName={coachName} onMessagesChange={onChatMessagesChange} />
       </div>
     </div>

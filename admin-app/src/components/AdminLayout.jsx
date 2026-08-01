@@ -37,18 +37,18 @@ const AdminLayout = ({ children }) => {
   const visibleItems = navItems.filter(item => item.roles.includes(userRole));
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen bg-gray-50 text-gray-900">
       {/* Sidebar - desktop */}
-      <aside className="hidden md:flex w-60 border-r border-gray-700/50 flex-col flex-shrink-0">
+      <aside className="hidden md:flex w-60 border-r border-gray-200 flex-col flex-shrink-0">
         {/* Logo */}
-        <div className="p-5 border-b border-gray-700/50">
+        <div className="p-5 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <img
               src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
               alt="Ignite"
               className="h-6 object-contain"
             />
-            <span className="text-sm font-medium text-gray-400">Admin</span>
+            <span className="text-sm font-medium text-gray-600">Admin</span>
           </div>
         </div>
 
@@ -61,8 +61,8 @@ const AdminLayout = ({ children }) => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-pink-500/10 text-pink-400'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    ? 'bg-pink-500/10 text-pink-600'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`
               }
             >
@@ -73,17 +73,17 @@ const AdminLayout = ({ children }) => {
         </nav>
 
         {/* Bottom */}
-        <div className="p-3 border-t border-gray-700/50 space-y-1">
+        <div className="p-3 border-t border-gray-200 space-y-1">
           <a
             href="https://ignite.education/progress"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
           >
             <ExternalLink size={18} />
             Back to Ignite
           </a>
           <button
             onClick={signOut}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-colors w-full"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:text-red-700 hover:bg-gray-100 transition-colors w-full"
           >
             <LogOut size={18} />
             Sign Out
@@ -94,17 +94,17 @@ const AdminLayout = ({ children }) => {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 border-b border-gray-700/50 flex items-center justify-between px-5 flex-shrink-0">
+        <header className="h-14 border-b border-gray-200 flex items-center justify-between px-5 flex-shrink-0">
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
+            className="md:hidden p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
           {/* Page title from nav */}
-          <h1 className="text-sm font-medium text-gray-300 hidden md:block">
+          <h1 className="text-sm font-medium text-gray-700 hidden md:block">
             {visibleItems.find(item => location.pathname.startsWith(item.path))?.label || 'Admin'}
           </h1>
 
@@ -113,28 +113,28 @@ const AdminLayout = ({ children }) => {
             {profilePicture ? (
               <img src={profilePicture} alt="" className="w-7 h-7 rounded-full" />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-300">
+              <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-700">
                 {firstName?.[0] || '?'}
               </div>
             )}
-            <span className="text-sm text-gray-300 hidden sm:block">{firstName || 'Admin'}</span>
+            <span className="text-sm text-gray-700 hidden sm:block">{firstName || 'Admin'}</span>
           </div>
         </header>
 
         {/* Mobile sidebar overlay */}
         {mobileMenuOpen && (
           <div className="md:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setMobileMenuOpen(false)}>
-            <div className="w-60 h-full bg-gray-900 border-r border-gray-700/50 flex flex-col" onClick={e => e.stopPropagation()}>
-              <div className="p-5 border-b border-gray-700/50 flex items-center justify-between">
+            <div className="w-60 h-full bg-white border-r border-gray-200 flex flex-col" onClick={e => e.stopPropagation()}>
+              <div className="p-5 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
                     alt="Ignite"
                     className="h-6 object-contain"
                   />
-                  <span className="text-sm font-medium text-gray-400">Admin</span>
+                  <span className="text-sm font-medium text-gray-600">Admin</span>
                 </div>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white">
+                <button onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-gray-900">
                   <X size={18} />
                 </button>
               </div>
@@ -148,8 +148,8 @@ const AdminLayout = ({ children }) => {
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-pink-500/10 text-pink-400'
-                          : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                          ? 'bg-pink-500/10 text-pink-600'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`
                     }
                   >
@@ -159,17 +159,17 @@ const AdminLayout = ({ children }) => {
                 ))}
               </nav>
 
-              <div className="p-3 border-t border-gray-700/50 space-y-1">
+              <div className="p-3 border-t border-gray-200 space-y-1">
                 <a
                   href="https://ignite.education/progress"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 >
                   <ExternalLink size={18} />
                   Back to Ignite
                 </a>
                 <button
                   onClick={signOut}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-colors w-full"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:text-red-700 hover:bg-gray-100 transition-colors w-full"
                 >
                   <LogOut size={18} />
                   Sign Out

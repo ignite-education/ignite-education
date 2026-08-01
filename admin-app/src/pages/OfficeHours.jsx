@@ -287,13 +287,13 @@ const OfficeHours = () => {
       <h1 className="text-2xl font-semibold mb-6">Office Hours</h1>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-600 text-sm">
           {error}
         </div>
       )}
 
       {/* Active Session Card */}
-      <div className="mb-8 p-6 rounded-xl border border-gray-700/50 bg-gray-800/50">
+      <div className="mb-8 p-6 rounded-xl border border-gray-200 bg-gray-50">
         {activeSession ? (
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -305,13 +305,13 @@ const OfficeHours = () => {
                   {activeSession.status === 'occupied' ? 'In Session with Student' : 'Live \u2014 Waiting for Student'}
                 </span>
               </div>
-              <span className="text-gray-400 font-mono text-lg">{formatDuration(elapsed)}</span>
+              <span className="text-gray-600 font-mono text-lg">{formatDuration(elapsed)}</span>
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={handleRejoin}
-                className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors text-white"
               >
                 <ExternalLink size={16} />
                 Open Video Chat
@@ -319,7 +319,7 @@ const OfficeHours = () => {
               <button
                 onClick={handleEndSession}
                 disabled={ending}
-                className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg text-sm font-medium transition-colors"
               >
                 <VideoOff size={16} />
                 {ending ? 'Ending...' : 'End Session'}
@@ -329,16 +329,16 @@ const OfficeHours = () => {
         ) : (
           <div className="text-center py-4">
             <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-4">
-              <Video size={28} className="text-purple-400" />
+              <Video size={28} className="text-purple-600" />
             </div>
             <h3 className="text-lg font-medium mb-2">Start Office Hours</h3>
-            <p className="text-gray-400 text-sm mb-5">
+            <p className="text-gray-600 text-sm mb-5">
               Go live to let students join you for a 1:1 video session.
             </p>
             <button
               onClick={handleGoLive}
               disabled={starting}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors disabled:opacity-50 text-white"
             >
               <Video size={18} />
               {starting ? 'Starting...' : 'Go Live'}
@@ -350,44 +350,44 @@ const OfficeHours = () => {
       {/* Upcoming Schedule */}
       <div className="mb-8">
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <CalendarPlus size={18} className="text-gray-400" />
+          <CalendarPlus size={18} className="text-gray-600" />
           Upcoming Schedule
         </h2>
 
         {/* Add slot form */}
         <div className="flex items-end gap-3 mb-4">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Date</label>
+            <label className="block text-xs text-gray-600 mb-1">Date</label>
             <input
               type="date"
               value={scheduleDate}
               min={todayStr}
               onChange={(e) => setScheduleDate(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+              className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-purple-500"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Start</label>
+            <label className="block text-xs text-gray-600 mb-1">Start</label>
             <input
               type="time"
               value={scheduleStartTime}
               onChange={(e) => setScheduleStartTime(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+              className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-purple-500"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">End</label>
+            <label className="block text-xs text-gray-600 mb-1">End</label>
             <input
               type="time"
               value={scheduleEndTime}
               onChange={(e) => setScheduleEndTime(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+              className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-purple-500"
             />
           </div>
           <button
             onClick={handleAddSlot}
             disabled={addingSlot}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 text-white"
           >
             <CalendarPlus size={15} />
             {addingSlot ? 'Adding...' : 'Add'}
@@ -402,12 +402,12 @@ const OfficeHours = () => {
             {scheduledSlots.map((slot) => (
               <div
                 key={slot.id}
-                className="flex items-center justify-between px-4 py-3 rounded-lg border border-gray-700/50 bg-gray-800/30"
+                className="flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 bg-gray-50"
               >
-                <span className="text-sm text-gray-300">{formatScheduleSlot(slot)}</span>
+                <span className="text-sm text-gray-700">{formatScheduleSlot(slot)}</span>
                 <button
                   onClick={() => handleDeleteSlot(slot.id)}
-                  className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                  className="text-gray-500 hover:text-red-700 transition-colors p-1"
                   title="Remove"
                 >
                   <Trash2 size={15} />
@@ -421,17 +421,17 @@ const OfficeHours = () => {
       {/* Past Sessions */}
       <div>
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <Clock size={18} className="text-gray-400" />
+          <Clock size={18} className="text-gray-600" />
           Past Sessions
         </h2>
 
         {pastSessions.length === 0 ? (
           <p className="text-gray-500 text-sm">No past sessions yet.</p>
         ) : (
-          <div className="border border-gray-700/50 rounded-xl overflow-hidden">
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-700/50 text-gray-400">
+                <tr className="border-b border-gray-200 text-gray-600">
                   <th className="text-left p-3 font-medium">Date</th>
                   <th className="text-left p-3 font-medium">Duration</th>
                   <th className="text-left p-3 font-medium">Student</th>
@@ -439,10 +439,10 @@ const OfficeHours = () => {
               </thead>
               <tbody>
                 {pastSessions.map((session) => (
-                  <tr key={session.id} className="border-b border-gray-700/30 last:border-0">
-                    <td className="p-3 text-gray-300">{formatDate(session.started_at)}</td>
-                    <td className="p-3 text-gray-300 font-mono">{getSessionDuration(session)}</td>
-                    <td className="p-3 text-gray-400">
+                  <tr key={session.id} className="border-b border-gray-200 last:border-0">
+                    <td className="p-3 text-gray-700">{formatDate(session.started_at)}</td>
+                    <td className="p-3 text-gray-700 font-mono">{getSessionDuration(session)}</td>
+                    <td className="p-3 text-gray-600">
                       {session.student_id ? (
                         <span className="flex items-center gap-1.5">
                           <Users size={14} />

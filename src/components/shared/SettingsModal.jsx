@@ -43,10 +43,17 @@ const resizeProfileImage = (file) => {
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
 const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) => {
-  const { user: authUser, updateProfile, signOut, isInsider, hasUsedTrial, profilePicture, firstName, refreshSession, userRole } = useAuth();
+  const { user: authUser, updateProfile, signOut, isInsider, insiderSource, insiderUntil, profilePicture, firstName, refreshSession, userRole } = useAuth();
   const navigate = useNavigate();
   const imageInputRef = useRef(null);
   const scrollRef = useRef(null);
+
+  // Insider access earned rather than paid for — a referral week or a comp.
+  // These users have no Stripe customer, so the billing portal is not an option.
+  const isGrantInsider = isInsider && insiderSource !== 'stripe';
+  const grantEndsOn = insiderUntil
+    ? new Date(insiderUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+    : null;
 
   const memoryRef = useRef(null);
 
@@ -676,22 +683,15 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em', marginBottom: '2px', paddingTop: '10px' }}>Account</h3>
 
             {!isInsider ? (
-              /* Upsell Card — trial or re-subscribe */
+              /* Upsell Card */
               <>
               <h4 className="font-medium text-purple-700 mb-[10px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
-                {hasUsedTrial ? 'Get more with Ignite Insider' : 'Try Ignite Insider for free'}
+                Get more with Ignite Insider
               </h4>
               <div className="flex gap-4">
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt={hasUsedTrial ? 'Subscribe' : 'Free trial'} className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-                  {hasUsedTrial ? (
-                    <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>£4.99/month</p>
-                  ) : (
-                    <>
-                      <p style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>Two weeks free</p>
-                      <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.2 }}>then £4.99/month</p>
-                    </>
-                  )}
+                  <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt="Ignite Insider" className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
+                  <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>£4.99/month</p>
                   <button
                     onClick={handleJoinInsider}
                     className="text-white px-5 py-2 transition cursor-pointer"
@@ -699,7 +699,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 8px rgba(103,103,103,0.55)'}
                     onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
                   >
-                    {hasUsedTrial ? 'Join Ignite Insider' : `Get ${firstName ? `${firstName}'s` : 'your'} Free Trial`}
+                    Join Ignite Insider
                   </button>
                   <p className="text-black mt-2.5 leading-snug" style={{ fontSize: '0.85rem', fontWeight: 300 }}>Access all Ignite features.<br />Cancel anytime.</p>
                 </div>
@@ -721,13 +721,21 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               </div>
               </>
             ) : (
-              /* Ignite Insider Card */
+              /* Ignite Insider Card.
+                 A grant-based Insider (referral week or comp) has no Stripe
+                 customer, so the billing portal would 400 — they get a
+                 subscribe CTA instead of Manage. This is the main conversion
+                 surface now that there is no self-serve trial. */
               <div>
-                <h4 className="font-medium text-purple-700 mb-[2px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Ignite Insider</h4>
+                <h4 className="font-medium text-purple-700 mb-[2px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
+                  {isGrantInsider ? 'Ignite Insider — free week' : 'Ignite Insider'}
+                </h4>
                 <div className="flex gap-4">
                   <div style={{ width: '70%' }}>
                     <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300, marginBottom: '20px' }}>
-                      You have exclusive access to Ignite Insider features to accelerate your learning.
+                      {isGrantInsider
+                        ? `Your free week ends on ${grantEndsOn}. Keep your access for £4.99/month.`
+                        : 'You have exclusive access to Ignite Insider features to accelerate your learning.'}
                     </p>
                     <ul className="space-y-1.5 text-black" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>
                       {['1:1 Office Hours with industry professionals', 'Weekly hand-pick job opportunities', 'AI Tool Prompt highlights'].map(feature => (
@@ -739,15 +747,27 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         </li>
                       ))}
                     </ul>
-                    <button
-                      onClick={handleManageSubscription}
-                      className="text-black transition cursor-pointer"
-                      style={{ borderRadius: '0.3rem', backgroundColor: 'white', padding: '6px 24px', fontSize: '0.9rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)', marginTop: '16px', marginBottom: '3px', alignSelf: 'flex-start' }}
-                      onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
-                      onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
-                    >
-                      Manage
-                    </button>
+                    {isGrantInsider ? (
+                      <button
+                        onClick={handleJoinInsider}
+                        className="text-white transition cursor-pointer"
+                        style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', padding: '6px 24px', fontSize: '0.9rem', fontWeight: 500, letterSpacing: '-0.02em', marginTop: '16px', marginBottom: '3px', alignSelf: 'flex-start' }}
+                        onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 8px rgba(103,103,103,0.55)'}
+                        onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+                      >
+                        Keep Ignite Insider
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleManageSubscription}
+                        className="text-black transition cursor-pointer"
+                        style={{ borderRadius: '0.3rem', backgroundColor: 'white', padding: '6px 24px', fontSize: '0.9rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)', marginTop: '16px', marginBottom: '3px', alignSelf: 'flex-start' }}
+                        onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
+                        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
+                      >
+                        Manage
+                      </button>
+                    )}
                   </div>
                   <div className="flex flex-col items-center justify-center" style={{ width: '30%' }}>
                     <img

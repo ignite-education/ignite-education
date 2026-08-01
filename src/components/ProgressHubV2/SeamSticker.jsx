@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const ASSETS = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/';
 
@@ -22,6 +22,10 @@ const STICKERS = [
    scale; this hub runs ~19% under it. Retune by moving the 0.8075 alone. */
 const SCALE = (163 / 762) * 0.8075;
 
+/* Rounded to a whole pixel so the card's edges land on the device grid; the
+   height is then derived from it, keeping the artwork's aspect ratio exact. */
+const STICKER_W = (s) => Math.round(s.width * SCALE);
+
 /**
  * One of the four stickers, at a random tilt, straddling the seam between the
  * white IntroSection and the black CourseDetailsSection.
@@ -44,6 +48,33 @@ export default function SeamSticker() {
   }));
 
   const sticker = STICKERS[pick.index];
+  const src = ASSETS + sticker.file;
+
+  /* Hold the sticker back until its bitmap is decoded, then render it.
+     drop-shadow is a filter, and Chrome sizes the raster for a filtered element
+     from what that element paints. An <img> whose pixels have not arrived yet
+     paints nothing, so the filter rasterises against an empty box and the glow
+     is clipped — usually along the seam, since that is where the surrounding
+     paint chunk ends. The repaint on load does not always re-expand those
+     bounds, which is why the clipped shadow survived until some unrelated
+     re-raster. Decoding first means the bitmap and the filter reach the
+     compositor in the same frame, so the bounds are right the only time they
+     are ever computed. Cache hits resolve in a microtask, so this costs nothing
+     on the common path. */
+  const [decoded, setDecoded] = useState(false);
+  useEffect(() => {
+    let live = true;
+    const done = () => { if (live) setDecoded(true); };
+    const probe = new Image();
+    probe.src = src;
+    // Render on a decode failure too: a broken sticker beats no sticker, and
+    // alt text is all that shows either way.
+    if (probe.decode) probe.decode().then(done, done);
+    else done();
+    return () => { live = false; };
+  }, [src]);
+
+  if (!decoded) return null;
 
   return (
     /* h-0 so this sits exactly on the boundary and adds no height of its own.
@@ -63,14 +94,21 @@ export default function SeamSticker() {
             pre-transform space and render it clipped until a full re-raster. */}
         <div style={{ transform: `rotate(${pick.angle.toFixed(2)}deg)` }}>
           <img
-            src={ASSETS + sticker.file}
+            src={src}
             alt={sticker.alt}
             width={sticker.width}
             height={sticker.height}
             style={{
-              width: `${Math.round(sticker.width * SCALE)}px`,
-              height: 'auto',
+              /* Both axes in px rather than height:auto. Same number auto
+                 resolves to, but stated up front, so the box can never change
+                 size under the filter. */
+              width: `${STICKER_W(sticker)}px`,
+              height: `${STICKER_W(sticker) * sticker.height / sticker.width}px`,
               display: 'block',
+              /* Own compositing layer, so the raster is sized to the filter
+                 region instead of sharing tiles with the two sections the
+                 sticker straddles — the clip in the bug was those tiles' edge. */
+              willChange: 'filter',
               /* Literal rather than a token: this app has no --btn-glow-light,
                  and states its glows inline (see SignIn, GoogleOneTap). Value
                  matches the course page's sticker exactly. */

@@ -358,18 +358,18 @@ const PromptsManagement = () => {
   // ---- Render ----
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-gray-50 text-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Prompts Management</h1>
           <div className="flex items-center gap-3">
             {/* Tab buttons */}
-            <div className="flex bg-white/5 rounded-lg p-1">
+            <div className="flex bg-white rounded-lg p-1 border border-gray-200">
               <button
                 onClick={() => setActiveTab('published')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'published' ? 'bg-[#EF0B72] text-white' : 'text-gray-400 hover:text-white'
+                  activeTab === 'published' ? 'bg-[#EF0B72] text-white' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <Lightbulb className="w-4 h-4" />
@@ -378,7 +378,7 @@ const PromptsManagement = () => {
               <button
                 onClick={() => setActiveTab('contributions')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'contributions' ? 'bg-[#EF0B72] text-white' : 'text-gray-400 hover:text-white'
+                  activeTab === 'contributions' ? 'bg-[#EF0B72] text-white' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -391,7 +391,7 @@ const PromptsManagement = () => {
               </button>
             </div>
             {activeTab === 'published' && (
-              <button onClick={handleNewPrompt} className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg">
+              <button onClick={handleNewPrompt} className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg text-white">
                 <Plus className="w-5 h-5" />
                 New Prompt
               </button>
@@ -402,33 +402,33 @@ const PromptsManagement = () => {
         {activeTab === 'published' ? (
           <div className="grid grid-cols-12 gap-6">
             {/* Prompts List */}
-            <div className="col-span-3 bg-white/5 rounded-lg p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="col-span-3 bg-white rounded-lg p-4 max-h-[calc(100vh-200px)] overflow-y-auto border border-gray-200">
               <div className="mb-3">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search prompts..."
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 />
               </div>
-              <h2 className="text-sm font-semibold text-gray-400 mb-3">{filteredPrompts.length} prompts</h2>
+              <h2 className="text-sm font-semibold text-gray-600 mb-3">{filteredPrompts.length} prompts</h2>
               <div className="space-y-2">
                 {filteredPrompts.map(prompt => (
                   <div
                     key={prompt.id}
                     className={`p-3 rounded-lg cursor-pointer ${
-                      selectedPrompt?.id === prompt.id ? 'bg-[#EF0B72]/20 border border-[#EF0B72]' : 'bg-white/5 hover:bg-white/10'
+                      selectedPrompt?.id === prompt.id ? 'bg-[#EF0B72]/20 border border-[#EF0B72]' : 'bg-gray-50 hover:bg-gray-100'
                     }`}
                     onClick={() => handleSelectPrompt(prompt)}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-sm truncate">{prompt.title}</h3>
-                        <p className="text-xs text-gray-400 mt-1">{prompt.profession}</p>
+                        <p className="text-xs text-gray-600 mt-1">{prompt.profession}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className={`text-xs px-1.5 py-0.5 rounded ${
-                            prompt.status === 'published' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                            prompt.status === 'published' ? 'bg-green-500/20 text-green-600' : 'bg-yellow-500/20 text-yellow-600'
                           }`}>
                             {prompt.status}
                           </span>
@@ -438,19 +438,19 @@ const PromptsManagement = () => {
                         onClick={(e) => { e.stopPropagation(); handleDeletePrompt(prompt.id); }}
                         className="p-1 hover:bg-red-500/20 rounded flex-shrink-0"
                       >
-                        <Trash2 className="w-4 h-4 text-red-400" />
+                        <Trash2 className="w-4 h-4 text-red-600" />
                       </button>
                     </div>
                   </div>
                 ))}
                 {filteredPrompts.length === 0 && (
-                  <p className="text-gray-400 text-sm text-center py-4">No prompts found</p>
+                  <p className="text-gray-600 text-sm text-center py-4">No prompts found</p>
                 )}
               </div>
             </div>
 
             {/* Editor */}
-            <div className="col-span-9 bg-white/5 rounded-lg p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="col-span-9 bg-white rounded-lg p-6 max-h-[calc(100vh-200px)] overflow-y-auto border border-gray-200">
               {reviewingContribution && (
                 <div className="mb-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-3 text-sm">
                   Reviewing contribution — edit fields below then click <strong>Approve & Publish</strong> to add to the toolkit.
@@ -465,10 +465,10 @@ const PromptsManagement = () => {
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   placeholder="e.g., Competitor Product Analysis"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 />
                 {formData.title && (
-                  <p className="text-xs text-gray-400 mt-1">Slug: /prompts/{formData.profession ? generateSlug(formData.profession) + '/' : ''}{generateSlug(formData.title)}</p>
+                  <p className="text-xs text-gray-600 mt-1">Slug: /prompts/{formData.profession ? generateSlug(formData.profession) + '/' : ''}{generateSlug(formData.title)}</p>
                 )}
               </div>
 
@@ -480,7 +480,7 @@ const PromptsManagement = () => {
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Short description shown on prompt cards (1-2 sentences)"
                   rows={2}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-none"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72] resize-none"
                 />
               </div>
 
@@ -491,7 +491,7 @@ const PromptsManagement = () => {
                   <button
                     type="button"
                     onClick={toggleBold}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white transition-colors"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                     title="Wrap selected text in **bold** (Ctrl+B)"
                   >
                     <Bold className="w-3.5 h-3.5" />
@@ -505,7 +505,7 @@ const PromptsManagement = () => {
                   onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); toggleBold(); } }}
                   placeholder="The complete prompt text. Use [PLACEHOLDER] syntax for user-editable fields. Use **text** for bold."
                   rows={10}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-y font-mono text-sm"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72] resize-y font-mono text-sm"
                 />
               </div>
 
@@ -515,10 +515,10 @@ const PromptsManagement = () => {
                 <select
                   value={formData.profession}
                   onChange={(e) => handleInputChange('profession', e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 >
-                  <option value="" className="bg-gray-900">Select a profession...</option>
-                  {professions.map(p => <option key={p} value={p} className="bg-gray-900">{p}</option>)}
+                  <option value="" className="bg-white">Select a profession...</option>
+                  {professions.map(p => <option key={p} value={p} className="bg-white">{p}</option>)}
                 </select>
               </div>
 
@@ -533,7 +533,7 @@ const PromptsManagement = () => {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         formData.llm_tools.includes(tool)
                           ? 'bg-[#EF0B72] text-white'
-                          : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                       }`}
                     >
                       {tool}
@@ -553,7 +553,7 @@ const PromptsManagement = () => {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         formData.complexity === level
                           ? 'bg-[#EF0B72] text-white'
-                          : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                       }`}
                     >
                       {level}
@@ -573,7 +573,7 @@ const PromptsManagement = () => {
                     handleInputChange('usage_count', usage);
                     handleInputChange('rating', likes);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
                   <Shuffle className="w-3.5 h-3.5" />
                   Randomize
@@ -587,7 +587,7 @@ const PromptsManagement = () => {
                     value={formData.usage_count}
                     onChange={(e) => handleInputChange('usage_count', e.target.value)}
                     min="0"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                   />
                 </div>
                 <div>
@@ -598,7 +598,7 @@ const PromptsManagement = () => {
                     onChange={(e) => handleInputChange('rating', e.target.value)}
                     min="0"
                     step="1"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                   />
                 </div>
               </div>
@@ -609,10 +609,10 @@ const PromptsManagement = () => {
                 <select
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 >
-                  <option value="published" className="bg-gray-900">Published</option>
-                  <option value="draft" className="bg-gray-900">Draft</option>
+                  <option value="published" className="bg-white">Published</option>
+                  <option value="draft" className="bg-white">Draft</option>
                 </select>
               </div>
 
@@ -626,7 +626,7 @@ const PromptsManagement = () => {
                       value={formData.author_name}
                       onChange={(e) => handleInputChange('author_name', e.target.value)}
                       placeholder="Author name"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                     />
                   </div>
                   <div>
@@ -635,7 +635,7 @@ const PromptsManagement = () => {
                       value={formData.author_title}
                       onChange={(e) => handleInputChange('author_title', e.target.value)}
                       placeholder="Title (e.g. Product Manager at Acme)"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                     />
                   </div>
                   <div>
@@ -644,7 +644,7 @@ const PromptsManagement = () => {
                       value={formData.author_image}
                       onChange={(e) => handleInputChange('author_image', e.target.value)}
                       placeholder="Profile image URL"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                     />
                   </div>
                   <div>
@@ -653,18 +653,18 @@ const PromptsManagement = () => {
                       value={formData.author_linkedin}
                       onChange={(e) => handleInputChange('author_linkedin', e.target.value)}
                       placeholder="LinkedIn profile URL"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Save Button */}
-              <div className="flex justify-end pt-4 border-t border-white/10">
+              <div className="flex justify-end pt-4 border-t border-gray-200">
                 <button
                   onClick={handleSavePrompt}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-3 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50 text-white"
                 >
                   <Save className="w-5 h-5" />
                   {isSaving ? 'Saving...' : reviewingContribution ? 'Approve & Publish' : selectedPrompt ? 'Update Prompt' : 'Create Prompt'}
@@ -684,7 +684,7 @@ const PromptsManagement = () => {
                   className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
                     contributionFilter === status
                       ? 'bg-[#EF0B72] text-white'
-                      : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                   }`}
                 >
                   {status}
@@ -700,25 +700,25 @@ const PromptsManagement = () => {
             {/* Contributions list */}
             <div className="grid gap-4">
               {filteredContributions.length === 0 && (
-                <div className="bg-white/5 rounded-lg p-8 text-center text-gray-400">
+                <div className="bg-white rounded-lg p-8 text-center text-gray-600 border border-gray-200">
                   No {contributionFilter} contributions
                 </div>
               )}
               {filteredContributions.map(contribution => (
-                <div key={contribution.id} className="bg-white/5 rounded-lg p-5">
+                <div key={contribution.id} className="bg-white rounded-lg p-5 border border-gray-200">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-lg">{contribution.title}</h3>
-                      <p className="text-gray-400 text-sm mt-1">{contribution.description}</p>
+                      <p className="text-gray-600 text-sm mt-1">{contribution.description}</p>
                       <div className="flex flex-wrap items-center gap-3 mt-3">
-                        <span className="text-xs bg-white/10 px-2 py-1 rounded">{contribution.profession}</span>
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">{contribution.profession}</span>
                         {contribution.llm_tools?.map(tool => (
-                          <span key={tool} className="text-xs bg-white/10 px-2 py-1 rounded">{tool}</span>
+                          <span key={tool} className="text-xs bg-gray-100 px-2 py-1 rounded">{tool}</span>
                         ))}
                         <span className={`text-xs px-2 py-1 rounded ${
-                          contribution.complexity === 'High' ? 'bg-red-500/20 text-red-400' :
-                          contribution.complexity === 'Mid' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-green-500/20 text-green-400'
+                          contribution.complexity === 'High' ? 'bg-red-500/20 text-red-600' :
+                          contribution.complexity === 'Mid' ? 'bg-yellow-500/20 text-yellow-600' :
+                          'bg-green-500/20 text-green-600'
                         }`}>
                           {contribution.complexity}
                         </span>
@@ -727,16 +727,16 @@ const PromptsManagement = () => {
 
                       {/* Show full prompt preview */}
                       <details className="mt-3">
-                        <summary className="text-sm text-gray-400 cursor-pointer hover:text-white flex items-center gap-1">
+                        <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-900 flex items-center gap-1">
                           <Eye className="w-3 h-3" /> View full prompt
                         </summary>
-                        <pre className="mt-2 bg-white/5 p-3 rounded-lg text-xs text-gray-300 whitespace-pre-wrap font-mono max-h-48 overflow-y-auto">
+                        <pre className="mt-2 bg-white p-3 rounded-lg text-xs text-gray-700 whitespace-pre-wrap font-mono max-h-48 overflow-y-auto border border-gray-200">
                           {contribution.full_prompt}
                         </pre>
                       </details>
 
                       {contribution.status === 'rejected' && contribution.rejection_reason && (
-                        <p className="mt-2 text-sm text-red-400">Rejection reason: {contribution.rejection_reason}</p>
+                        <p className="mt-2 text-sm text-red-600">Rejection reason: {contribution.rejection_reason}</p>
                       )}
                     </div>
 
@@ -744,7 +744,7 @@ const PromptsManagement = () => {
                       <div className="flex flex-col gap-2 flex-shrink-0">
                         <button
                           onClick={() => handleReviewContribution(contribution)}
-                          className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg text-sm"
+                          className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg text-sm text-white"
                         >
                           <Check className="w-4 h-4" />
                           Review
@@ -755,11 +755,11 @@ const PromptsManagement = () => {
                             value={rejectionReason}
                             onChange={(e) => setRejectionReason(e.target.value)}
                             placeholder="Reason (optional)"
-                            className="bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-red-400 w-36"
+                            className="bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-gray-900 focus:outline-none focus:border-red-400 w-36"
                           />
                           <button
                             onClick={() => handleRejectContribution(contribution.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded text-xs"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-600 rounded text-xs"
                           >
                             <X className="w-3 h-3" />
                             Reject

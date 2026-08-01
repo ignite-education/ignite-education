@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { PublicProfile } from '@/lib/profileData'
 import ProfileAuthCTA from './ProfileAuthCTA'
+import { rememberReferrer } from '@/lib/referral'
 
 // Match the progress page tag format exactly: "Oct-25" (IntroSection.jsx formatJoinDate)
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -29,6 +30,11 @@ function HeroBand({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   )
+}
+
+/** "Max Shillam" -> "Max". Falls back to "they" so the offer copy still reads. */
+function firstNameOf(displayName: string): string {
+  return (displayName || '').trim().split(/\s+/).filter(Boolean)[0] || 'they'
 }
 
 /** "Max Shillam" -> "Max S". Single-word names are returned unchanged. */
@@ -75,6 +81,10 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
       .then(({ data: { user } }) => {
         setSignedIn(!!user)
         setAuthLoaded(true)
+        // Remember who sent them, so a visitor who wanders off to a course page
+        // and signs up there still credits this profile. Only for signed-out
+        // visitors: a signed-in user browsing profiles isn't a referral.
+        if (!user) rememberReferrer(profile.username)
       })
       .catch(() => setAuthLoaded(true))
 
@@ -86,7 +96,7 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [profile.username])
 
   const heading = signedIn
     ? profile.display_name
@@ -94,24 +104,23 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
 
   return (
     <section
-      className="bg-black"
+      // The fixed height band is desktop-only. Below md the sign-up CTA stacks
+      // under the profile (it used to be hidden entirely), which needs ~200px
+      // more than the band allows — so the section is left to grow to fit.
+      // The md+ values are ~30% shorter than the original 70vh / 500 / 550 band
+      // (-30%, +5%, -5%) and match CourseHero; change them together.
+      className="bg-black pb-8 md:pb-0 md:h-[48.9vh] md:min-h-[366px] md:max-h-[384px]"
       style={{
         position: 'relative',
-        // ~30% shorter than the original 70vh / 500 / 550 band (-30%, +5%, -5%).
-        // Nothing is pinned to the section's bottom any more — the share row
-        // moved into the sign-up CTA — so all three values scale together.
-        height: '48.9vh',
-        minHeight: '366px',
-        maxHeight: '384px',
         // Left/right padding is owned by HeroBand, not the section.
         // 40px top: the navbar above supplies the rest of the breathing room
         // that the removed in-hero logo used to (61px glyph + 55px margin).
-        padding: '40px 0 0 0',
+        paddingTop: '40px',
         fontFamily: 'var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
       <HeroBand>
-      <div className="flex w-full gap-16 items-start">
+      <div className="flex flex-col md:flex-row w-full gap-8 md:gap-16 items-start">
         {/* Left Column: Avatar, Name, Tags */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Profile Picture — plain <img> (Google/LinkedIn hosts aren't in next.config remotePatterns) */}
@@ -170,9 +179,12 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
             either way so the left column holds its half-width geometry.
             Unlike the H1, these fade in only once auth has resolved — a flash
             of sign-up buttons at a already-signed-in user is worse than the
-            ~200ms wait, and they carry no SEO value to lose. */}
+            ~200ms wait, and they carry no SEO value to lose.
+            Below md this stacks under the profile rather than hiding: profile
+            links are shared into WhatsApp and LinkedIn DMs, so most of the
+            traffic that matters here is on a phone. */}
         <div
-          className="hidden md:flex items-center justify-center"
+          className="flex w-full md:w-auto items-center justify-center"
           style={{
             flex: 1,
             minWidth: 0,
@@ -190,6 +202,8 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
               onSignedIn={() => setSignedIn(true)}
               profileUrl={`https://ignite.education/${profile.username}`}
               displayName={profile.display_name}
+              username={profile.username}
+              firstName={firstNameOf(profile.display_name)}
             />
           )}
         </div>

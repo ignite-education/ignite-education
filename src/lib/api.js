@@ -2670,3 +2670,33 @@ export async function getNotifications(userId, courseId = null, limit = 20) {
 
   return data || [];
 }
+
+/**
+ * Get the signed-in user's referral standing and Insider entitlement.
+ *
+ * Goes through the API rather than straight to Supabase because it also
+ * resolves entitlement, which depends on auth.users metadata the browser
+ * client can't read.
+ *
+ * @returns {Promise<Object|null>} Summary, or null when signed out / on error.
+ *   Callers treat null as "hide the card", so this never throws.
+ */
+export async function getReferralSummary() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return null;
+
+    const response = await fetch(`${API_URL}/api/referrals/me`, {
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (err) {
+    console.error('Error in getReferralSummary:', err);
+    return null;
+  }
+}

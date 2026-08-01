@@ -591,7 +591,7 @@ const BlogManagement = () => {
       case 'h3':
         return { label: 'Heading 3', color: 'bg-blue-600', textClass: 'text-xl font-semibold' };
       case 'paragraph':
-        return { label: 'Paragraph', color: 'bg-gray-600', textClass: '' };
+        return { label: 'Paragraph', color: 'bg-gray-200', textClass: '' };
       case 'bulletlist':
         return { label: 'Bullet List', color: 'bg-green-600', textClass: '' };
       case 'numberedlist':
@@ -599,7 +599,7 @@ const BlogManagement = () => {
       case 'quote':
         return { label: 'Quote', color: 'bg-amber-600', textClass: 'italic' };
       default:
-        return { label: 'Text', color: 'bg-gray-600', textClass: '' };
+        return { label: 'Text', color: 'bg-gray-200', textClass: '' };
     }
   };
 
@@ -613,7 +613,7 @@ const BlogManagement = () => {
         <div className="space-y-2">
           {items.map((item, itemIndex) => (
             <div key={itemIndex} className="flex items-center gap-2">
-              <span className="text-gray-400 w-6 text-center">
+              <span className="text-gray-600 w-6 text-center">
                 {block.type === 'bulletlist' ? '•' : `${itemIndex + 1}.`}
               </span>
               <input
@@ -636,7 +636,7 @@ const BlogManagement = () => {
                     updateBlock(block.id, { items: newItems });
                   }
                 }}
-                className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 placeholder="List item..."
               />
               {items.length > 1 && (
@@ -645,7 +645,7 @@ const BlogManagement = () => {
                     const newItems = items.filter((_, i) => i !== itemIndex);
                     updateBlock(block.id, { items: newItems });
                   }}
-                  className="p-1 hover:bg-red-900/30 text-red-400 rounded"
+                  className="p-1 hover:bg-red-100 text-red-600 rounded"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -654,7 +654,7 @@ const BlogManagement = () => {
           ))}
           <button
             onClick={() => updateBlock(block.id, { items: [...items, ''] })}
-            className="text-sm text-gray-400 hover:text-white ml-8"
+            className="text-sm text-gray-600 hover:text-gray-900 ml-8"
           >
             + Add item
           </button>
@@ -669,7 +669,7 @@ const BlogManagement = () => {
           <button
             type="button"
             onClick={() => toggleBold(block.id)}
-            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600/50 hover:bg-gray-600 rounded transition"
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition"
             title="Bold (select text first)"
           >
             <Bold size={12} />
@@ -677,7 +677,7 @@ const BlogManagement = () => {
           <button
             type="button"
             onClick={() => toggleItalic(block.id)}
-            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600/50 hover:bg-gray-600 rounded transition"
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition"
             title="Italic (select text first)"
           >
             <Italic size={12} />
@@ -685,16 +685,16 @@ const BlogManagement = () => {
           <button
             type="button"
             onClick={() => openLinkModal(block.id)}
-            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-600/50 hover:bg-blue-600 rounded transition"
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-600/50 hover:bg-blue-600 rounded transition text-white"
             title="Insert link (select text first)"
           >
             <Link2 size={12} />
           </button>
-          <div className="w-px h-4 bg-white/20 mx-1 self-center" />
+          <div className="w-px h-4 bg-gray-200 mx-1 self-center" />
           <button
             type="button"
             onClick={() => insertInlineBulletList(block.id)}
-            className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600/50 hover:bg-green-600 rounded transition"
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600/50 hover:bg-green-600 rounded transition text-white"
             title="Insert bullet list"
           >
             <List size={12} />
@@ -702,7 +702,7 @@ const BlogManagement = () => {
           <button
             type="button"
             onClick={() => insertInlineNumberedList(block.id)}
-            className="flex items-center gap-1 px-2 py-1 text-xs bg-teal-600/50 hover:bg-teal-600 rounded transition"
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-teal-600/50 hover:bg-teal-600 rounded transition text-white"
             title="Insert numbered list"
           >
             <ListOrdered size={12} />
@@ -722,7 +722,7 @@ const BlogManagement = () => {
             block.type === 'quote' ? 'Enter quote...' :
             'Enter paragraph text... (select text and click Link to add URLs)'
           }
-          className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-none min-h-[60px] ${textClass}`}
+          className={`w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72] resize-none min-h-[60px] ${textClass}`}
           style={{ height: 'auto' }}
         />
       </div>
@@ -730,11 +730,11 @@ const BlogManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-gray-50 text-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Blog Management</h1>
-          <button onClick={handleNewPost} className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg">
+          <button onClick={handleNewPost} className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg text-white">
             <Plus className="w-5 h-5" />
             New Post
           </button>
@@ -742,26 +742,26 @@ const BlogManagement = () => {
 
         <div className="grid grid-cols-12 gap-6">
           {/* Posts List */}
-          <div className="col-span-3 bg-white/5 rounded-lg p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="col-span-3 bg-white rounded-lg p-4 max-h-[calc(100vh-200px)] overflow-y-auto border border-gray-200">
             <h2 className="text-lg font-semibold mb-4">All Posts</h2>
             <div className="space-y-2">
               {posts.map(post => (
                 <div
                   key={post.id}
                   className={`p-3 rounded-lg cursor-pointer ${
-                    selectedPost?.id === post.id ? 'bg-[#EF0B72]/20 border border-[#EF0B72]' : 'bg-white/5 hover:bg-white/10'
+                    selectedPost?.id === post.id ? 'bg-[#EF0B72]/20 border border-[#EF0B72]' : 'bg-gray-50 hover:bg-gray-100'
                   }`}
                   onClick={() => handleSelectPost(post)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <h3 className="font-semibold text-sm line-clamp-2">{post.title}</h3>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-600 mt-1">
                         {post.status === 'published' ? '✓ Published' : '📝 Draft'}
                       </p>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }} className="p-1 hover:bg-red-500/20 rounded">
-                      <Trash2 className="w-4 h-4 text-red-400" />
+                      <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
                   </div>
                 </div>
@@ -770,14 +770,14 @@ const BlogManagement = () => {
           </div>
 
           {/* Editor */}
-          <div className="col-span-9 bg-white/5 rounded-lg p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="col-span-9 bg-white rounded-lg p-6 max-h-[calc(100vh-200px)] overflow-y-auto border border-gray-200">
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Title *</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 placeholder="Enter post title..."
               />
             </div>
@@ -788,10 +788,10 @@ const BlogManagement = () => {
                 type="text"
                 value={formData.slug}
                 onChange={(e) => handleInputChange('slug', e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 placeholder="url-friendly-slug"
               />
-              <p className="text-xs text-gray-400 mt-1">URL: /blog/{formData.slug}</p>
+              <p className="text-xs text-gray-600 mt-1">URL: /blog/{formData.slug}</p>
             </div>
 
             <div className="mb-6">
@@ -799,14 +799,14 @@ const BlogManagement = () => {
               <textarea
                 value={formData.excerpt}
                 onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72] h-20"
+                className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72] h-20"
                 placeholder="Short description..."
               />
             </div>
 
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Featured Media</label>
-              <p className="text-xs text-gray-400 mb-3">Choose either an image or a YouTube video as your featured media</p>
+              <p className="text-xs text-gray-600 mb-3">Choose either an image or a YouTube video as your featured media</p>
 
               {/* Image Upload Section */}
               <div className="space-y-3">
@@ -822,12 +822,12 @@ const BlogManagement = () => {
                     type="button"
                     onClick={() => imageInputRef.current?.click()}
                     disabled={isUploadingImage || !!formData.featured_video}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-100 border border-gray-300 rounded-lg disabled:opacity-50"
                   >
                     <Upload className="w-4 h-4" />
                     {isUploadingImage ? 'Uploading...' : 'Upload Image'}
                   </button>
-                  <span className="text-gray-400 text-sm">or</span>
+                  <span className="text-gray-600 text-sm">or</span>
                   <input
                     type="text"
                     value={formData.featured_image}
@@ -836,7 +836,7 @@ const BlogManagement = () => {
                       if (e.target.value) handleInputChange('featured_video', '');
                     }}
                     disabled={!!formData.featured_video}
-                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72] disabled:opacity-50"
+                    className="flex-1 bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72] disabled:opacity-50"
                     placeholder="Paste image URL..."
                   />
                   {formData.featured_image && (
@@ -850,7 +850,7 @@ const BlogManagement = () => {
                       <button
                         type="button"
                         onClick={() => handleInputChange('featured_image', '')}
-                        className="p-2 hover:bg-red-900/30 text-red-400 rounded"
+                        className="p-2 hover:bg-red-100 text-red-600 rounded"
                       >
                         <X size={16} />
                       </button>
@@ -860,9 +860,9 @@ const BlogManagement = () => {
 
                 {/* Divider */}
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-white/20"></div>
-                  <span className="text-gray-400 text-sm">OR</span>
-                  <div className="flex-1 h-px bg-white/20"></div>
+                  <div className="flex-1 h-px bg-gray-200"></div>
+                  <span className="text-gray-600 text-sm">OR</span>
+                  <div className="flex-1 h-px bg-gray-200"></div>
                 </div>
 
                 {/* YouTube Video Section */}
@@ -876,14 +876,14 @@ const BlogManagement = () => {
                       if (e.target.value) handleInputChange('featured_image', '');
                     }}
                     disabled={!!formData.featured_image}
-                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72] disabled:opacity-50"
+                    className="flex-1 bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72] disabled:opacity-50"
                     placeholder="Paste YouTube URL (e.g., https://youtube.com/watch?v=...)"
                   />
                   {formData.featured_video && (
                     <button
                       type="button"
                       onClick={() => handleInputChange('featured_video', '')}
-                      className="p-2 hover:bg-red-900/30 text-red-400 rounded"
+                      className="p-2 hover:bg-red-100 text-red-600 rounded"
                     >
                       <X size={16} />
                     </button>
@@ -904,7 +904,7 @@ const BlogManagement = () => {
                 )}
 
                 {formData.featured_video && !extractYouTubeId(formData.featured_video) && (
-                  <p className="text-red-400 text-sm">Invalid YouTube URL. Please use a valid YouTube link.</p>
+                  <p className="text-red-600 text-sm">Invalid YouTube URL. Please use a valid YouTube link.</p>
                 )}
               </div>
             </div>
@@ -914,29 +914,29 @@ const BlogManagement = () => {
               <label className="block text-sm font-medium mb-2">Content *</label>
 
               {/* Add Block Buttons */}
-              <div className="bg-white/10 border border-white/20 rounded-t-lg p-3 flex flex-wrap gap-2">
-                <button onClick={() => addBlock('h2')} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium">
+              <div className="bg-gray-100 border border-gray-300 rounded-t-lg p-3 flex flex-wrap gap-2">
+                <button onClick={() => addBlock('h2')} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium text-white">
                   + Heading 2
                 </button>
-                <button onClick={() => addBlock('h3')} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium">
+                <button onClick={() => addBlock('h3')} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium text-white">
                   + Heading 3
                 </button>
-                <button onClick={() => addBlock('paragraph')} className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 rounded text-sm font-medium">
+                <button onClick={() => addBlock('paragraph')} className="px-3 py-1.5 bg-gray-200 hover:bg-gray-200 rounded text-sm font-medium">
                   + Paragraph
                 </button>
-                <button onClick={() => addBlock('bulletlist')} className="px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded text-sm font-medium flex items-center gap-1">
+                <button onClick={() => addBlock('bulletlist')} className="px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded text-sm font-medium flex items-center gap-1 text-white">
                   <List size={14} /> Bullet List
                 </button>
-                <button onClick={() => addBlock('numberedlist')} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 rounded text-sm font-medium">
+                <button onClick={() => addBlock('numberedlist')} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 rounded text-sm font-medium text-white">
                   1. Numbered List
                 </button>
-                <button onClick={() => addBlock('quote')} className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 rounded text-sm font-medium">
+                <button onClick={() => addBlock('quote')} className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 rounded text-sm font-medium text-white">
                   " Quote
                 </button>
               </div>
 
               {/* Content Blocks */}
-              <div className="bg-white/5 border border-white/20 border-t-0 rounded-b-lg p-4 space-y-4">
+              <div className="bg-white border border-gray-300 border-t-0 rounded-b-lg p-4 space-y-4">
                 {contentBlocks.map((block, index) => {
                   const { label, color } = getBlockInfo(block.type);
 
@@ -945,38 +945,38 @@ const BlogManagement = () => {
                       {/* Insert buttons between blocks */}
                       {index > 0 && (
                         <div className="flex justify-center mb-2 -mt-2">
-                          <div className="flex gap-1 bg-gray-800 rounded p-1 opacity-0 hover:opacity-100 transition-opacity">
-                            <button onClick={() => addBlockAt('h2', index)} className="px-2 py-0.5 text-xs bg-purple-600/50 hover:bg-purple-600 rounded">+H2</button>
-                            <button onClick={() => addBlockAt('h3', index)} className="px-2 py-0.5 text-xs bg-blue-600/50 hover:bg-blue-600 rounded">+H3</button>
-                            <button onClick={() => addBlockAt('paragraph', index)} className="px-2 py-0.5 text-xs bg-gray-600/50 hover:bg-gray-600 rounded">+P</button>
-                            <button onClick={() => addBlockAt('bulletlist', index)} className="px-2 py-0.5 text-xs bg-green-600/50 hover:bg-green-600 rounded">+List</button>
+                          <div className="flex gap-1 bg-white rounded p-1 opacity-0 hover:opacity-100 transition-opacity border border-gray-200">
+                            <button onClick={() => addBlockAt('h2', index)} className="px-2 py-0.5 text-xs bg-purple-600/50 hover:bg-purple-600 rounded text-white">+H2</button>
+                            <button onClick={() => addBlockAt('h3', index)} className="px-2 py-0.5 text-xs bg-blue-600/50 hover:bg-blue-600 rounded text-white">+H3</button>
+                            <button onClick={() => addBlockAt('paragraph', index)} className="px-2 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded">+P</button>
+                            <button onClick={() => addBlockAt('bulletlist', index)} className="px-2 py-0.5 text-xs bg-green-600/50 hover:bg-green-600 rounded text-white">+List</button>
                           </div>
                         </div>
                       )}
 
-                      <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                         {/* Block header */}
-                        <div className="flex items-center justify-between px-3 py-2 bg-white/5">
+                        <div className="flex items-center justify-between px-3 py-2 bg-white">
                           <span className={`text-xs font-medium px-2 py-0.5 rounded ${color}`}>{label}</span>
                           <div className="flex gap-1">
                             <button
                               onClick={() => moveBlockUp(index)}
                               disabled={index === 0}
-                              className="p-1 hover:bg-white/10 rounded disabled:opacity-30"
+                              className="p-1 hover:bg-gray-50 rounded disabled:opacity-30"
                             >
                               <MoveUp size={14} />
                             </button>
                             <button
                               onClick={() => moveBlockDown(index)}
                               disabled={index === contentBlocks.length - 1}
-                              className="p-1 hover:bg-white/10 rounded disabled:opacity-30"
+                              className="p-1 hover:bg-gray-50 rounded disabled:opacity-30"
                             >
                               <MoveDown size={14} />
                             </button>
                             <button
                               onClick={() => removeBlock(block.id)}
                               disabled={contentBlocks.length <= 1}
-                              className="p-1 hover:bg-red-900/30 text-red-400 rounded disabled:opacity-30"
+                              className="p-1 hover:bg-red-100 text-red-600 rounded disabled:opacity-30"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -997,18 +997,18 @@ const BlogManagement = () => {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-medium mb-2">Author Name</label>
-                <input type="text" value={formData.author_name} onChange={(e) => handleInputChange('author_name', e.target.value)} className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white" />
+                <input type="text" value={formData.author_name} onChange={(e) => handleInputChange('author_name', e.target.value)} className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Author Role</label>
-                <input type="text" value={formData.author_role} onChange={(e) => handleInputChange('author_role', e.target.value)} className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white" />
+                <input type="text" value={formData.author_role} onChange={(e) => handleInputChange('author_role', e.target.value)} className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-medium mb-2">Status</label>
-                <select value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)} className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white">
+                <select value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)} className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900">
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
                   <option value="archived">Archived</option>
@@ -1020,28 +1020,28 @@ const BlogManagement = () => {
                   type="datetime-local"
                   value={formData.published_at ? new Date(formData.published_at).toISOString().slice(0, 16) : ''}
                   onChange={(e) => handleInputChange('published_at', e.target.value ? new Date(e.target.value).toISOString() : '')}
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900"
                 />
               </div>
             </div>
 
             {/* SEO Settings Panel */}
-            <div className="mb-6 border border-white/20 rounded-lg overflow-hidden">
+            <div className="mb-6 border border-gray-300 rounded-lg overflow-hidden">
               <button
                 type="button"
                 onClick={() => setShowSeoPanel(!showSeoPanel)}
-                className="w-full px-4 py-3 bg-white/5 hover:bg-white/10 flex items-center justify-between text-left"
+                className="w-full px-4 py-3 bg-white hover:bg-gray-50 flex items-center justify-between text-left"
               >
                 <span className="font-medium">SEO Settings</span>
                 <span className={`transform transition-transform ${showSeoPanel ? 'rotate-180' : ''}`}>▼</span>
               </button>
 
               {showSeoPanel && (
-                <div className="p-4 space-y-4 bg-white/5">
+                <div className="p-4 space-y-4 bg-white">
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       Meta Title
-                      <span className={`ml-2 text-xs ${formData.meta_title.length > 60 ? 'text-red-400' : 'text-gray-400'}`}>
+                      <span className={`ml-2 text-xs ${formData.meta_title.length > 60 ? 'text-red-600' : 'text-gray-600'}`}>
                         ({formData.meta_title.length}/60)
                       </span>
                     </label>
@@ -1049,7 +1049,7 @@ const BlogManagement = () => {
                       type="text"
                       value={formData.meta_title}
                       onChange={(e) => handleInputChange('meta_title', e.target.value)}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                       placeholder="SEO title (appears in search results)"
                       maxLength={70}
                     />
@@ -1058,14 +1058,14 @@ const BlogManagement = () => {
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       Meta Description
-                      <span className={`ml-2 text-xs ${formData.meta_description.length > 160 ? 'text-red-400' : 'text-gray-400'}`}>
+                      <span className={`ml-2 text-xs ${formData.meta_description.length > 160 ? 'text-red-600' : 'text-gray-600'}`}>
                         ({formData.meta_description.length}/160)
                       </span>
                     </label>
                     <textarea
                       value={formData.meta_description}
                       onChange={(e) => handleInputChange('meta_description', e.target.value)}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72] h-20"
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72] h-20"
                       placeholder="SEO description (appears in search results)"
                       maxLength={170}
                     />
@@ -1077,7 +1077,7 @@ const BlogManagement = () => {
                       type="text"
                       value={formData.og_image}
                       onChange={(e) => handleInputChange('og_image', e.target.value)}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                       placeholder="Image URL for social media sharing"
                     />
                   </div>
@@ -1102,7 +1102,7 @@ const BlogManagement = () => {
               <button
                 onClick={handleSavePost}
                 disabled={isSaving || !formData.title || !formData.slug || !formData.excerpt}
-                className="flex items-center gap-2 px-6 py-3 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-3 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50 text-white"
               >
                 <Save className="w-5 h-5" />
                 {isSaving ? 'Saving...' : selectedPost ? 'Update Post' : 'Create Post'}
@@ -1112,7 +1112,7 @@ const BlogManagement = () => {
                 <button
                   onClick={handleGenerateAudio}
                   disabled={isGeneratingAudio}
-                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg disabled:opacity-50 text-white"
                 >
                   <Volume2 className="w-5 h-5" />
                   {isGeneratingAudio ? 'Generating...' : 'Generate Audio'}
@@ -1121,14 +1121,14 @@ const BlogManagement = () => {
 
               {audioStatus && (
                 <span className={`text-xs px-3 py-1 rounded ${
-                  audioStatus.hasAudio ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-400'
+                  audioStatus.hasAudio ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
                 }`}>
                   {audioStatus.hasAudio ? `✅ Audio ready (${audioStatus.duration_seconds?.toFixed(1)}s)` : '❌ No audio'}
                 </span>
               )}
 
               {selectedPost && formData.status === 'published' && (
-                <a href={`/blog/${formData.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg">
+                <a href={`/blog/${formData.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-100 rounded-lg">
                   <Eye className="w-5 h-5" />
                   Preview
                 </a>
@@ -1141,7 +1141,7 @@ const BlogManagement = () => {
       {/* Link Modal */}
       {showLinkModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-white/20">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md border border-gray-300">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Link2 size={20} />
@@ -1149,7 +1149,7 @@ const BlogManagement = () => {
               </h3>
               <button
                 onClick={() => setShowLinkModal(false)}
-                className="p-1 hover:bg-white/10 rounded"
+                className="p-1 hover:bg-gray-50 rounded"
               >
                 <X size={20} />
               </button>
@@ -1162,10 +1162,10 @@ const BlogManagement = () => {
                   type="text"
                   value={linkData.text}
                   onChange={(e) => setLinkData({ ...linkData, text: e.target.value })}
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                   placeholder="Display text for the link"
                 />
-                <p className="text-xs text-gray-400 mt-1">Leave empty to show the URL as link text</p>
+                <p className="text-xs text-gray-600 mt-1">Leave empty to show the URL as link text</p>
               </div>
 
               <div>
@@ -1174,7 +1174,7 @@ const BlogManagement = () => {
                   type="url"
                   value={linkData.url}
                   onChange={(e) => setLinkData({ ...linkData, url: e.target.value })}
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                   placeholder="https://example.com"
                   autoFocus
                 />
@@ -1183,14 +1183,14 @@ const BlogManagement = () => {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowLinkModal(false)}
-                  className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg"
+                  className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={insertLink}
                   disabled={!linkData.url}
-                  className="flex-1 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50 text-white"
                 >
                   Insert Link
                 </button>

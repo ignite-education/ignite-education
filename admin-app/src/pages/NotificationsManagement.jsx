@@ -114,18 +114,18 @@ const NotificationsManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-gray-50 text-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">Notifications</h1>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-gray-600 mt-1">
               Published notifications appear in the bell on every user&rsquo;s Progress Hub.
             </p>
           </div>
           <button
             onClick={loadNotifications}
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 rounded-lg text-sm border border-gray-200"
           >
             <RefreshCw className="w-4 h-4" />
             Refresh
@@ -135,7 +135,7 @@ const NotificationsManagement = () => {
         <div className="grid grid-cols-12 gap-6">
           {/* Composer */}
           <div className="col-span-12 lg:col-span-5">
-            <div className="bg-white/5 rounded-lg p-6">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h2 className="text-lg font-semibold mb-5">New notification</h2>
 
               <div className="mb-5">
@@ -146,7 +146,7 @@ const NotificationsManagement = () => {
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   placeholder="e.g., New course just launched"
                   maxLength={80}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 />
                 <p className="text-xs text-gray-500 mt-1.5">{formData.title.length}/80</p>
               </div>
@@ -159,7 +159,7 @@ const NotificationsManagement = () => {
                   placeholder="A short sentence explaining what happened."
                   rows={3}
                   maxLength={200}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-none"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72] resize-none"
                 />
                 <p className="text-xs text-gray-500 mt-1.5">
                   {formData.body.length}/200 &middot; clamped to 2 lines in the bell
@@ -173,7 +173,7 @@ const NotificationsManagement = () => {
                   value={formData.link_url}
                   onChange={(e) => handleInputChange('link_url', e.target.value)}
                   placeholder="/courses  or  https://example.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
                 />
                 <p className="text-xs text-gray-500 mt-1.5">
                   Opens in a new tab. Leave blank to make it unclickable.
@@ -199,7 +199,7 @@ const NotificationsManagement = () => {
               <button
                 onClick={handlePublish}
                 disabled={isSending || !formData.title.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#EF0B72] hover:bg-[#D10A64] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#EF0B72] hover:bg-[#D10A64] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg font-medium transition-colors text-white"
               >
                 <Send className="w-4 h-4" />
                 {isSending ? 'Publishing…' : 'Publish to all users'}
@@ -209,25 +209,25 @@ const NotificationsManagement = () => {
 
           {/* Existing notifications */}
           <div className="col-span-12 lg:col-span-7">
-            <div className="bg-white/5 rounded-lg p-6">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h2 className="text-lg font-semibold mb-1">All notifications</h2>
-              <p className="text-xs text-gray-400 mb-5">
+              <p className="text-xs text-gray-600 mb-5">
                 Includes ones created automatically by certificates, releases, blog posts and
                 office hours. Only the newest {MAX_PREVIEW} show in a user&rsquo;s bell.
               </p>
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4 text-sm text-red-300">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4 text-sm text-red-600">
                   {error}
                 </div>
               )}
 
               {loading ? (
-                <p className="text-gray-400 text-sm py-8 text-center">Loading…</p>
+                <p className="text-gray-600 text-sm py-8 text-center">Loading…</p>
               ) : notifications.length === 0 ? (
                 <div className="text-center py-12">
                   <Bell className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-400 text-sm">No notifications yet</p>
+                  <p className="text-gray-600 text-sm">No notifications yet</p>
                 </div>
               ) : (
                 <div className="space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto">
@@ -236,8 +236,8 @@ const NotificationsManagement = () => {
                       key={n.id}
                       className={`p-3 rounded-lg border ${
                         idx < MAX_PREVIEW
-                          ? 'bg-white/[0.07] border-white/10'
-                          : 'bg-white/[0.02] border-transparent'
+                          ? 'bg-white border-gray-200'
+                          : 'bg-gray-50 border-transparent'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -245,8 +245,8 @@ const NotificationsManagement = () => {
                           <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide ${
                               TRIGGER_TYPES[n.type]
-                                ? 'bg-gray-600/40 text-gray-300'
-                                : 'bg-[#EF0B72]/20 text-pink-300'
+                                ? 'bg-gray-200 text-gray-700'
+                                : 'bg-[#EF0B72]/20 text-pink-600'
                             }`}>
                               {TRIGGER_TYPES[n.type] || 'Manual'}
                             </span>
@@ -256,12 +256,12 @@ const NotificationsManagement = () => {
                               <span className="text-[10px] text-gray-500">One user</span>
                             )}
                             {idx < MAX_PREVIEW && (
-                              <span className="text-[10px] text-green-400">Visible in bell</span>
+                              <span className="text-[10px] text-green-600">Visible in bell</span>
                             )}
                           </div>
                           <h3 className="font-medium text-sm truncate">{n.title}</h3>
                           {n.body && (
-                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{n.body}</p>
+                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{n.body}</p>
                           )}
                           <div className="flex items-center gap-3 mt-1.5">
                             <span className="text-[11px] text-gray-500">{formatWhen(n.created_at)}</span>
@@ -275,7 +275,7 @@ const NotificationsManagement = () => {
                           className="p-1.5 hover:bg-red-500/20 rounded flex-shrink-0"
                           title="Delete"
                         >
-                          <Trash2 className="w-4 h-4 text-red-400" />
+                          <Trash2 className="w-4 h-4 text-red-600" />
                         </button>
                       </div>
                     </div>

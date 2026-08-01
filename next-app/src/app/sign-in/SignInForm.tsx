@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { readReferrer } from '@/lib/referral'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import lottieData from '../../../public/icon-animation.json'
@@ -45,10 +46,14 @@ export default function SignInForm() {
       // `next` (which itself contains a query string) as a single value.
       const nextParam = searchParams.get('next') || '/courses'
       const courseParam = searchParams.get('course')
+      // Referral attribution. An explicit ?ref= beats the stored crumb, so a
+      // freshly-clicked link wins over a profile visited days ago.
+      const refParam = searchParams.get('ref') || readReferrer()
 
       const callbackParams = new URLSearchParams()
       callbackParams.set('next', nextParam)
       if (courseParam) callbackParams.set('course', courseParam)
+      if (refParam) callbackParams.set('ref', refParam)
       if (redirectParam === 'admin') callbackParams.set('redirect', 'admin')
 
       const { error } = await supabase.auth.signInWithOAuth({

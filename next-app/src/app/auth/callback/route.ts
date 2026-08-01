@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createUserRecord, addToResendAudience } from '@/lib/auth'
+import { claimReferral } from '@/lib/referral'
 import { enrollUserInCourse } from '@/lib/enroll'
 import { getCourseBySlug } from '@/lib/courseData'
 
@@ -33,6 +34,21 @@ export async function GET(request: Request) {
         // Add to Resend audience (non-blocking, safe for returning users)
         if (user.email) {
           addToResendAudience(user.email, firstName, lastName)
+        }
+
+        // Signed up from someone's public profile — attribute it so both sides
+        // get their free week. Runs after createUserRecord so public.users
+        // exists. Non-critical: the server declines quietly for anything that
+        // isn't a genuine new signup, and a failure here must never turn a
+        // successful sign-in into /sign-in?error=auth.
+        const ref = searchParams.get('ref')
+        const accessToken = sessionData?.session?.access_token
+        if (ref && accessToken) {
+          try {
+            await claimReferral(accessToken, ref)
+          } catch (e) {
+            console.error('[auth/callback] referral claim failed:', e)
+          }
         }
 
         // For LinkedIn sign-ins, try to fetch a higher-res profile picture

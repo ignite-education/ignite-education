@@ -255,15 +255,30 @@ const iconButtonReset = {
   appearance: 'none',
 };
 
-const ShareButton = () => {
+// Shares the user's own public profile page (ignite.education/{username}), not
+// the private /progress route — that's the only URL a recipient can actually
+// open. `username` is null while loading or when the profile is opted out of
+// being public, in which case we fall back to the marketing page.
+//
+// The share text leads with the referral offer, because anyone who signs up
+// through this link earns the sharer a free week of Insider. ?ref= is redundant
+// with the path, but it survives a recipient who bounces straight to a course
+// page before ProfileHero's effect writes the crumb.
+const ShareButton = ({ username }) => {
   const [hovered, setHovered] = useState(false);
   const iconColor = hovered ? '#EF0B72' : '#000000';
 
   const handleShare = async () => {
-    const shareData = {
-      title: 'My Progress | Ignite Education',
-      url: 'https://ignite.education/welcome',
-    };
+    const shareData = username
+      ? {
+          title: 'Learn with me on Ignite Education',
+          text: 'Join me on Ignite and we both get a free week of Ignite Insider',
+          url: `https://ignite.education/${username}?ref=${username}`,
+        }
+      : {
+          title: 'Ignite Education',
+          url: 'https://ignite.education/welcome',
+        };
     if (navigator.share) {
       try {
         await navigator.share(shareData);
@@ -281,7 +296,7 @@ const ShareButton = () => {
       onClick={handleShare}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      aria-label="Share your progress"
+      aria-label="Share your public profile"
       className="intro-icon-btn flex items-center justify-center rounded-[4px]"
       style={iconButtonReset}
     >
@@ -330,36 +345,67 @@ const SettingsCog = ({ onClick }) => {
       className="intro-icon-btn flex items-center justify-center rounded-[4px]"
       style={iconButtonReset}
     >
+      {/* The gear must rotate in place, with no hint of translation, so the
+          rotation lives on an inner <g> rather than on the <svg> itself.
+
+          On the outermost <svg>, the initial `transform-box: view-box` is
+          ambiguous: Blink resolves it against the element's 23px CSS box (origin
+          11.5 11.5 — correct), but resolving it against the 20-unit viewBox
+          instead puts the origin at 10 10 of a box whose real centre is 11.5
+          11.5, swinging the icon ~1.6px sideways at 45deg. On a <g> the
+          reference box is unambiguously the viewBox in every engine, so
+          `10px 10px` is exactly the centre and the ambiguity is gone.
+
+          `willChange: transform` keeps the layer composited for good. Without it
+          the icon is promoted to its own layer when the transition starts and
+          dropped when it ends, and each promotion snaps the layer origin to a
+          whole device pixel — a sub-pixel jump at both ends of the hover, on top
+          of a rotation that is otherwise clean.
+
+          The 45deg step is deliberate: the gear is 8-fold symmetric (measured to
+          within 0.7% of its mean radius), so each hover lands it back on itself.
+          Its ink peaks at 9.958 of the 10 user units the viewport allows, at
+          every angle, so nothing is ever clipped — don't grow the stroke or the
+          path without rechecking that. */}
       <svg
         width="23"
         height="23"
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ transition: 'transform 0.3s ease', transform: `rotate(${rotation}deg)` }}
       >
-        <path
-          d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
-          stroke={iconColor}
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ transition: 'stroke 0.2s ease' }}
-        />
-        <path
-          d="M16.167 12.5a1.375 1.375 0 0 0 .275 1.517l.05.05a1.667 1.667 0 1 1-2.359 2.358l-.05-.05a1.375 1.375 0 0 0-1.516-.275 1.375 1.375 0 0 0-.834 1.258v.142a1.667 1.667 0 1 1-3.333 0v-.075a1.375 1.375 0 0 0-.9-1.258 1.375 1.375 0 0 0-1.517.275l-.05.05a1.667 1.667 0 1 1-2.358-2.359l.05-.05A1.375 1.375 0 0 0 3.9 12.567a1.375 1.375 0 0 0-1.258-.834h-.142a1.667 1.667 0 0 1 0-3.333h.075a1.375 1.375 0 0 0 1.258-.9 1.375 1.375 0 0 0-.275-1.517l-.05-.05A1.667 1.667 0 1 1 5.867 3.575l.05.05a1.375 1.375 0 0 0 1.516.275h.067a1.375 1.375 0 0 0 .833-1.258v-.142a1.667 1.667 0 0 1 3.334 0v.075a1.375 1.375 0 0 0 .833 1.258 1.375 1.375 0 0 0 1.517-.275l.05-.05a1.667 1.667 0 1 1 2.358 2.358l-.05.05a1.375 1.375 0 0 0-.275 1.517v.067a1.375 1.375 0 0 0 1.258.833h.142a1.667 1.667 0 0 1 0 3.334h-.075a1.375 1.375 0 0 0-1.258.833Z"
-          stroke={iconColor}
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ transition: 'stroke 0.2s ease' }}
-        />
+        <g
+          style={{
+            transform: `rotate(${rotation}deg)`,
+            transformBox: 'view-box',
+            transformOrigin: '10px 10px',
+            transition: 'transform 0.3s ease',
+            willChange: 'transform',
+          }}
+        >
+          <path
+            d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
+            stroke={iconColor}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transition: 'stroke 0.2s ease' }}
+          />
+          <path
+            d="M16.167 12.5a1.375 1.375 0 0 0 .275 1.517l.05.05a1.667 1.667 0 1 1-2.359 2.358l-.05-.05a1.375 1.375 0 0 0-1.516-.275 1.375 1.375 0 0 0-.834 1.258v.142a1.667 1.667 0 1 1-3.333 0v-.075a1.375 1.375 0 0 0-.9-1.258 1.375 1.375 0 0 0-1.517.275l-.05.05a1.667 1.667 0 1 1-2.358-2.359l.05-.05A1.375 1.375 0 0 0 3.9 12.567a1.375 1.375 0 0 0-1.258-.834h-.142a1.667 1.667 0 0 1 0-3.333h.075a1.375 1.375 0 0 0 1.258-.9 1.375 1.375 0 0 0-.275-1.517l-.05-.05A1.667 1.667 0 1 1 5.867 3.575l.05.05a1.375 1.375 0 0 0 1.516.275h.067a1.375 1.375 0 0 0 .833-1.258v-.142a1.667 1.667 0 0 1 3.334 0v.075a1.375 1.375 0 0 0 .833 1.258 1.375 1.375 0 0 0 1.517-.275l.05-.05a1.667 1.667 0 1 1 2.358 2.358l-.05.05a1.375 1.375 0 0 0-.275 1.517v.067a1.375 1.375 0 0 0 1.258.833h.142a1.667 1.667 0 0 1 0 3.334h-.075a1.375 1.375 0 0 0-1.258.833Z"
+            stroke={iconColor}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transition: 'stroke 0.2s ease' }}
+          />
+        </g>
       </svg>
     </button>
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, insiderUntil, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, username, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
   const isMobile = useIsMobile();
   const avatarSize = isMobile ? 42.35 : 150; // mobile: 42.35 (top-right)
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
@@ -376,6 +422,17 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
   const animatedCount = useCountUp(communityCount, 1200, 1000);
+
+  // "3 days left" / "1 day left" / "today" for a time-limited Insider grant.
+  // null for Stripe subscribers, whose access has no end date.
+  const insiderDaysLeft = useMemo(() => {
+    if (!insiderUntil) return null;
+    const msLeft = new Date(insiderUntil).getTime() - Date.now();
+    if (!(msLeft > 0)) return null;
+    const days = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+    if (days === 1) return 'last day';
+    return `${days} days left`;
+  }, [insiderUntil]);
 
   const introText = useMemo(() => generateIntroText({
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
@@ -531,7 +588,13 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     >
       <style>{`
         .intro-link:hover { color: #EF0B72 !important; }
-        .intro-icon-btn:focus-visible { outline: 2px solid #EF0B72; outline-offset: 2px; }
+        /* No :focus-visible ring on the icon buttons. Clicking one gives it DOM
+           focus, and the next keypress (Escape to dismiss the notification
+           panel, say) flips Chrome into keyboard modality and re-evaluates
+           :focus-visible on the still-focused button — so a pink square would
+           appear over the icon during ordinary mouse use. The buttons stay
+           focusable and labelled for keyboard and screen-reader users. */
+        .intro-icon-btn:focus { outline: none; }
       `}</style>
       <div className="flex flex-col lg:flex-row w-full gap-4 lg:gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
@@ -653,7 +716,9 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
               </span>
             )}
 
-            {/* Insider Tag */}
+            {/* Insider Tag — counts down when the access is a referral week or
+                a comp rather than a subscription (insiderUntil is null for
+                Stripe subscribers, who have no end date to show). */}
             {isInsider && (
               <span style={{ position: 'relative', display: 'inline-block' }}>
                 {activeConfetti.insider && <ConfettiBurst />}
@@ -661,7 +726,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                   className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
                   style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', zIndex: 2 }}
                 >
-                  Insider
+                  {insiderDaysLeft !== null ? `Insider · ${insiderDaysLeft}` : 'Insider'}
                 </span>
               </span>
             )}
@@ -745,7 +810,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: '30px', left: '40px', zIndex: 3 }}>
           <SettingsCog onClick={onSettingsClick} />
           <NotificationBell userId={userId} courseId={courseId} />
-          <ShareButton />
+          <ShareButton username={username} />
         </div>
       )}
     </section>

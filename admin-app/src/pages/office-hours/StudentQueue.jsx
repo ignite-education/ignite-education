@@ -37,8 +37,8 @@ const SessionTimer = ({ connectedEntryId, connectedAt }) => {
 
   return (
     <div className="flex items-center justify-between mt-2 pt-2 border-t border-yellow-500/10">
-      <span className="text-xs font-mono text-gray-400">{formatDuration(elapsed)}</span>
-      <span className={`text-xs ${remaining <= 60 ? 'text-red-400' : 'text-gray-500'}`}>
+      <span className="text-xs font-mono text-gray-600">{formatDuration(elapsed)}</span>
+      <span className={`text-xs ${remaining <= 60 ? 'text-red-600' : 'text-gray-500'}`}>
         {remaining <= 0 ? 'End of allocated time' : `${minsLeft} min${minsLeft !== 1 ? 's' : ''} left`}
       </span>
     </div>
@@ -51,14 +51,14 @@ const StudentQueue = ({ queue, activeSession, admitting, kicking, onAdmit, onKic
   const isOccupied = activeSession?.status === 'occupied';
 
   return (
-    <div className="rounded-xl border border-gray-700/50 bg-gray-800/50 p-4 flex flex-col" style={{ height: '520px' }}>
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 flex flex-col" style={{ height: '520px' }}>
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <h3 className="font-medium flex items-center gap-2">
-          <Users size={16} className="text-gray-400" />
+          <Users size={16} className="text-gray-600" />
           Student Queue
         </h3>
         {queue.length > 0 && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600">
             {queue.length}
           </span>
         )}
@@ -71,12 +71,12 @@ const StudentQueue = ({ queue, activeSession, admitting, kicking, onAdmit, onKic
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                <span className="text-xs font-medium text-yellow-400 uppercase tracking-wide">Connected</span>
+                <span className="text-xs font-medium text-yellow-600 uppercase tracking-wide">Connected</span>
               </div>
               <button
                 onClick={() => onKick(connectedEntry.id)}
                 disabled={kicking}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
               >
                 <Square size={10} />
                 {kicking ? 'Ending...' : 'End'}
@@ -89,13 +89,13 @@ const StudentQueue = ({ queue, activeSession, admitting, kicking, onAdmit, onKic
 
         {/* Waiting students */}
         {waitingEntries.map((entry, i) => (
-          <div key={entry.id} className="p-3 rounded-lg border border-gray-700/50 bg-gray-800/30">
+          <div key={entry.id} className="p-3 rounded-lg border border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-500">#{i + 1}</span>
               <button
                 onClick={() => onAdmit(entry.id)}
                 disabled={isOccupied || admitting === entry.id}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-md text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 hover:bg-green-500/20 text-green-600 rounded-md text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 title={isOccupied ? 'End current student session first' : 'Admit this student'}
               >
                 <Play size={10} />
@@ -126,12 +126,12 @@ const StudentCard = ({ entry }) => {
         {entry.profilePicture ? (
           <img src={entry.profilePicture} alt="" className="w-8 h-8 rounded-full object-cover" />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-medium text-purple-300">
+          <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-medium text-purple-600">
             {initials}
           </div>
         )}
         <div>
-          <span className="text-sm font-medium text-gray-200">
+          <span className="text-sm font-medium text-gray-800">
             {entry.firstName} {entry.lastName}
           </span>
           {entry.country && (
@@ -142,13 +142,13 @@ const StudentCard = ({ entry }) => {
       {entry.topic && (
         <div className="mb-1">
           <span className="text-xs text-gray-500">Topic: </span>
-          <span className="text-xs text-gray-300">{entry.topic}</span>
+          <span className="text-xs text-gray-700">{entry.topic}</span>
         </div>
       )}
       {entry.question && (
         <div>
           <span className="text-xs text-gray-500">Question: </span>
-          <span className="text-xs text-gray-400 line-clamp-2">{entry.question}</span>
+          <span className="text-xs text-gray-600 line-clamp-2">{entry.question}</span>
         </div>
       )}
     </div>

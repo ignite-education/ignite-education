@@ -29,15 +29,15 @@ const AdminRoute = ({ children, requireAdmin = false }) => {
     if (lastRedirect && (now - parseInt(lastRedirect, 10)) < 30000) {
       console.error('[AdminRoute] REDIRECT LOOP DETECTED — cookies not shared across subdomains');
       return (
-        <div className="flex items-center justify-center h-screen bg-gray-900">
+        <div className="flex items-center justify-center h-screen bg-gray-50">
           <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
             <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
-              <svg className="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-white font-medium">Session not found</p>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-900 font-medium">Session not found</p>
+            <p className="text-gray-600 text-sm">
               Your sign-in session couldn't be shared with the admin portal. Please sign out and sign in again.
             </p>
             <div className="flex gap-3 mt-2">
@@ -53,7 +53,7 @@ const AdminRoute = ({ children, requireAdmin = false }) => {
               <a
                 href="https://ignite.education/sign-in?redirect=admin&fresh=true"
                 onClick={() => sessionStorage.removeItem(redirectKey)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-300 text-gray-900 text-sm font-medium rounded-lg transition-colors"
               >
                 Sign In Again
               </a>
@@ -73,15 +73,15 @@ const AdminRoute = ({ children, requireAdmin = false }) => {
   if (roleError) {
     console.log('[AdminRoute] → showing error screen (roleError:', roleError, ')');
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
+      <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
           <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-            <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-white font-medium">Unable to load your account</p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-900 font-medium">Unable to load your account</p>
+          <p className="text-gray-600 text-sm">
             We couldn't verify your admin access. This may be a temporary issue.
           </p>
           <div className="flex gap-3 mt-2">
@@ -93,7 +93,7 @@ const AdminRoute = ({ children, requireAdmin = false }) => {
             </button>
             <button
               onClick={() => { window.location.href = 'https://ignite.education/sign-in?redirect=admin'; }}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-300 text-gray-900 text-sm font-medium rounded-lg transition-colors"
             >
               Sign In Again
             </button>

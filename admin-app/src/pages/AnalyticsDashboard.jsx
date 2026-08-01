@@ -527,10 +527,10 @@ const AnalyticsDashboard = () => {
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'admin': return 'text-purple-400 bg-purple-900/30';
-      case 'teacher': return 'text-blue-400 bg-blue-900/30';
-      case 'student': return 'text-gray-400 bg-gray-800';
-      default: return 'text-gray-400 bg-gray-800';
+      case 'admin': return 'text-purple-600 bg-purple-100';
+      case 'teacher': return 'text-blue-600 bg-blue-100';
+      case 'student': return 'text-gray-600 bg-gray-100';
+      default: return 'text-gray-600 bg-gray-100';
     }
   };
 
@@ -551,19 +551,19 @@ const AnalyticsDashboard = () => {
   };
 
   const MetricCard = ({ icon: Icon, title, value, subtitle, trend, trendValue }) => (
-    <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+    <div className="bg-white rounded-lg p-6 border border-gray-200">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-purple-900/30 rounded-lg">
-            <Icon className="text-purple-400" size={24} />
+          <div className="p-3 bg-purple-100 rounded-lg">
+            <Icon className="text-purple-600" size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-400">{title}</p>
-            <p className="text-2xl font-bold text-white">{value}</p>
+            <p className="text-sm text-gray-600">{title}</p>
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
           </div>
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 ${trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
+          <div className={`flex items-center gap-1 ${trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
             {trend === 'up' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
             <span className="text-sm font-medium">{trendValue}</span>
           </div>
@@ -574,14 +574,14 @@ const AnalyticsDashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div className="min-h-screen bg-gray-50 text-gray-900" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Header */}
-      <header className="px-12 flex-shrink-0 border-b border-gray-800" style={{ paddingTop: '1.5rem', paddingBottom: '1.575rem' }}>
+      <header className="px-12 flex-shrink-0 border-b border-gray-200" style={{ paddingTop: '1.5rem', paddingBottom: '1.575rem' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/')}
-              className="p-2 hover:bg-gray-900 rounded-lg transition text-white"
+              className="p-2 hover:bg-gray-100 rounded-lg transition text-gray-900"
             >
               <ArrowLeft size={20} />
             </button>
@@ -601,12 +601,12 @@ const AnalyticsDashboard = () => {
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white"
+              className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900"
             >
-              <option value="7" className="bg-gray-900 text-white">Last 7 days</option>
-              <option value="30" className="bg-gray-900 text-white">Last 30 days</option>
-              <option value="90" className="bg-gray-900 text-white">Last 90 days</option>
-              <option value="365" className="bg-gray-900 text-white">Last year</option>
+              <option value="7" className="bg-white text-gray-900">Last 7 days</option>
+              <option value="30" className="bg-white text-gray-900">Last 30 days</option>
+              <option value="90" className="bg-white text-gray-900">Last 90 days</option>
+              <option value="365" className="bg-white text-gray-900">Last year</option>
             </select>
             <button
               onClick={loadAnalytics}
@@ -624,7 +624,7 @@ const AnalyticsDashboard = () => {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-              <p className="text-gray-400">Loading analytics...</p>
+              <p className="text-gray-600">Loading analytics...</p>
             </div>
           </div>
         ) : (
@@ -634,7 +634,7 @@ const AnalyticsDashboard = () => {
               <h1 className="font-semibold mb-2" style={{ fontSize: '36px' }}>
                 Analytics <span className="text-pink-500">Dashboard</span>
               </h1>
-              <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100' }}>
+              <p className="text-gray-900" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100' }}>
                 Monitor platform performance and user engagement
               </p>
             </div>
@@ -719,33 +719,33 @@ const AnalyticsDashboard = () => {
               </div>
 
               {/* Course Enrollments Table */}
-              <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-800">
-                  <h3 className="font-semibold text-white">Course Enrollments</h3>
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900">Course Enrollments</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-800">
+                    <thead className="bg-white">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Course</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Enrollments</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Active</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Completed</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Avg. Score</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Course</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Enrollments</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Active</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Completed</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Avg. Score</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-gray-200">
                       {courseEnrollments.map((course, idx) => (
-                        <tr key={idx} className="hover:bg-gray-800/50">
-                          <td className="px-6 py-4 text-sm font-medium text-white">{course.name}</td>
-                          <td className="px-6 py-4 text-sm text-gray-300">{course.enrollments}</td>
-                          <td className="px-6 py-4 text-sm text-gray-300">{course.active}</td>
-                          <td className="px-6 py-4 text-sm text-gray-300">{course.completed}</td>
+                        <tr key={idx} className="hover:bg-gray-100">
+                          <td className="px-6 py-4 text-sm font-medium text-gray-900">{course.name}</td>
+                          <td className="px-6 py-4 text-sm text-gray-700">{course.enrollments}</td>
+                          <td className="px-6 py-4 text-sm text-gray-700">{course.active}</td>
+                          <td className="px-6 py-4 text-sm text-gray-700">{course.completed}</td>
                           <td className="px-6 py-4 text-sm">
                             <span className={`px-2 py-1 rounded ${
-                              course.avgScore >= 80 ? 'bg-green-900/30 text-green-400' :
-                              course.avgScore >= 60 ? 'bg-yellow-900/30 text-yellow-400' :
-                              'bg-red-900/30 text-red-400'
+                              course.avgScore >= 80 ? 'bg-green-100 text-green-600' :
+                              course.avgScore >= 60 ? 'bg-yellow-100 text-yellow-600' :
+                              'bg-red-100 text-red-600'
                             }`}>
                               {course.avgScore}%
                             </span>
@@ -758,26 +758,26 @@ const AnalyticsDashboard = () => {
               </div>
 
               {/* Average Scores by Lesson */}
-              <div className="bg-gray-900 rounded-lg border border-gray-800 mt-4">
-                <div className="px-6 py-4 border-b border-gray-800">
-                  <h3 className="font-semibold text-white">Top Performing Lessons</h3>
+              <div className="bg-white rounded-lg border border-gray-200 mt-4">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900">Top Performing Lessons</h3>
                 </div>
                 <div className="p-6">
                   <div className="space-y-3">
                     {averageScores.slice(0, 5).map((lesson, idx) => (
                       <div key={idx} className="flex items-center justify-between">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-white">{lesson.name}</p>
+                          <p className="text-sm font-medium text-gray-900">{lesson.name}</p>
                           <p className="text-xs text-gray-500">Module {lesson.module}, Lesson {lesson.lesson}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="w-32 bg-gray-700 rounded-full h-2">
+                          <div className="w-32 bg-gray-100 rounded-full h-2">
                             <div
                               className="bg-purple-600 h-2 rounded-full"
                               style={{ width: `${lesson.score}%` }}
                             ></div>
                           </div>
-                          <span className="text-sm font-medium w-12 text-right text-white">{lesson.score}%</span>
+                          <span className="text-sm font-medium w-12 text-right text-gray-900">{lesson.score}%</span>
                         </div>
                       </div>
                     ))}
@@ -808,50 +808,50 @@ const AnalyticsDashboard = () => {
               </div>
 
               {/* Lesson Ratings Table */}
-              <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-800">
-                  <h3 className="font-semibold text-white">Lesson Ratings</h3>
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900">Lesson Ratings</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-800">
+                    <thead className="bg-white">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Lesson</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Thumbs Up</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Thumbs Down</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Total</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Satisfaction</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Lesson</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Thumbs Up</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Thumbs Down</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Total</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Satisfaction</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-gray-200">
                       {lessonRatings.map((lesson, idx) => {
                         const satisfaction = (lesson.thumbsUp / lesson.total * 100) || 0;
                         return (
-                          <tr key={idx} className="hover:bg-gray-800/50">
+                          <tr key={idx} className="hover:bg-gray-100">
                             <td className="px-6 py-4 text-sm font-medium">
                               <div>
-                                <div className="text-white">{lesson.name}</div>
+                                <div className="text-gray-900">{lesson.name}</div>
                                 <div className="text-xs text-gray-500">
                                   Module {lesson.module}, Lesson {lesson.lesson}
                                 </div>
                               </div>
                             </td>
                             <td className="px-6 py-4 text-sm">
-                              <span className="flex items-center gap-1 text-green-400">
+                              <span className="flex items-center gap-1 text-green-600">
                                 <ThumbsUp size={14} />
                                 {lesson.thumbsUp}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-sm">
-                              <span className="flex items-center gap-1 text-red-400">
+                              <span className="flex items-center gap-1 text-red-600">
                                 <ThumbsDown size={14} />
                                 {lesson.thumbsDown}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-300">{lesson.total}</td>
+                            <td className="px-6 py-4 text-sm text-gray-700">{lesson.total}</td>
                             <td className="px-6 py-4 text-sm">
                               <div className="flex items-center gap-2">
-                                <div className="w-20 bg-gray-700 rounded-full h-2">
+                                <div className="w-20 bg-gray-100 rounded-full h-2">
                                   <div
                                     className={`h-2 rounded-full ${
                                       satisfaction >= 80 ? 'bg-green-500' :
@@ -861,7 +861,7 @@ const AnalyticsDashboard = () => {
                                     style={{ width: `${satisfaction}%` }}
                                   ></div>
                                 </div>
-                                <span className="text-xs font-medium text-white">{satisfaction.toFixed(1)}%</span>
+                                <span className="text-xs font-medium text-gray-900">{satisfaction.toFixed(1)}%</span>
                               </div>
                             </td>
                           </tr>
@@ -908,85 +908,85 @@ const AnalyticsDashboard = () => {
 
               {/* Role Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700">
+                <div className="bg-purple-100 rounded-lg p-4 border border-purple-700">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-purple-900/40 rounded-lg">
-                      <Shield className="text-purple-400" size={24} />
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                      <Shield className="text-purple-600" size={24} />
                     </div>
                     <div>
-                      <p className="text-sm text-purple-400 font-medium">Admins</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm text-purple-600 font-medium">Admins</p>
+                      <p className="text-2xl font-bold text-gray-900">
                         {allUsers.filter(u => u.role === 'admin').length}
                       </p>
-                      <p className="text-xs text-purple-400">Full access</p>
+                      <p className="text-xs text-purple-600">Full access</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
+                <div className="bg-blue-100 rounded-lg p-4 border border-blue-700">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-blue-900/40 rounded-lg">
-                      <GraduationCap className="text-blue-400" size={24} />
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <GraduationCap className="text-blue-600" size={24} />
                     </div>
                     <div>
-                      <p className="text-sm text-blue-400 font-medium">Teachers</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm text-blue-600 font-medium">Teachers</p>
+                      <p className="text-2xl font-bold text-gray-900">
                         {allUsers.filter(u => u.role === 'teacher').length}
                       </p>
-                      <p className="text-xs text-blue-400">Learning + Curriculum</p>
+                      <p className="text-xs text-blue-600">Learning + Curriculum</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-gray-700 rounded-lg">
-                      <UserCircle className="text-gray-400" size={24} />
+                    <div className="p-3 bg-gray-100 rounded-lg">
+                      <UserCircle className="text-gray-600" size={24} />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 font-medium">Students</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm text-gray-600 font-medium">Students</p>
+                      <p className="text-2xl font-bold text-gray-900">
                         {allUsers.filter(u => u.role === 'student').length}
                       </p>
-                      <p className="text-xs text-gray-400">Learning only</p>
+                      <p className="text-xs text-gray-600">Learning only</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* User List */}
-              <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                  <h3 className="font-semibold text-white">All Users ({filteredUsers.length})</h3>
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900">All Users ({filteredUsers.length})</h3>
                   <div className="flex gap-2">
                     <select
                       value={userFilter}
                       onChange={(e) => setUserFilter(e.target.value)}
-                      className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                      className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900"
                     >
-                      <option value="all" className="bg-gray-900 text-white">All Roles</option>
-                      <option value="admin" className="bg-gray-900 text-white">Admins</option>
-                      <option value="teacher" className="bg-gray-900 text-white">Teachers</option>
-                      <option value="student" className="bg-gray-900 text-white">Students</option>
+                      <option value="all" className="bg-white text-gray-900">All Roles</option>
+                      <option value="admin" className="bg-white text-gray-900">Admins</option>
+                      <option value="teacher" className="bg-white text-gray-900">Teachers</option>
+                      <option value="student" className="bg-white text-gray-900">Students</option>
                     </select>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-800">
+                    <thead className="bg-white">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">User</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Current Role</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Enrolled Course</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Progress</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Joined</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Change Role</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">User</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Email</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Current Role</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Enrolled Course</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Progress</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Joined</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Change Role</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-gray-200">
                       {filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan="8" className="px-6 py-8 text-center text-gray-400">
+                          <td colSpan="8" className="px-6 py-8 text-center text-gray-600">
                             No users found
                           </td>
                         </tr>
@@ -996,8 +996,8 @@ const AnalyticsDashboard = () => {
                           const isUpdating = updatingUserId === user.id;
                           const isCurrentUser = authUser?.id === user.id;
                           return (
-                            <tr key={user.id} className={`hover:bg-gray-800/50 ${isCurrentUser ? 'bg-pink-900/10 border-l-4 border-pink-500' : ''}`}>
-                              <td className="px-6 py-4 text-sm font-medium text-white">
+                            <tr key={user.id} className={`hover:bg-gray-100 ${isCurrentUser ? 'bg-pink-100 border-l-4 border-pink-500' : ''}`}>
+                              <td className="px-6 py-4 text-sm font-medium text-gray-900">
                                 <div className="flex items-center gap-2">
                                   {user.first_name} {user.last_name}
                                   {isCurrentUser && (
@@ -1007,7 +1007,7 @@ const AnalyticsDashboard = () => {
                                   )}
                                 </div>
                               </td>
-                              <td className="px-6 py-4 text-sm text-gray-400">
+                              <td className="px-6 py-4 text-sm text-gray-600">
                                 {user.email || 'No email'}
                               </td>
                               <td className="px-6 py-4 text-sm">
@@ -1021,23 +1021,23 @@ const AnalyticsDashboard = () => {
                                   value={user.enrolled_course || ''}
                                   onChange={(e) => handleCourseChange(user.id, e.target.value)}
                                   disabled={isUpdating}
-                                  className={`px-3 py-1.5 bg-gray-800 border rounded-lg text-sm text-white ${
+                                  className={`px-3 py-1.5 bg-white border rounded-lg text-sm text-gray-900 ${
                                     isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                   } ${
                                     !user.enrolled_course && waitlistByUser[user.id]
                                       ? 'border-yellow-600'
-                                      : 'border-gray-700'
+                                      : 'border-gray-200'
                                   }`}
                                 >
-                                  <option value="" className="bg-gray-900 text-white">No course</option>
+                                  <option value="" className="bg-white text-gray-900">No course</option>
                                   {availableCourses.map(course => (
-                                    <option key={course.name} value={course.name} className="bg-gray-900 text-white">
+                                    <option key={course.name} value={course.name} className="bg-white text-gray-900">
                                       {course.title || course.name}
                                     </option>
                                   ))}
                                 </select>
                                 {!user.enrolled_course && waitlistByUser[user.id] && (
-                                  <div className="mt-1 flex items-center gap-1 text-xs text-yellow-400">
+                                  <div className="mt-1 flex items-center gap-1 text-xs text-yellow-600">
                                     <Clock size={12} />
                                     Waitlisted: {getCourseDisplayName(waitlistByUser[user.id])}
                                   </div>
@@ -1048,7 +1048,7 @@ const AnalyticsDashboard = () => {
                                   <button
                                     onClick={() => handleOpenProgressModal(user)}
                                     disabled={isUpdating}
-                                    className={`px-3 py-1.5 bg-purple-900/30 text-purple-400 border border-purple-700 rounded-lg hover:bg-purple-900/50 transition text-xs font-medium ${
+                                    className={`px-3 py-1.5 bg-purple-100 text-purple-600 border border-purple-700 rounded-lg hover:bg-purple-100 transition text-xs font-medium ${
                                       isUpdating ? 'opacity-50 cursor-not-allowed' : ''
                                     }`}
                                   >
@@ -1060,7 +1060,7 @@ const AnalyticsDashboard = () => {
                                   <span className="text-gray-500 text-xs">No course</span>
                                 )}
                               </td>
-                              <td className="px-6 py-4 text-sm text-gray-400">
+                              <td className="px-6 py-4 text-sm text-gray-600">
                                 {new Date(user.created_at).toLocaleDateString('en-US', {
                                   year: 'numeric',
                                   month: 'short',
@@ -1072,20 +1072,20 @@ const AnalyticsDashboard = () => {
                                   value={user.role}
                                   onChange={(e) => handleRoleChange(user.id, e.target.value)}
                                   disabled={isUpdating}
-                                  className={`px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white ${
+                                  className={`px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 ${
                                     isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                   }`}
                                 >
-                                  <option value="student" className="bg-gray-900 text-white">Student</option>
-                                  <option value="teacher" className="bg-gray-900 text-white">Teacher</option>
-                                  <option value="admin" className="bg-gray-900 text-white">Admin</option>
+                                  <option value="student" className="bg-white text-gray-900">Student</option>
+                                  <option value="teacher" className="bg-white text-gray-900">Teacher</option>
+                                  <option value="admin" className="bg-white text-gray-900">Admin</option>
                                 </select>
                               </td>
                               <td className="px-6 py-4 text-sm">
                                 <button
                                   onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
                                   disabled={isUpdating}
-                                  className={`p-2 text-red-400 hover:bg-red-900/20 rounded-lg transition ${
+                                  className={`p-2 text-red-600 hover:bg-red-100 rounded-lg transition ${
                                     isUpdating ? 'opacity-50 cursor-not-allowed' : ''
                                   }`}
                                   title="Delete user"
@@ -1103,27 +1103,27 @@ const AnalyticsDashboard = () => {
               </div>
 
               {/* Role Permissions Info */}
-              <div className="mt-4 bg-gray-800 border border-gray-700 rounded-lg p-4">
-                <h4 className="font-semibold text-white mb-2 text-sm">Role Permissions:</h4>
+              <div className="mt-4 bg-white border border-gray-200 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm">Role Permissions:</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                   <div className="flex items-start gap-2">
-                    <UserCircle size={16} className="text-gray-400 mt-0.5" />
+                    <UserCircle size={16} className="text-gray-600 mt-0.5" />
                     <div>
-                      <p className="font-medium text-gray-300">Student</p>
+                      <p className="font-medium text-gray-700">Student</p>
                       <p className="text-gray-500">Learning Hub, Progress tracking</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <GraduationCap size={16} className="text-blue-400 mt-0.5" />
+                    <GraduationCap size={16} className="text-blue-600 mt-0.5" />
                     <div>
-                      <p className="font-medium text-blue-300">Teacher</p>
+                      <p className="font-medium text-blue-600">Teacher</p>
                       <p className="text-blue-500">Student access + Curriculum Upload</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Shield size={16} className="text-purple-400 mt-0.5" />
+                    <Shield size={16} className="text-purple-600 mt-0.5" />
                     <div>
-                      <p className="font-medium text-purple-300">Admin</p>
+                      <p className="font-medium text-purple-600">Admin</p>
                       <p className="text-purple-500">Teacher access + Analytics Dashboard</p>
                     </div>
                   </div>
@@ -1137,77 +1137,77 @@ const AnalyticsDashboard = () => {
                 <BookOpen size={24} className="text-pink-500" />
                 Courses Management
               </h2>
-              <p className="text-gray-400 mb-6 text-sm">
+              <p className="text-gray-600 mb-6 text-sm">
                 Manage course availability, details, and content
               </p>
 
               {/* Course Status Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-green-900/20 rounded-lg p-4 border border-green-700">
+                <div className="bg-green-100 rounded-lg p-4 border border-green-700">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-green-900/40 rounded-lg">
-                      <BookOpen className="text-green-400" size={24} />
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <BookOpen className="text-green-600" size={24} />
                     </div>
                     <div>
-                      <p className="text-sm text-green-400 font-medium">Available</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm text-green-600 font-medium">Available</p>
+                      <p className="text-2xl font-bold text-gray-900">
                         {managedCourses.filter(c => c.status === 'live').length}
                       </p>
-                      <p className="text-xs text-green-400">Live courses</p>
+                      <p className="text-xs text-green-600">Live courses</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
+                <div className="bg-blue-100 rounded-lg p-4 border border-blue-700">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-blue-900/40 rounded-lg">
-                      <Clock className="text-blue-400" size={24} />
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <Clock className="text-blue-600" size={24} />
                     </div>
                     <div>
-                      <p className="text-sm text-blue-400 font-medium">Coming Soon</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm text-blue-600 font-medium">Coming Soon</p>
+                      <p className="text-2xl font-bold text-gray-900">
                         {managedCourses.filter(c => c.status === 'coming_soon').length}
                       </p>
-                      <p className="text-xs text-blue-400">In development</p>
+                      <p className="text-xs text-blue-600">In development</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-gray-700 rounded-lg">
-                      <MessageSquare className="text-gray-400" size={24} />
+                    <div className="p-3 bg-gray-100 rounded-lg">
+                      <MessageSquare className="text-gray-600" size={24} />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 font-medium">Requested</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm text-gray-600 font-medium">Requested</p>
+                      <p className="text-2xl font-bold text-gray-900">
                         {managedCourses.filter(c => c.status === 'requested').length}
                       </p>
-                      <p className="text-xs text-gray-400">User requests</p>
+                      <p className="text-xs text-gray-600">User requests</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Courses Table */}
-              <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                  <h3 className="font-semibold text-white">All Courses ({managedCourses.length})</h3>
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900">All Courses ({managedCourses.length})</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-800">
+                    <thead className="bg-white">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Course Title</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Modules</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Lessons</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Description</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Course Title</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Modules</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Lessons</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Description</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-gray-200">
                       {managedCourses.length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="px-6 py-8 text-center text-gray-400">
+                          <td colSpan="6" className="px-6 py-8 text-center text-gray-600">
                             No courses found. Add courses in the Courses Dashboard.
                           </td>
                         </tr>
@@ -1216,7 +1216,7 @@ const AnalyticsDashboard = () => {
                           const isEditing = editingCourse === course.id;
 
                           return (
-                            <tr key={course.id} className="hover:bg-gray-800/50">
+                            <tr key={course.id} className="hover:bg-gray-100">
                               {isEditing ? (
                                 // Edit Mode
                                 <>
@@ -1225,14 +1225,14 @@ const AnalyticsDashboard = () => {
                                       type="text"
                                       value={courseEditForm.title}
                                       onChange={(e) => setCourseEditForm({ ...courseEditForm, title: e.target.value })}
-                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                      className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900"
                                     />
                                   </td>
                                   <td className="px-6 py-4">
                                     <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                                      course.status === 'live' ? 'bg-green-900/30 text-green-400' :
-                                      course.status === 'coming_soon' ? 'bg-blue-900/30 text-blue-400' :
-                                      'bg-gray-700 text-gray-400'
+                                      course.status === 'live' ? 'bg-green-100 text-green-600' :
+                                      course.status === 'coming_soon' ? 'bg-blue-100 text-blue-600' :
+                                      'bg-gray-100 text-gray-600'
                                     }`}>
                                       {course.status === 'live' ? 'Available' :
                                        course.status === 'coming_soon' ? 'Coming Soon' :
@@ -1244,7 +1244,7 @@ const AnalyticsDashboard = () => {
                                       type="text"
                                       value={courseEditForm.modules}
                                       onChange={(e) => setCourseEditForm({ ...courseEditForm, modules: e.target.value })}
-                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                      className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900"
                                       placeholder="e.g., 3 or Multiple"
                                     />
                                   </td>
@@ -1253,14 +1253,14 @@ const AnalyticsDashboard = () => {
                                       type="number"
                                       value={courseEditForm.lessons}
                                       onChange={(e) => setCourseEditForm({ ...courseEditForm, lessons: parseInt(e.target.value) || 0 })}
-                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                      className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900"
                                     />
                                   </td>
                                   <td className="px-6 py-4">
                                     <textarea
                                       value={courseEditForm.description}
                                       onChange={(e) => setCourseEditForm({ ...courseEditForm, description: e.target.value })}
-                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                      className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900"
                                       rows={2}
                                     />
                                   </td>
@@ -1268,7 +1268,7 @@ const AnalyticsDashboard = () => {
                                     <div className="flex gap-2">
                                       <button
                                         onClick={() => handleSaveCourse(course.id)}
-                                        className="p-2 text-green-400 hover:bg-green-900/20 rounded-lg transition"
+                                        className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition"
                                         title="Save changes"
                                       >
                                         <Plus size={16} className="rotate-45" />
@@ -1278,7 +1278,7 @@ const AnalyticsDashboard = () => {
                                           setEditingCourse(null);
                                           setCourseEditForm({});
                                         }}
-                                        className="p-2 text-gray-400 hover:bg-gray-800 rounded-lg transition"
+                                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
                                         title="Cancel"
                                       >
                                         <X size={16} />
@@ -1289,7 +1289,7 @@ const AnalyticsDashboard = () => {
                               ) : (
                                 // View Mode
                                 <>
-                                  <td className="px-6 py-4 text-sm font-medium text-white">
+                                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
                                     {course.title || course.name}
                                   </td>
                                   <td className="px-6 py-4">
@@ -1297,25 +1297,25 @@ const AnalyticsDashboard = () => {
                                       value={course.status}
                                       onChange={(e) => handleCourseStatusChange(course.id, e.target.value)}
                                       className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer ${
-                                        course.status === 'live' ? 'bg-green-900/30 text-green-400 hover:bg-green-900/40' :
-                                        course.status === 'coming_soon' ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/40' :
-                                        'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                                        course.status === 'live' ? 'bg-green-100 text-green-600 hover:bg-green-100' :
+                                        course.status === 'coming_soon' ? 'bg-blue-100 text-blue-600 hover:bg-blue-100' :
+                                        'bg-gray-100 text-gray-600 hover:bg-gray-300'
                                       }`}
                                     >
-                                      <option value="live" className="bg-gray-900 text-white">Available</option>
-                                      <option value="coming_soon" className="bg-gray-900 text-white">Coming Soon</option>
-                                      <option value="requested" className="bg-gray-900 text-white">Requested</option>
+                                      <option value="live" className="bg-white text-gray-900">Available</option>
+                                      <option value="coming_soon" className="bg-white text-gray-900">Coming Soon</option>
+                                      <option value="requested" className="bg-white text-gray-900">Requested</option>
                                     </select>
                                   </td>
-                                  <td className="px-6 py-4 text-sm text-gray-300">{course.modules || 'N/A'}</td>
-                                  <td className="px-6 py-4 text-sm text-gray-300">{course.lessons || 0}</td>
-                                  <td className="px-6 py-4 text-sm text-gray-300 max-w-xs truncate">{course.description || 'No description'}</td>
+                                  <td className="px-6 py-4 text-sm text-gray-700">{course.modules || 'N/A'}</td>
+                                  <td className="px-6 py-4 text-sm text-gray-700">{course.lessons || 0}</td>
+                                  <td className="px-6 py-4 text-sm text-gray-700 max-w-xs truncate">{course.description || 'No description'}</td>
                                   <td className="px-6 py-4">
                                     <div className="flex gap-2">
                                       {course.status === 'live' && (
                                         <button
                                           onClick={() => handleOpenNotifyModal(course)}
-                                          className="p-2 text-pink-400 hover:bg-pink-900/20 rounded-lg transition"
+                                          className="p-2 text-pink-600 hover:bg-pink-100 rounded-lg transition"
                                           title="Notify waitlisted users"
                                         >
                                           <Bell size={16} />
@@ -1323,14 +1323,14 @@ const AnalyticsDashboard = () => {
                                       )}
                                       <button
                                         onClick={() => handleEditCourse(course)}
-                                        className="p-2 text-blue-400 hover:bg-blue-900/20 rounded-lg transition"
+                                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"
                                         title="Edit course"
                                       >
                                         <Edit3 size={16} />
                                       </button>
                                       <button
                                         onClick={() => handleDeleteCourse(course.id, course.title || course.name)}
-                                        className="p-2 text-red-400 hover:bg-red-900/20 rounded-lg transition"
+                                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                                         title="Delete course"
                                       >
                                         <Trash2 size={16} />
@@ -1355,56 +1355,56 @@ const AnalyticsDashboard = () => {
                 <TrendingUp size={24} className="text-pink-500" />
                 Course Demand
               </h2>
-              <p className="text-gray-400 mb-6 text-sm">
+              <p className="text-gray-600 mb-6 text-sm">
                 User interest in upcoming and requested courses
               </p>
 
               {courseRequests.length === 0 ? (
-                <div className="bg-gray-900 rounded-lg border border-gray-800 p-8 text-center">
+                <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
                   <BookOpen className="mx-auto text-gray-600 mb-3" size={48} />
-                  <p className="text-gray-400 text-lg">No course requests yet</p>
+                  <p className="text-gray-600 text-lg">No course requests yet</p>
                   <p className="text-gray-500 text-sm mt-2">Users will see this data when they request upcoming or new courses</p>
                 </div>
               ) : (
-                <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-800">
-                    <h3 className="font-semibold text-white">Requested Courses ({courseRequests.reduce((sum, c) => sum + c.total, 0)} total requests)</h3>
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="font-semibold text-gray-900">Requested Courses ({courseRequests.reduce((sum, c) => sum + c.total, 0)} total requests)</h3>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-800">
+                      <thead className="bg-white">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Course Name</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Total Requests</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Upcoming</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Requested</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Popularity</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Course Name</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Total Requests</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Upcoming</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Requested</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Popularity</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-800">
+                      <tbody className="divide-y divide-gray-200">
                         {courseRequests.map((request, idx) => {
                           const maxRequests = Math.max(...courseRequests.map(r => r.total));
                           const popularityPercent = (request.total / maxRequests) * 100;
 
                           return (
-                            <tr key={idx} className="hover:bg-gray-800/50">
-                              <td className="px-6 py-4 text-sm font-medium text-white">{request.courseName}</td>
+                            <tr key={idx} className="hover:bg-gray-100">
+                              <td className="px-6 py-4 text-sm font-medium text-gray-900">{request.courseName}</td>
                               <td className="px-6 py-4 text-sm">
-                                <span className="px-3 py-1 bg-pink-900/30 text-pink-400 rounded-full font-semibold">
+                                <span className="px-3 py-1 bg-pink-100 text-pink-600 rounded-full font-semibold">
                                   {request.total}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-sm text-gray-300">{request.upcoming}</td>
-                              <td className="px-6 py-4 text-sm text-gray-300">{request.requested}</td>
+                              <td className="px-6 py-4 text-sm text-gray-700">{request.upcoming}</td>
+                              <td className="px-6 py-4 text-sm text-gray-700">{request.requested}</td>
                               <td className="px-6 py-4 text-sm">
                                 <div className="flex items-center gap-3">
-                                  <div className="flex-1 bg-gray-700 rounded-full h-2" style={{ minWidth: '100px' }}>
+                                  <div className="flex-1 bg-gray-100 rounded-full h-2" style={{ minWidth: '100px' }}>
                                     <div
                                       className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full transition-all duration-300"
                                       style={{ width: `${popularityPercent}%` }}
                                     ></div>
                                   </div>
-                                  <span className="text-xs font-medium text-gray-400 w-12 text-right">
+                                  <span className="text-xs font-medium text-gray-600 w-12 text-right">
                                     {popularityPercent.toFixed(0)}%
                                   </span>
                                 </div>
@@ -1425,15 +1425,15 @@ const AnalyticsDashboard = () => {
       {/* Progress Adjustment Modal */}
       {progressModalOpen && selectedUserForProgress && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg border border-gray-800 max-w-md w-full">
+          <div className="bg-white rounded-lg border border-gray-200 max-w-md w-full">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
                 Adjust Progress
               </h3>
               <button
                 onClick={handleCloseProgressModal}
-                className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white"
+                className="p-2 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-gray-900"
               >
                 <X size={20} />
               </button>
@@ -1444,35 +1444,35 @@ const AnalyticsDashboard = () => {
               {loadingProgress ? (
                 <div className="py-8 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-3"></div>
-                  <p className="text-gray-400 text-sm">Loading progress...</p>
+                  <p className="text-gray-600 text-sm">Loading progress...</p>
                 </div>
               ) : (
                 <>
                   {/* User Info */}
-                  <div className="bg-gray-800 rounded-lg p-4">
-                    <p className="text-sm text-gray-400 mb-1">User</p>
-                    <p className="text-white font-medium">
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <p className="text-sm text-gray-600 mb-1">User</p>
+                    <p className="text-gray-900 font-medium">
                       {selectedUserForProgress.first_name} {selectedUserForProgress.last_name}
                     </p>
-                    <p className="text-sm text-gray-400 mt-2 mb-1">Enrolled Course</p>
-                    <p className="text-white">{selectedUserForProgress.enrolled_course}</p>
+                    <p className="text-sm text-gray-600 mt-2 mb-1">Enrolled Course</p>
+                    <p className="text-gray-900">{selectedUserForProgress.enrolled_course}</p>
                   </div>
 
                   {/* Current Progress */}
                   {userProgressData && (
-                    <div className="bg-purple-900/20 border border-purple-700 rounded-lg p-4">
-                      <p className="text-sm text-purple-400 font-medium mb-2">Current Progress</p>
+                    <div className="bg-purple-100 border border-purple-700 rounded-lg p-4">
+                      <p className="text-sm text-purple-600 font-medium mb-2">Current Progress</p>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs text-purple-400 mb-1">Module</p>
-                          <p className="text-2xl font-bold text-white">{userProgressData.currentModule}</p>
+                          <p className="text-xs text-purple-600 mb-1">Module</p>
+                          <p className="text-2xl font-bold text-gray-900">{userProgressData.currentModule}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-purple-400 mb-1">Lesson</p>
-                          <p className="text-2xl font-bold text-white">{userProgressData.currentLesson}</p>
+                          <p className="text-xs text-purple-600 mb-1">Lesson</p>
+                          <p className="text-2xl font-bold text-gray-900">{userProgressData.currentLesson}</p>
                         </div>
                       </div>
-                      <p className="text-xs text-purple-400 mt-3">
+                      <p className="text-xs text-purple-600 mt-3">
                         Completed: {userProgressData.completedCount} lessons
                       </p>
                     </div>
@@ -1480,26 +1480,26 @@ const AnalyticsDashboard = () => {
 
                   {/* Set Target Progress */}
                   <div className="space-y-3">
-                    <p className="text-sm font-medium text-white">Set New Progress</p>
+                    <p className="text-sm font-medium text-gray-900">Set New Progress</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-gray-400 mb-1.5">Module Number</label>
+                        <label className="block text-xs text-gray-600 mb-1.5">Module Number</label>
                         <input
                           type="number"
                           min="1"
                           value={targetModule}
                           onChange={(e) => setTargetModule(parseInt(e.target.value) || 1)}
-                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-purple-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-400 mb-1.5">Lesson Number</label>
+                        <label className="block text-xs text-gray-600 mb-1.5">Lesson Number</label>
                         <input
                           type="number"
                           min="1"
                           value={targetLesson}
                           onChange={(e) => setTargetLesson(parseInt(e.target.value) || 1)}
-                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-purple-500"
                         />
                       </div>
                     </div>
@@ -1513,7 +1513,7 @@ const AnalyticsDashboard = () => {
                     <button
                       onClick={handleResetProgress}
                       disabled={loadingProgress}
-                      className="w-full px-4 py-2 bg-red-900/30 text-red-400 border border-red-700 rounded-lg hover:bg-red-900/50 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 bg-red-100 text-red-600 border border-red-700 rounded-lg hover:bg-red-100 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Reset to Module 1, Lesson 1
                     </button>
@@ -1523,11 +1523,11 @@ const AnalyticsDashboard = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
               <button
                 onClick={handleCloseProgressModal}
                 disabled={loadingProgress}
-                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-white text-gray-900 rounded-lg hover:bg-gray-200 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200"
               >
                 Cancel
               </button>
@@ -1546,16 +1546,16 @@ const AnalyticsDashboard = () => {
       {/* Course Launch Notification Modal */}
       {notifyModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-xl border border-gray-800 w-full max-w-md overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 w-full max-w-md overflow-hidden">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Bell className="text-pink-500" size={20} />
                 Notify Waitlist
               </h3>
               <button
                 onClick={handleCloseNotifyModal}
-                className="p-1 text-gray-400 hover:text-white transition"
+                className="p-1 text-gray-600 hover:text-gray-900 transition"
               >
                 <X size={20} />
               </button>
@@ -1566,7 +1566,7 @@ const AnalyticsDashboard = () => {
               {notifyLoading && !notifyResults ? (
                 <div className="text-center py-8">
                   <div className="animate-spin h-8 w-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-3" />
-                  <p className="text-gray-400">Loading...</p>
+                  <p className="text-gray-600">Loading...</p>
                 </div>
               ) : notifyResults ? (
                 // Results view
@@ -1574,19 +1574,19 @@ const AnalyticsDashboard = () => {
                   {notifyResults.success ? (
                     <>
                       <CheckCircle className="mx-auto text-green-500 mb-3" size={48} />
-                      <h4 className="text-xl font-semibold text-white mb-2">Notifications Sent!</h4>
-                      <div className="bg-gray-800 rounded-lg p-4 text-left">
-                        <div className="flex justify-between py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Total Waitlisted</span>
-                          <span className="text-white font-medium">{notifyResults.summary?.totalWaitlisted || 0}</span>
+                      <h4 className="text-xl font-semibold text-gray-900 mb-2">Notifications Sent!</h4>
+                      <div className="bg-white rounded-lg p-4 text-left border border-gray-200">
+                        <div className="flex justify-between py-2 border-b border-gray-200">
+                          <span className="text-gray-600">Total Waitlisted</span>
+                          <span className="text-gray-900 font-medium">{notifyResults.summary?.totalWaitlisted || 0}</span>
                         </div>
-                        <div className="flex justify-between py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Emails Sent</span>
-                          <span className="text-green-400 font-medium">{notifyResults.summary?.notificationsSent || 0}</span>
+                        <div className="flex justify-between py-2 border-b border-gray-200">
+                          <span className="text-gray-600">Emails Sent</span>
+                          <span className="text-green-600 font-medium">{notifyResults.summary?.notificationsSent || 0}</span>
                         </div>
                         <div className="flex justify-between py-2">
-                          <span className="text-gray-400">Failed</span>
-                          <span className={`font-medium ${notifyResults.summary?.failed > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                          <span className="text-gray-600">Failed</span>
+                          <span className={`font-medium ${notifyResults.summary?.failed > 0 ? 'text-red-600' : 'text-gray-600'}`}>
                             {notifyResults.summary?.failed || 0}
                           </span>
                         </div>
@@ -1595,31 +1595,31 @@ const AnalyticsDashboard = () => {
                   ) : (
                     <>
                       <AlertCircle className="mx-auto text-red-500 mb-3" size={48} />
-                      <h4 className="text-xl font-semibold text-white mb-2">Error</h4>
-                      <p className="text-gray-400">{notifyResults.error || 'Failed to send notifications'}</p>
+                      <h4 className="text-xl font-semibold text-gray-900 mb-2">Error</h4>
+                      <p className="text-gray-600">{notifyResults.error || 'Failed to send notifications'}</p>
                     </>
                   )}
                 </div>
               ) : (
                 // Confirmation view
                 <>
-                  <p className="text-gray-300 mb-4">
+                  <p className="text-gray-700 mb-4">
                     Send launch notifications to all users who registered interest in{' '}
-                    <span className="text-pink-400 font-medium">{notifyingCourse?.title || notifyingCourse?.name}</span>?
+                    <span className="text-pink-600 font-medium">{notifyingCourse?.title || notifyingCourse?.name}</span>?
                   </p>
-                  <div className="bg-gray-800 rounded-lg p-4 mb-4">
+                  <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-pink-900/30 rounded-lg">
-                        <Users className="text-pink-400" size={20} />
+                      <div className="p-2 bg-pink-100 rounded-lg">
+                        <Users className="text-pink-600" size={20} />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-400">Users to notify</p>
-                        <p className="text-2xl font-bold text-white">{notifyWaitlistCount}</p>
+                        <p className="text-sm text-gray-600">Users to notify</p>
+                        <p className="text-2xl font-bold text-gray-900">{notifyWaitlistCount}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-3 text-sm">
-                    <p className="text-blue-300">
+                  <div className="bg-blue-100 border border-blue-800 rounded-lg p-3 text-sm">
+                    <p className="text-blue-600">
                       Each user will receive an email with a priority enrollment link that expires in 72 hours.
                     </p>
                   </div>
@@ -1628,11 +1628,11 @@ const AnalyticsDashboard = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
               <button
                 onClick={handleCloseNotifyModal}
                 disabled={notifyLoading}
-                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-white text-gray-900 rounded-lg hover:bg-gray-200 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200"
               >
                 {notifyResults ? 'Close' : 'Cancel'}
               </button>

@@ -45,6 +45,15 @@ services:
         sync: false
       - key: VITE_REDDIT_USER_AGENT
         sync: false
+      # Referrals — all optional, defaults live in server.js
+      - key: REFERRAL_WEEK_DAYS
+        sync: false
+      - key: REFERRAL_MONTHLY_CAP
+        sync: false
+      - key: REFERRAL_SIGNUP_WINDOW_MINUTES
+        sync: false
+      - key: REFERRAL_IP_DAILY_CAP
+        sync: false
 
   # Cron job to refresh Reddit cache daily at 6 AM UTC
   - type: cron

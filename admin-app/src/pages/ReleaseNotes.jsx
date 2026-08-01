@@ -166,11 +166,11 @@ const ReleaseNotesManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-gray-50 text-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Release Notes Management</h1>
-          <button onClick={handleNewRelease} className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg">
+          <button onClick={handleNewRelease} className="flex items-center gap-2 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg text-white">
             <Plus className="w-5 h-5" />
             New Release
           </button>
@@ -178,41 +178,41 @@ const ReleaseNotesManagement = () => {
 
         <div className="grid grid-cols-12 gap-6">
           {/* Releases List */}
-          <div className="col-span-3 bg-white/5 rounded-lg p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="col-span-3 bg-white rounded-lg p-4 max-h-[calc(100vh-200px)] overflow-y-auto border border-gray-200">
             <h2 className="text-lg font-semibold mb-4">All Releases</h2>
             <div className="space-y-2">
               {releases.map(release => (
                 <div
                   key={release.id}
                   className={`p-3 rounded-lg cursor-pointer ${
-                    selectedRelease?.id === release.id ? 'bg-[#EF0B72]/20 border border-[#EF0B72]' : 'bg-white/5 hover:bg-white/10'
+                    selectedRelease?.id === release.id ? 'bg-[#EF0B72]/20 border border-[#EF0B72]' : 'bg-gray-50 hover:bg-gray-100'
                   }`}
                   onClick={() => handleSelectRelease(release)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <h3 className="font-semibold text-sm">{release.version}</h3>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-600 mt-1">
                         {formatDate(release.release_date)}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-600 mt-1">
                         {release.status === 'published' ? '✓ Published' : '📝 Draft'}
                       </p>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); handleDeleteRelease(release.id); }} className="p-1 hover:bg-red-500/20 rounded">
-                      <Trash2 className="w-4 h-4 text-red-400" />
+                      <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
                   </div>
                 </div>
               ))}
               {releases.length === 0 && (
-                <p className="text-gray-400 text-sm text-center py-4">No releases yet</p>
+                <p className="text-gray-600 text-sm text-center py-4">No releases yet</p>
               )}
             </div>
           </div>
 
           {/* Editor */}
-          <div className="col-span-9 bg-white/5 rounded-lg p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="col-span-9 bg-white rounded-lg p-6 max-h-[calc(100vh-200px)] overflow-y-auto border border-gray-200">
             {/* Version */}
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Version *</label>
@@ -221,7 +221,7 @@ const ReleaseNotesManagement = () => {
                 value={formData.version}
                 onChange={(e) => handleInputChange('version', e.target.value)}
                 placeholder="e.g., v1.01"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
               />
             </div>
 
@@ -232,7 +232,7 @@ const ReleaseNotesManagement = () => {
                 type="date"
                 value={formData.release_date}
                 onChange={(e) => handleInputChange('release_date', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
               />
             </div>
 
@@ -242,10 +242,10 @@ const ReleaseNotesManagement = () => {
               <select
                 value={formData.status}
                 onChange={(e) => handleInputChange('status', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
               >
-                <option value="draft" className="bg-gray-900">Draft</option>
-                <option value="published" className="bg-gray-900">Published</option>
+                <option value="draft" className="bg-white">Draft</option>
+                <option value="published" className="bg-white">Published</option>
               </select>
             </div>
 
@@ -257,7 +257,7 @@ const ReleaseNotesManagement = () => {
                 value={formData.blog_url}
                 onChange={(e) => handleInputChange('blog_url', e.target.value)}
                 placeholder="https://example.com/blog/release-announcement"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72]"
               />
             </div>
 
@@ -276,7 +276,7 @@ const ReleaseNotesManagement = () => {
               <div className="space-y-3">
                 {notes.map((note, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <span className="text-gray-400 mt-3 w-6 text-center">•</span>
+                    <span className="text-gray-600 mt-3 w-6 text-center">•</span>
                     <textarea
                       value={note}
                       onChange={(e) => updateNote(index, e.target.value)}
@@ -285,28 +285,28 @@ const ReleaseNotesManagement = () => {
                         e.target.style.height = e.target.scrollHeight + 'px';
                       }}
                       placeholder="Enter release note..."
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-none min-h-[48px]"
+                      className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-[#EF0B72] resize-none min-h-[48px]"
                       style={{ height: 'auto' }}
                     />
                     <div className="flex flex-col gap-1">
                       <button
                         onClick={() => moveNoteUp(index)}
                         disabled={index === 0}
-                        className={`p-1.5 rounded ${index === 0 ? 'text-gray-600' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                        className={`p-1.5 rounded ${index === 0 ? 'text-gray-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                       >
                         <MoveUp className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => moveNoteDown(index)}
                         disabled={index === notes.length - 1}
-                        className={`p-1.5 rounded ${index === notes.length - 1 ? 'text-gray-600' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                        className={`p-1.5 rounded ${index === notes.length - 1 ? 'text-gray-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                       >
                         <MoveDown className="w-4 h-4" />
                       </button>
                       {notes.length > 1 && (
                         <button
                           onClick={() => removeNote(index)}
-                          className="p-1.5 hover:bg-red-500/20 text-red-400 rounded"
+                          className="p-1.5 hover:bg-red-500/20 text-red-600 rounded"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -318,11 +318,11 @@ const ReleaseNotesManagement = () => {
             </div>
 
             {/* Save Button */}
-            <div className="flex justify-end pt-4 border-t border-white/10">
+            <div className="flex justify-end pt-4 border-t border-gray-200">
               <button
                 onClick={handleSaveRelease}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-3 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-3 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50 text-white"
               >
                 <Save className="w-5 h-5" />
                 {isSaving ? 'Saving...' : (selectedRelease ? 'Update Release' : 'Create Release')}

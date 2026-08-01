@@ -28,7 +28,7 @@ const extractSubredditFromUrl = (url) => {
 };
 
 const useProgressData = () => {
-  const { user: authUser, firstName, isInitialized, isInsider, profilePicture, hasHighQualityAvatar, signOut } = useAuth();
+  const { user: authUser, firstName, isInitialized, isInsider, insiderUntil, profilePicture, hasHighQualityAvatar, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [courseData, setCourseData] = useState(null);
   const [groupedLessons, setGroupedLessons] = useState({});
@@ -52,6 +52,9 @@ const useProgressData = () => {
   const [resources, setResources] = useState([]);
   const [userRole, setUserRole] = useState('student');
   const [userCountry, setUserCountry] = useState(null);
+  // Slug for the public profile page at ignite.education/{username}. Null only
+  // while loading or if the signup trigger somehow missed this row.
+  const [username, setUsername] = useState(null);
   const [communityPostsError, setCommunityPostsError] = useState(null);
   const [communityCount, setCommunityCount] = useState(null);
   const [behaviourStat, setBehaviourStat] = useState(null);
@@ -128,7 +131,7 @@ const useProgressData = () => {
         // Fetch enrolled course
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('enrolled_course, role, country')
+          .select('enrolled_course, role, country, username, is_public')
           .eq('id', userId)
           .single();
 
@@ -140,6 +143,9 @@ const useProgressData = () => {
         if (isMounted) {
           setUserRole(userData.role || 'student');
           setUserCountry(userData.country || null);
+          // Only surface the slug when the profile is actually public — the
+          // /{username} page 404s for opted-out users.
+          setUsername(userData.is_public === false ? null : (userData.username || null));
         }
         const courseId = userData.enrolled_course;
 
@@ -451,6 +457,9 @@ const useProgressData = () => {
     firstName,
     authUser,
     isInsider,
+    // Only set when Insider access came from a referral week or a comp, not
+    // from Stripe — see AuthContext.
+    insiderUntil,
     profilePicture,
     hasHighQualityAvatar,
     signOut,
@@ -471,6 +480,7 @@ const useProgressData = () => {
     resources,
     userRole,
     userCountry,
+    username,
     communityCount,
     behaviourStat,
     achievementStat,

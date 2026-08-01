@@ -31,7 +31,7 @@ const formatUpcomingTime = (dateStr) => {
 
 const OfficeHoursCard = ({ coaches, courseId }) => {
   const isMobile = useIsMobile();
-  const { user: authUser, isInsider, hasUsedTrial, firstName } = useAuth();
+  const { user: authUser, isInsider, firstName } = useAuth();
   const [liveSession, setLiveSession] = useState(null); // { id, status, coach }
   const [nextUpcoming, setNextUpcoming] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -377,7 +377,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                   </div>
 
                   <h3 style={{ color: '#7714E0', fontSize: '1.5rem', fontWeight: 600, lineHeight: '1.2', marginBottom: '0.75rem', letterSpacing: '-0.01em' }}>
-                    {hasUsedTrial ? 'Upgrade to Ignite Insider' : 'Try Ignite Insider for free'}
+                    Upgrade to Ignite Insider
                   </h3>
 
                   <p className="text-black font-light" style={{ fontSize: '1rem', lineHeight: '1.5', marginBottom: '1.25rem' }}>
@@ -414,14 +414,11 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                       boxShadow: '0 0 10px rgba(103,103,103,0.4)'
                     }}
                   >
-                    {hasUsedTrial
-                      ? 'Get Ignite Insider'
-                      : `Two weeks free${firstName ? ` for ${firstName}` : ''}`
-                    }
+                    Get Ignite Insider{firstName ? ` for ${firstName}` : ''}
                   </div>
 
                   <p className="text-black text-center m-0 font-light" style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                    {hasUsedTrial ? '£4.99/month' : 'then £4.99/month'}
+                    £4.99/month
                   </p>
 
                   <p className="text-black text-center m-0 font-light" style={{ fontSize: '0.9rem', marginTop: '0.75rem', lineHeight: '1.4' }}>

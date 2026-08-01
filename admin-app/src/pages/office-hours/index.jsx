@@ -356,7 +356,7 @@ const OfficeHours = () => {
       <h1 className="text-2xl font-semibold mb-6">Office Hours</h1>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-600 text-sm">
           {error}
         </div>
       )}
@@ -387,7 +387,7 @@ const OfficeHours = () => {
                 />
               </DailyProvider>
             ) : (
-              <div className="rounded-xl border border-gray-700/50 bg-gray-800/50 flex items-center justify-center" style={{ height: '520px' }}>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center" style={{ height: '520px' }}>
                 <p className="text-gray-500">Connecting to video...</p>
               </div>
             )}

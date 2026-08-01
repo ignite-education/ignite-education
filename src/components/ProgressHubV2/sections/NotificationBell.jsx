@@ -216,6 +216,12 @@ const NotificationBell = ({ userId, courseId }) => {
   const iconColor = hovered || open ? PINK : '#000000';
   const visible = notifications.slice(0, MAX_VISIBLE);
 
+  // Deliberately never calls buttonRef.focus(). Programmatic focus makes Chrome
+  // match :focus-visible, which painted the pink focus ring over the bell after
+  // an Escape dismissal and left it there until the next click. The ring is
+  // still shown when the button is genuinely reached by Tab, which is the only
+  // case it's meant for.
+  // Ignores any argument, so it's safe to pass straight to useClickOutside.
   const handleClose = useCallback(() => {
     if (closing) return;
     clearTimeout(leaveTimerRef.current);
@@ -224,7 +230,6 @@ const NotificationBell = ({ userId, courseId }) => {
       setOpen(false);
       setClosing(false);
       markAllSeen(); // commit read state only once the panel is gone
-      buttonRef.current?.focus();
     }, POPOVER_CLOSE_MS);
   }, [closing, markAllSeen]);
 
@@ -233,7 +238,8 @@ const NotificationBell = ({ userId, courseId }) => {
   const handlePointerLeave = useCallback(() => {
     if (!open || closing) return;
     clearTimeout(leaveTimerRef.current);
-    leaveTimerRef.current = setTimeout(handleClose, LEAVE_GRACE_MS);
+    // Wrapped so the timer id isn't passed through as restoreFocus
+    leaveTimerRef.current = setTimeout(() => handleClose(), LEAVE_GRACE_MS);
   }, [open, closing, handleClose]);
 
   const handlePointerEnter = useCallback(() => {

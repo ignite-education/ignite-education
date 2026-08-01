@@ -210,8 +210,8 @@ const CoursesDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
-        <div className="text-lg text-white">Loading courses...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-lg text-gray-900">Loading courses...</div>
       </div>
     );
   }
@@ -220,7 +220,7 @@ const CoursesDashboard = () => {
   const maxRequests = courseRequests.length > 0 ? Math.max(...courseRequests.map(r => r.total)) : 1;
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-12">
@@ -243,7 +243,7 @@ const CoursesDashboard = () => {
               className={`px-5 py-2 rounded-xl font-medium transition ${
                 filter === filterOption
                   ? 'bg-pink-500 text-white'
-                  : 'bg-white/10 text-white hover:bg-white/20'
+                  : 'bg-gray-100 text-gray-900 hover:bg-gray-100'
               }`}
             >
               {filterOption === 'all'
@@ -259,18 +259,18 @@ const CoursesDashboard = () => {
         <div className="space-y-8">
           {(filter === 'all' || filter === 'live') && liveCourses.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
                 Available Courses
               </h2>
               <div className="space-y-2">
                 {liveCourses.map((course) => (
                   <div
                     key={course.id}
-                    className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-white/10 transition group"
+                    className="bg-white backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition group border border-gray-200"
                   >
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium text-white mb-1">{course.title}</h3>
-                      <p className="text-sm text-gray-400">
+                      <h3 className="text-lg font-medium text-gray-900 mb-1">{course.title}</h3>
+                      <p className="text-sm text-gray-600">
                         {course.modules && `${course.modules === 'Multiple' ? 'Multiple modules' : `${course.modules} modules`}`}
                         {course.lessons > 0 && ` • ${course.lessons} lessons`}
                       </p>
@@ -279,7 +279,7 @@ const CoursesDashboard = () => {
                       <StatusBadge course={course} />
                       <button
                         onClick={() => handleDelete(course.id)}
-                        className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                        className="text-gray-600 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -292,18 +292,18 @@ const CoursesDashboard = () => {
 
           {(filter === 'all' || filter === 'coming_soon') && comingSoonCourses.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
                 Coming Soon
               </h2>
               <div className="space-y-2">
                 {comingSoonCourses.map((course) => (
                   <div
                     key={course.id}
-                    className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-white/10 transition group"
+                    className="bg-white backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition group border border-gray-200"
                   >
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium text-white mb-1">{course.title}</h3>
-                      <p className="text-sm text-gray-400">
+                      <h3 className="text-lg font-medium text-gray-900 mb-1">{course.title}</h3>
+                      <p className="text-sm text-gray-600">
                         {course.modules && `${course.modules === 'Multiple' ? 'Multiple modules' : `${course.modules} modules`}`}
                         {course.lessons > 0 && ` • ${course.lessons} lessons`}
                       </p>
@@ -312,7 +312,7 @@ const CoursesDashboard = () => {
                       <StatusBadge course={course} />
                       <button
                         onClick={() => handleDelete(course.id)}
-                        className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                        className="text-gray-600 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -325,27 +325,27 @@ const CoursesDashboard = () => {
 
           {(filter === 'all' || filter === 'requested') && (
             <div>
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
                 Requested Courses
               </h2>
               {requestsLoading ? (
-                <div className="text-gray-400 text-sm py-4">Loading requests...</div>
+                <div className="text-gray-600 text-sm py-4">Loading requests...</div>
               ) : courseRequests.length > 0 ? (
                 <div className="space-y-2">
                   {courseRequests.map((request) => (
                     <div
                       key={request.courseName}
-                      className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 hover:bg-white/10 transition"
+                      className="bg-white backdrop-blur-sm rounded-xl px-6 py-4 hover:bg-gray-50 transition border border-gray-200"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-medium text-white">{request.courseName}</h3>
-                        <div className="flex items-center gap-1.5 text-gray-400">
+                        <h3 className="text-lg font-medium text-gray-900">{request.courseName}</h3>
+                        <div className="flex items-center gap-1.5 text-gray-600">
                           <Users size={14} />
                           <span className="text-sm font-medium">{request.total} {request.total === 1 ? 'request' : 'requests'}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"
                             style={{ width: `${(request.total / maxRequests) * 100}%` }}
@@ -369,7 +369,7 @@ const CoursesDashboard = () => {
           )}
 
           {courses.length === 0 && (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-gray-600">
               No courses found. Add your first course to get started!
             </div>
           )}
@@ -383,7 +383,7 @@ const CoursesDashboard = () => {
                 <h2 className="text-2xl font-bold">Add New Course</h2>
                 <button
                   onClick={() => setIsAdding(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-600 hover:text-gray-600"
                 >
                   <X size={24} />
                 </button>

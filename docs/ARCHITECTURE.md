@@ -154,6 +154,7 @@ Ignite Education is a learning platform built as a **multi-app architecture** wi
 | **Admin Content** | `/api/admin/generate-lesson-questions`, `/api/admin/generate-svg` | Teacher+Admin |
 | **User Management** | `/api/users/:userId` (DELETE), `/api/delete-account` | Admin / Auth |
 | **Notifications** | `/api/notifications/broadcast`, `/api/notifications/admin`, `/api/notifications/:id` (DELETE) | Admin |
+| **Referrals** | `/api/referrals/claim`, `/api/referrals/me`, `/api/admin/referrals` | Auth / Admin |
 
 #### Auth middleware levels
 
@@ -293,7 +294,8 @@ After OAuth, the callback handler routes users by role:
 **Provider:** Supabase PostgreSQL
 
 Key tables (non-exhaustive):
-- `users` — profiles, roles, metadata, subscription status
+- `users` — profiles, roles, metadata. **Not** subscription status: Stripe state lives in
+  `auth.users.raw_user_meta_data` and grants live in `insider_grants` (see below)
 - `courses`, `modules`, `lessons` — curriculum structure
 - `user_progress` — lesson completion tracking
 - `certificates` — course completion certificates
@@ -305,6 +307,7 @@ Key tables (non-exhaustive):
 - `email_preferences` — per-user email subscription settings
 - `release_notes` — product changelog
 - `notifications` — Progress Hub notification feed (see below)
+- `referrals`, `insider_grants` — profile-page referrals and the free weeks they earn (see below)
 
 Supabase RPCs:
 - `refresh_community_stats()` — nightly community metrics
@@ -339,6 +342,42 @@ Backs the bell in the Progress Hub icon row. Migrations:
 - This is the **first RLS-enabled table in the `supabase_realtime` publication**, so the
   websocket must carry the user JWT for the SELECT policy to be evaluated per subscriber
   — `useNotifications` calls `supabase.realtime.setAuth()` explicitly before subscribing.
+
+### Referrals and Insider entitlement
+
+Creating an account from a public profile (`ignite.education/{username}`) gives both sides a
+free week of Ignite Insider. Migration: `migrations/add_referrals.sql` (hand-applied).
+
+**Insider access has two independent sources.** Never read `is_ad_free` directly for gating —
+use `resolveInsider()` in `server.js` or `isInsider` from `AuthContext`:
+
+| Source | Where it lives | Set by |
+|---|---|---|
+| Stripe subscription | `auth.users.raw_user_meta_data.is_ad_free` | the Stripe webhooks |
+| Referral week / comp | a `public.insider_grants` row with `expires_at > NOW()` | `/api/referrals/claim`, the qualification trigger |
+
+- **Grants are deliberately not in `user_metadata`.** Any signed-in user can write their own
+  metadata (`supabase.auth.updateUser({ data })`), so a grant kept there would be forgeable
+  from the console — and the `checkout.session.completed` handler rewrites that object.
+- **Expiry is evaluated at read time, not by a cron.** A grant self-expires, which also means
+  a stale JWT cannot keep a lapsed week alive. `AuthContext` re-queries `insider_grants` in the
+  same effect that fetches `users.role`, so a week appears and lapses without re-authenticating.
+- **Grant-only Insiders have no Stripe customer**, so anything billing-related must branch on
+  `insiderSource`. `SettingsModal` shows "Keep Ignite Insider" instead of "Manage" — the billing
+  portal endpoint 400s without a `stripe_customer_id`.
+- **There is no self-serve free trial.** The 14-day Stripe trial was retired; checkout charges
+  immediately and a referral is the only free path in. The `has_used_trial` metadata keys are
+  historic and no longer read.
+- **The referrer's week is earned, not given**: `qualify_referral_on_lesson()` fires
+  `AFTER INSERT ON lesson_completions` and grants it only once the referee completes a lesson,
+  capped at 10 credited referrals per rolling 30 days. Grants **stack** onto the end of any live
+  grant rather than overlapping, so two invites really are two weeks.
+- **Attribution survives three journeys**: `?ref=` on the OAuth callback URL, an inline claim for
+  Google One Tap (which never navigates), and a 30-day `localStorage` crumb written by
+  `ProfileHero` for anyone who signs up later from `/sign-in` or a course page. All three hit the
+  same endpoint; `UNIQUE(referee_id)` makes a double-claim a no-op. The crumb is `localStorage`
+  rather than `sessionStorage` because profile pages open course cards in a new tab.
+- **RLS:** SELECT only, own rows. Service role and the SECURITY DEFINER trigger are the only writers.
 
 ---
 
@@ -394,3 +433,5 @@ OAuth works locally via Vite's dev server proxy and Supabase redirect URL allowl
 - A `headers` rule setting `X-Robots-Tag` on the Next project leaks through the apex rewrite and deindexes production — use `app/robots.ts` instead
 - `openGraph` metadata is replaced, not merged, across layout→page — spread `OG_DEFAULTS` from `@/lib/siteConfig` per page
 - Run `npm run seo:validate` (in `next-app/`) after any deploy that touches metadata, routing or the sitemap
+- Insider entitlement has **two** sources — `user_metadata.is_ad_free` (Stripe) and `public.insider_grants` (referral/comp). Gate via `resolveInsider()` server-side or `isInsider` from `AuthContext`; never read `is_ad_free` directly. Anything billing-related must branch on `insiderSource` — a granted user has no Stripe customer. See [Referrals and Insider entitlement](#referrals-and-insider-entitlement)
+- `user_metadata` is writable by the user it belongs to (`AuthContext.updateProfile` → `supabase.auth.updateUser`), so it must not hold anything that grants access. `is_ad_free` predates this and remains forgeable

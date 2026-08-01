@@ -12,6 +12,7 @@ import SeamSticker from './SeamSticker';
 import ProgressGraph from './sections/ProgressGraph';
 import LessonSlider from './sections/LessonSlider';
 import OfficeHoursCard from './sections/OfficeHoursCard';
+import InviteCard from './sections/InviteCard';
 import ResourcesSlider from './sections/ResourcesSlider';
 import CommunityForumCard from './sections/CommunityForumCard';
 import CreatePostModal from './sections/CreatePostModal';
@@ -35,6 +36,7 @@ const ProgressHubV2 = () => {
     firstName,
     authUser,
     isInsider,
+    insiderUntil,
     profilePicture,
     hasHighQualityAvatar,
     signOut,
@@ -54,6 +56,7 @@ const ProgressHubV2 = () => {
     resources,
     userRole,
     userCountry,
+    username,
     communityCount,
     behaviourStat,
     achievementStat,
@@ -78,7 +81,11 @@ const ProgressHubV2 = () => {
       localStorage.removeItem('pendingPaymentRefresh');
       window.history.replaceState({}, '', window.location.pathname);
 
-      // Poll for updated insider status (webhook may still be processing)
+      // Poll for updated insider status (webhook may still be processing).
+      // Reads is_ad_free directly on purpose: this waits specifically for the
+      // Stripe webhook to land in the JWT. Referral/comp grants live in
+      // insider_grants and need no polling — AuthContext re-queries them on
+      // every auth change.
       const refreshInsiderStatus = async () => {
         for (let i = 0; i < 5; i++) {
           await refreshSession();
@@ -134,6 +141,7 @@ const ProgressHubV2 = () => {
         joinedAt={authUser?.created_at}
         totalCompletedLessons={totalCompletedLessons}
         isInsider={isInsider}
+        insiderUntil={insiderUntil}
         userId={authUser?.id}
         courseId={courseData?.name}
         onSettingsClick={() => setShowSettings(true)}
@@ -143,6 +151,7 @@ const ProgressHubV2 = () => {
         upcomingLessons={upcomingLessons}
         userRole={userRole}
         userCountry={userCountry}
+        username={username}
         communityCount={communityCount}
         behaviourStat={behaviourStat}
         achievementStat={achievementStat}
@@ -161,6 +170,7 @@ const ProgressHubV2 = () => {
         left={
           <>
             <OfficeHoursCard coaches={coaches} courseId={courseData?.name} />
+            <InviteCard />
             <ResourcesSlider resources={resources} />
           </>
         }

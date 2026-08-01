@@ -24,17 +24,17 @@ const PastSessions = ({ pastSessions }) => {
   return (
     <div>
       <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-        <Clock size={18} className="text-gray-400" />
+        <Clock size={18} className="text-gray-600" />
         Past Sessions
       </h2>
 
       {pastSessions.length === 0 ? (
         <p className="text-gray-500 text-sm">No past sessions yet.</p>
       ) : (
-        <div className="border border-gray-700/50 rounded-xl overflow-hidden">
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-700/50 text-gray-400">
+              <tr className="border-b border-gray-200 text-gray-600">
                 <th className="text-left p-3 font-medium">Date</th>
                 <th className="text-left p-3 font-medium">Duration</th>
                 <th className="text-left p-3 font-medium">Student</th>
@@ -68,12 +68,12 @@ const SessionRow = ({ session, isExpanded, onToggle, formatDate, formatDuration 
   return (
     <>
       <tr
-        className="border-b border-gray-700/30 last:border-0 cursor-pointer hover:bg-gray-800/30 transition-colors"
+        className="border-b border-gray-200 last:border-0 cursor-pointer hover:bg-gray-100 transition-colors"
         onClick={onToggle}
       >
-        <td className="p-3 text-gray-300">{formatDate(session.started_at)}</td>
-        <td className="p-3 text-gray-300 font-mono">{formatDuration(session)}</td>
-        <td className="p-3 text-gray-300">
+        <td className="p-3 text-gray-700">{formatDate(session.started_at)}</td>
+        <td className="p-3 text-gray-700 font-mono">{formatDuration(session)}</td>
+        <td className="p-3 text-gray-700">
           {session.studentName ? (
             <div className="flex items-center gap-2">
               {session.studentPicture ? (
@@ -84,19 +84,19 @@ const SessionRow = ({ session, isExpanded, onToggle, formatDate, formatDuration 
               <span>{session.studentName}</span>
             </div>
           ) : session.student_id ? (
-            <span className="flex items-center gap-1.5 text-gray-400">
+            <span className="flex items-center gap-1.5 text-gray-600">
               <Users size={14} />Student joined
             </span>
           ) : (
             <span className="text-gray-500">No student</span>
           )}
         </td>
-        <td className="p-3 text-gray-400 max-w-[150px] truncate">{session.topic || '-'}</td>
+        <td className="p-3 text-gray-600 max-w-[150px] truncate">{session.topic || '-'}</td>
         <td className="p-3">
           {session.rating === 'positive' ? (
-            <ThumbsUp size={14} className="text-green-400" />
+            <ThumbsUp size={14} className="text-green-600" />
           ) : session.rating === 'negative' ? (
-            <ThumbsDown size={14} className="text-red-400" />
+            <ThumbsDown size={14} className="text-red-600" />
           ) : (
             <span className="text-gray-600">-</span>
           )}
@@ -111,24 +111,24 @@ const SessionRow = ({ session, isExpanded, onToggle, formatDate, formatDuration 
       </tr>
       {isExpanded && (
         <tr>
-          <td colSpan={6} className="p-4 bg-gray-800/20 border-b border-gray-700/30">
+          <td colSpan={6} className="p-4 bg-gray-50 border-b border-gray-200">
             <div className="space-y-3 max-w-2xl">
               {session.topic && (
                 <div>
                   <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Topic</span>
-                  <p className="text-sm text-gray-300 mt-0.5">{session.topic}</p>
+                  <p className="text-sm text-gray-700 mt-0.5">{session.topic}</p>
                 </div>
               )}
               {session.question && (
                 <div>
                   <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Question</span>
-                  <p className="text-sm text-gray-300 mt-0.5">{session.question}</p>
+                  <p className="text-sm text-gray-700 mt-0.5">{session.question}</p>
                 </div>
               )}
               {session.feedback_comment && (
                 <div>
                   <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Feedback</span>
-                  <p className="text-sm text-gray-300 mt-0.5">{session.feedback_comment}</p>
+                  <p className="text-sm text-gray-700 mt-0.5">{session.feedback_comment}</p>
                 </div>
               )}
               {chatLog.length > 0 && (
@@ -137,8 +137,8 @@ const SessionRow = ({ session, isExpanded, onToggle, formatDate, formatDuration 
                   <div className="mt-1 space-y-1 max-h-48 overflow-y-auto">
                     {chatLog.map((msg, i) => (
                       <div key={i} className="text-xs">
-                        <span className="font-medium text-gray-400">{msg.sender}: </span>
-                        <span className="text-gray-300">{msg.text}</span>
+                        <span className="font-medium text-gray-600">{msg.sender}: </span>
+                        <span className="text-gray-700">{msg.text}</span>
                         {msg.ts && (
                           <span className="text-gray-600 ml-1">
                             {new Date(msg.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

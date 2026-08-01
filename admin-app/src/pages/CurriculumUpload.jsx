@@ -2073,10 +2073,10 @@ ${svgStyleGuide}`;
                   text: typeof block.content === 'object' ? block.content.text : block.content,
                   level: parseInt(e.target.value)
                 })}
-                className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
               >
-                <option value={2} className="bg-gray-900 text-white">H2</option>
-                <option value={3} className="bg-gray-900 text-white">H3</option>
+                <option value={2} className="bg-white text-gray-900">H2</option>
+                <option value={3} className="bg-white text-gray-900">H3</option>
               </select>
               <input
                 id={`heading-${block.id}`}
@@ -2087,7 +2087,7 @@ ${svgStyleGuide}`;
                   text: e.target.value,
                   level: typeof block.content === 'object' ? block.content.level : 2
                 })}
-                className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none"
               />
               <button
                 type="button"
@@ -2130,12 +2130,12 @@ ${svgStyleGuide}`;
                     }, 0);
                   }
                 }}
-                className="px-3 py-2 text-pink-400 hover:text-pink-300 font-medium bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition"
+                className="px-3 py-2 text-pink-600 hover:text-pink-700 font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-200 transition"
               >
                 <u>U</u> Underline
               </button>
             </div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-600">
               Use __text__ to <u>underline</u> heading text
             </div>
           </div>
@@ -2158,10 +2158,10 @@ ${svgStyleGuide}`;
                 e.target.style.height = e.target.scrollHeight + 'px';
                 window.scrollTo(0, scrollY);
               }}
-              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none min-h-[100px] resize-none overflow-hidden transition-[height] duration-75 ease-out"
+              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none min-h-[100px] resize-none overflow-hidden transition-[height] duration-75 ease-out"
               style={{ height: 'auto' }}
             />
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-xs text-gray-600 space-y-1">
               <div className="flex gap-4 items-center">
                 <span>💡 Tips:</span>
                 <button
@@ -2175,7 +2175,7 @@ ${svgStyleGuide}`;
                       : currentContent + '\n• ';
                     updateBlock(block.id, newContent);
                   }}
-                  className="text-pink-400 hover:text-pink-300 font-medium transition"
+                  className="text-pink-600 hover:text-pink-700 font-medium transition"
                 >
                   + Add bullet
                 </button>
@@ -2214,7 +2214,7 @@ ${svgStyleGuide}`;
                       }, 0);
                     }
                   }}
-                  className="text-pink-400 hover:text-pink-300 font-medium transition"
+                  className="text-pink-600 hover:text-pink-700 font-medium transition"
                 >
                   <strong>B</strong> Make bold
                 </button>
@@ -2253,7 +2253,7 @@ ${svgStyleGuide}`;
                       }, 0);
                     }
                   }}
-                  className="text-pink-400 hover:text-pink-300 font-medium transition"
+                  className="text-pink-600 hover:text-pink-700 font-medium transition"
                 >
                   <em>I</em> Make italic
                 </button>
@@ -2292,7 +2292,7 @@ ${svgStyleGuide}`;
                       }, 0);
                     }
                   }}
-                  className="text-pink-400 hover:text-pink-300 font-medium transition"
+                  className="text-pink-600 hover:text-pink-700 font-medium transition"
                 >
                   <u>U</u> Make underline
                 </button>
@@ -2341,19 +2341,19 @@ ${svgStyleGuide}`;
                       }
                     }
                   }}
-                  className="text-pink-400 hover:text-pink-300 font-medium bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 hover:bg-gray-700 transition"
+                  className="text-pink-600 hover:text-pink-700 font-medium bg-white border border-gray-200 rounded-lg px-2 py-1 hover:bg-gray-200 transition"
                 >
                   🔗 Add link
                 </button>
               </div>
-              <div className="text-gray-400">
+              <div className="text-gray-600">
                 Use **text** for <strong>bold</strong> • Use *text* for <em>italic</em> • Use __text__ for <u>underline</u> • Use [text](url) for <a href="#" className="text-blue-600 underline">links</a> • Use • or - for bullet points
               </div>
             </div>
             {/* User Question — optional ungraded question shown after this paragraph */}
-            <div className="mt-3 pt-3 border-t border-gray-700">
+            <div className="mt-3 pt-3 border-t border-gray-200">
               <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-gray-300">User Question (Optional)</label>
+                <label className="text-sm font-medium text-gray-700">User Question (Optional)</label>
                 <button
                   type="button"
                   disabled={generatingUserQuestion === block.id}
@@ -2367,7 +2367,7 @@ ${svgStyleGuide}`;
                     }
                     setGeneratingUserQuestion(null);
                   }}
-                  className="text-xs px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-900/50 transition disabled:opacity-50"
+                  className="text-xs px-3 py-1 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-100 transition disabled:opacity-50"
                 >
                   {generatingUserQuestion === block.id ? 'Generating...' : 'Auto-generate'}
                 </button>
@@ -2382,7 +2382,7 @@ ${svgStyleGuide}`;
                   ));
                 }}
                 placeholder="e.g., What do you think this means for product managers?"
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none"
               />
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-xs text-gray-500">Ungraded question to engage the user — they must answer before the lesson continues</p>
@@ -2394,11 +2394,11 @@ ${svgStyleGuide}`;
                       b.id === block.id ? { ...b, userQuestion: current + '{{firstName}}' } : b
                     ));
                   }}
-                  className="text-xs text-pink-400 hover:text-pink-300 whitespace-nowrap transition"
+                  className="text-xs text-pink-600 hover:text-pink-700 whitespace-nowrap transition"
                 >
                   + Insert name
                 </button>
-                <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer ml-auto">
+                <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer ml-auto">
                   <input
                     type="checkbox"
                     checked={block.saveFeedback || false}
@@ -2431,7 +2431,7 @@ ${svgStyleGuide}`;
                     newItems[idx] = e.target.value;
                     updateBlock(block.id, { items: newItems });
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                  className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none"
                 />
                 {idx === block.content.items.length - 1 && (
                   <button
@@ -2477,7 +2477,7 @@ ${svgStyleGuide}`;
                   <select
                     value={block.content.width || 'medium'}
                     onChange={(e) => updateBlock(block.id, { ...block.content, width: e.target.value })}
-                    className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none"
                   >
                     <option value="small">Small (max-w-sm - 384px)</option>
                     <option value="medium">Medium (max-w-md - 448px)</option>
@@ -2507,28 +2507,28 @@ ${svgStyleGuide}`;
                   placeholder="Alt text"
                   value={block.content.alt}
                   onChange={(e) => updateBlock(block.id, { ...block.content, alt: e.target.value })}
-                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none"
                 />
                 <input
                   type="text"
                   placeholder="Caption (optional)"
                   value={block.content.caption || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, caption: e.target.value })}
-                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none"
                 />
                 <textarea
                   placeholder="Description (optional) — displayed below the image"
                   value={block.content.description || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-y"
+                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none resize-y"
                   rows={2}
                 />
-                <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
+                <label className="flex items-center gap-2 mt-3 text-sm text-gray-700 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={block.content.persist || false}
                     onChange={(e) => updateBlock(block.id, { ...block.content, persist: e.target.checked })}
-                    className="w-4 h-4 rounded border-gray-600 text-purple-500 focus:ring-purple-500 bg-gray-800"
+                    className="w-4 h-4 rounded border-gray-300 text-purple-500 focus:ring-purple-500 bg-white border border-gray-200"
                   />
                   Keep visible in next sections
                 </label>
@@ -2558,7 +2558,7 @@ ${svgStyleGuide}`;
               placeholder="Description (optional) — displayed below the video"
               value={block.content.description || ''}
               onChange={(e) => updateBlock(block.id, { ...block.content, description: e.target.value })}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-y"
+              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none resize-y"
               rows={2}
             />
             {block.content.videoId && (
@@ -2572,12 +2572,12 @@ ${svgStyleGuide}`;
                 />
               </div>
             )}
-            <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
+            <label className="flex items-center gap-2 mt-3 text-sm text-gray-700 cursor-pointer">
               <input
                 type="checkbox"
                 checked={block.content.persist || false}
                 onChange={(e) => updateBlock(block.id, { ...block.content, persist: e.target.checked })}
-                className="w-4 h-4 rounded border-gray-600 text-purple-500 focus:ring-purple-500 bg-gray-800"
+                className="w-4 h-4 rounded border-gray-300 text-purple-500 focus:ring-purple-500 bg-white border border-gray-200"
               />
               Keep visible in next sections
             </label>
@@ -2589,7 +2589,7 @@ ${svgStyleGuide}`;
           <div className="space-y-4">
             {/* AI Prompt */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 {block.content.markup ? 'Describe changes' : 'Describe the SVG'}
               </label>
               <div className="flex gap-2 mb-2">
@@ -2606,7 +2606,7 @@ ${svgStyleGuide}`;
                     ? 'e.g., "Make it more abstract", "Add a graduation cap"'
                     : 'e.g., "A lightbulb with gears inside", "A brain connected to a network"'
                   }
-                  className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none text-sm"
+                  className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:outline-none text-sm"
                   disabled={isGeneratingSvg}
                 />
                 <button
@@ -2618,7 +2618,7 @@ ${svgStyleGuide}`;
                     }
                     setSvgPrompt(context);
                   }}
-                  className="px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 text-sm font-medium whitespace-nowrap transition"
+                  className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium whitespace-nowrap transition"
                 >
                   Use section content
                 </button>
@@ -2646,7 +2646,7 @@ ${svgStyleGuide}`;
                     const combined = svgPrompt + (svgFullPrompt ? `\n\n${svgFullPrompt}` : '') + (block.content.markup ? `\n\nEXISTING SVG TO MODIFY:\n${block.content.markup}` : '');
                     navigator.clipboard.writeText(combined + '\n\nRespond with ONLY the SVG markup. No explanation, no markdown code blocks, just the raw SVG starting with <svg> and ending with </svg>.');
                   }}
-                  className="px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm hover:bg-gray-700 hover:text-white transition"
+                  className="px-3 py-2 bg-white text-gray-600 rounded-lg text-sm hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200"
                   title="Copy full prompt to clipboard"
                 >
                   Copy prompt
@@ -2657,11 +2657,11 @@ ${svgStyleGuide}`;
               <details className="mt-3" onToggle={(e) => {
                 if (e.target.open && !svgFullPrompt) setSvgFullPrompt(buildSvgRules(block));
               }}>
-                <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition">View / edit rules</summary>
+                <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 transition">View / edit rules</summary>
                 <textarea
                   value={svgFullPrompt || buildSvgRules(block)}
                   onChange={(e) => setSvgFullPrompt(e.target.value)}
-                  className="w-full mt-2 bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 font-mono focus:border-purple-500 focus:outline-none resize-y"
+                  className="w-full mt-2 bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-700 font-mono focus:border-purple-500 focus:outline-none resize-y"
                   rows={8}
                 />
                 <div className="flex gap-2 mt-1">
@@ -2673,7 +2673,7 @@ ${svgStyleGuide}`;
                   </button>
                   <button
                     onClick={() => { const fresh = buildSvgRules(block); setSvgFullPrompt(fresh); localStorage.removeItem('svgRules'); }}
-                    className="px-3 py-1 bg-gray-800 text-gray-400 rounded text-xs font-medium hover:bg-gray-700 hover:text-white transition"
+                    className="px-3 py-1 bg-white text-gray-600 rounded text-xs font-medium hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200"
                   >
                     Reset to defaults
                   </button>
@@ -2684,7 +2684,7 @@ ${svgStyleGuide}`;
             {/* Size + Animation Controls */}
             <div className="flex gap-4 items-center">
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Size</label>
+                <label className="text-sm text-gray-600">Size</label>
                 {[
                   { label: 'S', value: '100' },
                   { label: 'M', value: '200' },
@@ -2698,7 +2698,7 @@ ${svgStyleGuide}`;
                     className={`px-3 py-1 rounded text-xs font-medium transition ${
                       (block.content.width || '200') === size.value
                         ? 'bg-purple-600 text-white'
-                        : 'bg-gray-900 border border-gray-700 text-gray-400 hover:border-purple-500 hover:text-purple-400'
+                        : 'bg-white border border-gray-200 text-gray-600 hover:border-purple-500 hover:text-purple-700'
                     }`}
                   >
                     {size.label}
@@ -2706,7 +2706,7 @@ ${svgStyleGuide}`;
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Animation</label>
+                <label className="text-sm text-gray-600">Animation</label>
                 {['off', 'once', 'loop'].map(mode => (
                   <button
                     key={mode}
@@ -2716,7 +2716,7 @@ ${svgStyleGuide}`;
                       (mode === 'once' && block.content.animated === 'once') ||
                       (mode === 'loop' && (block.content.animated === 'loop' || block.content.animated === true))
                         ? 'bg-pink-600 text-white'
-                        : 'bg-gray-900 border border-gray-700 text-gray-400 hover:border-pink-500 hover:text-pink-400'
+                        : 'bg-white border border-gray-200 text-gray-600 hover:border-pink-500 hover:text-pink-700'
                     }`}
                   >
                     {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -2730,7 +2730,7 @@ ${svgStyleGuide}`;
               <div className="grid grid-cols-2 gap-4">
                 {/* Code Editor */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">SVG Markup</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">SVG Markup</label>
                   <textarea
                     value={block.content.markup}
                     onChange={(e) => updateBlock(block.id, { ...block.content, markup: e.target.value })}
@@ -2741,27 +2741,27 @@ ${svgStyleGuide}`;
                       window.scrollTo(0, scrollY);
                     }}
                     spellCheck={false}
-                    className="w-full px-4 py-3 bg-gray-950 border border-gray-700 rounded-lg text-green-400 placeholder-gray-600 focus:border-purple-500 focus:outline-none font-mono text-xs leading-relaxed resize-none"
+                    className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-green-600 placeholder-gray-400 focus:border-purple-500 focus:outline-none font-mono text-xs leading-relaxed resize-none"
                     style={{ minHeight: '300px', tabSize: 2 }}
                     placeholder="<svg>...</svg>"
                   />
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={() => updateBlock(block.id, { ...block.content, markup: '' })}
-                      className="text-xs px-3 py-1 text-red-400 hover:text-red-300 bg-red-900/20 rounded transition"
+                      className="text-xs px-3 py-1 text-red-600 hover:text-red-700 bg-red-100 rounded transition"
                     >
                       Clear & Pick Template
                     </button>
                     <p className="text-xs text-gray-500 flex-1">
-                      Use <code className="text-purple-400">{'{{primary}}'}</code> and <code className="text-pink-400">{'{{secondary}}'}</code> for dynamic colors
+                      Use <code className="text-purple-600">{'{{primary}}'}</code> and <code className="text-pink-600">{'{{secondary}}'}</code> for dynamic colors
                     </p>
                   </div>
                 </div>
 
                 {/* Live Preview */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Preview</label>
-                  <div className="bg-gray-100 border border-gray-700 rounded-lg p-6 flex items-center justify-center" style={{ minHeight: '300px' }}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+                  <div className="bg-gray-100 border border-gray-200 rounded-lg p-6 flex items-center justify-center" style={{ minHeight: '300px' }}>
                     <div
                       style={{ width: `${block.content.width || 200}px`, height: `${block.content.height || 200}px` }}
                       dangerouslySetInnerHTML={{
@@ -2781,15 +2781,15 @@ ${svgStyleGuide}`;
               placeholder="Description (optional) — displayed below the graphic"
               value={block.content.description || ''}
               onChange={(e) => updateBlock(block.id, { ...block.content, description: e.target.value })}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-y"
+              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none resize-y"
               rows={2}
             />
-            <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
+            <label className="flex items-center gap-2 mt-3 text-sm text-gray-700 cursor-pointer">
               <input
                 type="checkbox"
                 checked={block.content.persist || false}
                 onChange={(e) => updateBlock(block.id, { ...block.content, persist: e.target.checked })}
-                className="w-4 h-4 rounded border-gray-600 text-purple-500 focus:ring-purple-500 bg-gray-800"
+                className="w-4 h-4 rounded border-gray-300 text-purple-500 focus:ring-purple-500 bg-white border border-gray-200"
               />
               Keep visible in next sections
             </label>
@@ -2802,7 +2802,7 @@ ${svgStyleGuide}`;
         return (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-400">Student must score 5/10 to proceed. Questions are drawn from this pool on retry.</p>
+              <p className="text-xs text-gray-600">Student must score 5/10 to proceed. Questions are drawn from this pool on retry.</p>
               <button
                 onClick={() => generateScoredQuestions(index)}
                 className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs font-medium transition"
@@ -2830,7 +2830,7 @@ ${svgStyleGuide}`;
                             ? diff === 'easy' ? 'bg-green-900 text-green-300 border border-green-600'
                               : diff === 'hard' ? 'bg-red-900 text-red-300 border border-red-600'
                               : 'bg-yellow-900 text-yellow-300 border border-yellow-600'
-                            : 'bg-gray-800 text-gray-500 border border-gray-700 hover:text-gray-300'
+                            : 'bg-white text-gray-500 border border-gray-200 hover:text-gray-700'
                         }`}
                       >
                         {diff}
@@ -2852,13 +2852,13 @@ ${svgStyleGuide}`;
                       maxLength={130}
                       placeholder={`Question ${qIdx + 1}`}
                       rows={2}
-                      className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none text-sm resize-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none text-sm resize-none"
                     />
-                    <span className={`text-xs ${q.length > 120 ? 'text-red-400' : 'text-gray-600'}`}>{q.length}/130</span>
+                    <span className={`text-xs ${q.length > 120 ? 'text-red-600' : 'text-gray-600'}`}>{q.length}/130</span>
                   </div>
                   <button
                     onClick={() => regenerateSingleScoredQuestion(index, qIdx)}
-                    className="p-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition shrink-0"
+                    className="p-2 bg-gray-100 hover:bg-gray-300 text-gray-700 rounded-lg transition shrink-0"
                     title="Regenerate this question"
                   >
                     <RotateCcw size={14} />
@@ -2876,12 +2876,12 @@ ${svgStyleGuide}`;
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-6" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-900 rounded-lg transition text-white">
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition text-gray-900">
               <ArrowLeft size={24} />
             </button>
             <div
@@ -2899,8 +2899,8 @@ ${svgStyleGuide}`;
         </div>
 
         {/* Tabs */}
-        <div className="bg-gray-900 rounded-lg border border-gray-800 mb-6">
-          <div className="flex border-b border-gray-800">
+        <div className="bg-white rounded-lg border border-gray-200 mb-6">
+          <div className="flex border-b border-gray-200">
             {['courses', 'content', 'coaches'].map((tab) => (
               <button
                 key={tab}
@@ -2908,7 +2908,7 @@ ${svgStyleGuide}`;
                 className={`px-6 py-4 font-medium capitalize ${
                   activeTab === tab
                     ? 'border-b-2 border-pink-500 text-pink-500'
-                    : 'text-gray-400 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 {tab}
@@ -2925,17 +2925,17 @@ ${svgStyleGuide}`;
             {/* Content Tab */}
             {activeTab === 'content' && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold mb-4 text-white">Manage Lesson Content</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-900">Manage Lesson Content</h2>
 
                 {/* Lesson Selection */}
-                <div className="bg-gray-800 border border-gray-700 p-4 rounded-lg space-y-3">
+                <div className="bg-white border border-gray-200 p-4 rounded-lg space-y-3">
                   <div className="flex gap-4 items-end">
                     <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1 text-gray-300">Course</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Course</label>
                       <select
                         value={selectedCourseId}
                         onChange={(e) => setSelectedCourseId(e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                       >
                         {courses.map((course) => (
                           <option key={course.name} value={course.name}>
@@ -2945,7 +2945,7 @@ ${svgStyleGuide}`;
                       </select>
                     </div>
                     <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1 text-gray-300">Module</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Module</label>
                       <select
                         value={selectedModuleIndex}
                         onChange={(e) => {
@@ -2958,7 +2958,7 @@ ${svgStyleGuide}`;
                             setSelectedLessonNumber(1);
                           }
                         }}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                       >
                         {moduleStructure.map((module, idx) => (
                           <option key={idx} value={idx}>
@@ -2968,7 +2968,7 @@ ${svgStyleGuide}`;
                       </select>
                     </div>
                     <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1 text-gray-300">Lesson</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Lesson</label>
                       <select
                         value={selectedLessonIndex}
                         onChange={(e) => {
@@ -2977,7 +2977,7 @@ ${svgStyleGuide}`;
                           setSelectedLessonNumber(lessonIdx + 1);
                           // Content will be loaded automatically by useEffect
                         }}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                       >
                         {moduleStructure[selectedModuleIndex]?.lessons?.map((lesson, idx) => (
                           <option key={idx} value={idx}>
@@ -2987,11 +2987,11 @@ ${svgStyleGuide}`;
                       </select>
                     </div>
                     <div className="flex-shrink-0">
-                      <label className="block text-sm font-medium mb-1 text-gray-300">&nbsp;</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">&nbsp;</label>
                       <button
                         onClick={handleShowVersionHistory}
                         disabled={!selectedCourseId}
-                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg flex items-center gap-2 transition-colors"
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-500 text-gray-900 rounded-lg flex items-center gap-2 transition-colors"
                         title="View version history"
                       >
                         <History className="w-4 h-4" />
@@ -3003,7 +3003,7 @@ ${svgStyleGuide}`;
 
                 {/* Loading Indicator */}
                 {isLoadingContent && (
-                  <div className="bg-purple-900/30 border border-purple-500/50 text-purple-200 px-4 py-3 rounded-lg flex items-center justify-center gap-3">
+                  <div className="bg-purple-100 border border-purple-500/50 text-purple-600 px-4 py-3 rounded-lg flex items-center justify-center gap-3">
                     <img
                       src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_S_5.png"
                       alt="Loading"
@@ -3014,21 +3014,21 @@ ${svgStyleGuide}`;
                 )}
 
                 {/* Lesson Metadata Section */}
-                <div className="bg-gray-800 border border-gray-700 p-4 rounded-lg space-y-3">
-                  <h3 className="text-md font-semibold text-white mb-3">Lesson Information</h3>
+                <div className="bg-white border border-gray-200 p-4 rounded-lg space-y-3">
+                  <h3 className="text-md font-semibold text-gray-900 mb-3">Lesson Information</h3>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Lesson Name *</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Lesson Name *</label>
                     <p className="text-xs text-gray-500 mb-2">The name that will appear on the lesson card</p>
                     <input
                       type="text"
                       value={lessonName}
                       onChange={(e) => setLessonName(e.target.value)}
                       placeholder="e.g., Introduction to Product Management"
-                      className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none mb-4"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none mb-4"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Bullet Points (for Upcoming Lessons Card) *</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Bullet Points (for Upcoming Lessons Card) *</label>
                     <p className="text-xs text-gray-500 mb-2">Add 3 bullet points that will appear on the upcoming lessons card</p>
                     {lessonBulletPoints.map((bp, idx) => (
                       <input
@@ -3041,7 +3041,7 @@ ${svgStyleGuide}`;
                           setLessonBulletPoints(newBps);
                         }}
                         placeholder={`Bullet point ${idx + 1}...`}
-                        className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none mb-2"
+                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none mb-2"
                       />
                     ))}
                   </div>
@@ -3055,24 +3055,24 @@ ${svgStyleGuide}`;
                 </div>
 
                 {/* Content Block Buttons - Sticky */}
-                <div className="sticky top-0 z-10 bg-gray-900 border border-gray-800 py-3 -mx-8 px-8 shadow-sm flex gap-2 flex-wrap items-center justify-between">
+                <div className="sticky top-0 z-10 bg-white border border-gray-200 py-3 -mx-8 px-8 shadow-sm flex gap-2 flex-wrap items-center justify-between">
                   <div className="flex gap-2 flex-wrap">
-                    <button onClick={() => addBlock('heading')} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 text-sm text-white transition">
+                    <button onClick={() => addBlock('heading')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm text-gray-900 transition">
                       + Heading
                     </button>
-                    <button onClick={() => addBlock('paragraph')} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 text-sm text-white transition">
+                    <button onClick={() => addBlock('paragraph')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm text-gray-900 transition">
                       + Paragraph
                     </button>
-                    <button onClick={() => addBlock('bulletlist')} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 text-sm flex items-center gap-1 text-white transition">
+                    <button onClick={() => addBlock('bulletlist')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
                       <ListIcon size={14} /> Bullet List
                     </button>
-                    <button onClick={() => addBlock('image')} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 text-sm flex items-center gap-1 text-white transition">
+                    <button onClick={() => addBlock('image')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
                       <ImageIcon size={14} /> Image
                     </button>
-                    <button onClick={() => addBlock('youtube')} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 text-sm flex items-center gap-1 text-white transition">
+                    <button onClick={() => addBlock('youtube')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
                       <Youtube size={14} /> YouTube
                     </button>
-                    <button onClick={() => addBlock('svg')} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 text-sm flex items-center gap-1 text-white transition">
+                    <button onClick={() => addBlock('svg')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
                       <Pen size={14} /> SVG Icon
                     </button>
                     <button onClick={() => addBlock('scored_question')} className="px-3 py-2 bg-pink-700 border border-pink-600 rounded-lg hover:bg-pink-600 text-sm flex items-center gap-1 text-white transition">
@@ -3112,10 +3112,10 @@ ${svgStyleGuide}`;
                     {audioStatus && (
                       <span className={`text-xs px-2 py-1 rounded ${
                         audioStatus.needsRegeneration
-                          ? 'bg-yellow-900/50 text-yellow-300'
+                          ? 'bg-yellow-100 text-yellow-600'
                           : audioStatus.hasAudio
-                            ? 'bg-green-900/50 text-green-300'
-                            : 'bg-gray-700 text-gray-400'
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-gray-100 text-gray-600'
                       }`}>
                         {audioStatus.hasAudio
                           ? (audioStatus.needsRegeneration ? '⚠️ Content changed' : '✅ Audio ready')
@@ -3131,45 +3131,45 @@ ${svgStyleGuide}`;
                     <div key={block.id}>
                       {/* Insert Above Buttons */}
                       <div className="flex justify-center mb-2">
-                        <div className="flex gap-1 bg-gray-800 border border-gray-700 rounded-lg p-1">
+                        <div className="flex gap-1 bg-white border border-gray-200 rounded-lg p-1">
                           <button
                             onClick={() => addBlockAt('heading', index)}
-                            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-300 text-gray-900 rounded transition"
                             title="Insert Heading Above"
                           >
                             + H2
                           </button>
                           <button
                             onClick={() => addBlockAt('paragraph', index)}
-                            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-300 text-gray-900 rounded transition"
                             title="Insert Paragraph Above"
                           >
                             + Para
                           </button>
                           <button
                             onClick={() => addBlockAt('bulletlist', index)}
-                            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-300 text-gray-900 rounded transition"
                             title="Insert Bullet List Above"
                           >
                             + List
                           </button>
                           <button
                             onClick={() => addBlockAt('image', index)}
-                            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-300 text-gray-900 rounded transition"
                             title="Insert Image Above"
                           >
                             + Img
                           </button>
                           <button
                             onClick={() => addBlockAt('youtube', index)}
-                            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-300 text-gray-900 rounded transition"
                             title="Insert YouTube Above"
                           >
                             + Video
                           </button>
                           <button
                             onClick={() => addBlockAt('svg', index)}
-                            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-300 text-gray-900 rounded transition"
                             title="Insert SVG Icon Above"
                           >
                             + SVG
@@ -3185,20 +3185,20 @@ ${svgStyleGuide}`;
                       </div>
 
                       {/* Content Block */}
-                      <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <span className={`text-sm font-medium capitalize ${block.type === 'scored_question' ? 'text-pink-400' : 'text-gray-300'}`}>
+                          <span className={`text-sm font-medium capitalize ${block.type === 'scored_question' ? 'text-pink-600' : 'text-gray-700'}`}>
                             {block.type === 'scored_question' ? 'Scored Question' : block.type}
-                            {block.content?.persist && <span className="ml-2 text-xs text-purple-400 normal-case">(persistent)</span>}
+                            {block.content?.persist && <span className="ml-2 text-xs text-purple-600 normal-case">(persistent)</span>}
                           </span>
                           <div className="flex gap-2">
-                            <button onClick={() => moveBlockUp(index)} disabled={index === 0} className="p-1 hover:bg-gray-700 text-gray-300 rounded disabled:opacity-30">
+                            <button onClick={() => moveBlockUp(index)} disabled={index === 0} className="p-1 hover:bg-gray-200 text-gray-700 rounded disabled:opacity-30">
                               <MoveUp size={16} />
                             </button>
-                            <button onClick={() => moveBlockDown(index)} disabled={index === contentBlocks.length - 1} className="p-1 hover:bg-gray-700 text-gray-300 rounded disabled:opacity-30">
+                            <button onClick={() => moveBlockDown(index)} disabled={index === contentBlocks.length - 1} className="p-1 hover:bg-gray-200 text-gray-700 rounded disabled:opacity-30">
                               <MoveDown size={16} />
                             </button>
-                            <button onClick={() => removeBlock(block.id)} className="p-1 hover:bg-red-900/30 text-red-400 rounded">
+                            <button onClick={() => removeBlock(block.id)} className="p-1 hover:bg-red-100 text-red-600 rounded">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -3207,9 +3207,9 @@ ${svgStyleGuide}`;
 
                       {/* Suggested Question Field - Only for H2 Headings */}
                       {block.type === 'heading' && block.content?.level === 2 && (
-                        <div className="mt-4 pt-4 border-t border-gray-700">
+                        <div className="mt-4 pt-4 border-t border-gray-200">
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block text-sm font-medium text-gray-300">
+                            <label className="block text-sm font-medium text-gray-700">
                               Suggested Question (Optional)
                             </label>
                             <button
@@ -3221,7 +3221,7 @@ ${svgStyleGuide}`;
                                   b.id === block.id ? { ...b, suggestedQuestion: questionText } : b
                                 ));
                               }}
-                              className="text-xs px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-900/50 transition"
+                              className="text-xs px-3 py-1 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-100 transition"
                             >
                               Auto-generate
                             </button>
@@ -3237,7 +3237,7 @@ ${svgStyleGuide}`;
                               ));
                             }}
                             placeholder="e.g., What are the key concepts in this section?"
-                            className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                            className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none"
                           />
                           <p className="text-xs text-gray-500 mt-1">
                             This question will appear when users scroll to this H2 section in the learning hub ({(block.suggestedQuestion || '').length}/55 characters)
@@ -3245,10 +3245,10 @@ ${svgStyleGuide}`;
 
                           {/* Section feedback stats */}
                           {sectionFeedbackStats[index + 1] && sectionFeedbackStats[index + 1].total > 0 && (
-                            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-700/50">
-                              <span className="text-xs text-gray-400">Section Feedback:</span>
-                              <span className="text-xs text-green-400">👍 {sectionFeedbackStats[index + 1].thumbsUp}</span>
-                              <span className="text-xs text-red-400">👎 {sectionFeedbackStats[index + 1].thumbsDown}</span>
+                            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-200">
+                              <span className="text-xs text-gray-600">Section Feedback:</span>
+                              <span className="text-xs text-green-600">👍 {sectionFeedbackStats[index + 1].thumbsUp}</span>
+                              <span className="text-xs text-red-600">👎 {sectionFeedbackStats[index + 1].thumbsDown}</span>
                               <span className="text-xs text-gray-500">
                                 ({Math.round((sectionFeedbackStats[index + 1].thumbsUp / sectionFeedbackStats[index + 1].total) * 100)}% positive, {sectionFeedbackStats[index + 1].total} votes)
                               </span>
@@ -3309,21 +3309,21 @@ ${svgStyleGuide}`;
                       </>
                     )}
                   </button>
-                  <p className="text-sm text-gray-400 text-center">
+                  <p className="text-sm text-gray-600 text-center">
                     Generate flashcards after saving your lesson content
                   </p>
                 </div>
 
                 {/* Flashcards Display */}
                 {generatedFlashcards.length > 0 && (
-                  <div className="mt-6 border-t border-gray-800 pt-6">
+                  <div className="mt-6 border-t border-gray-200 pt-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-white">
+                      <h3 className="text-lg font-semibold text-gray-900">
                         Generated Flashcards ({generatedFlashcards.length})
                       </h3>
                       <button
                         onClick={() => setShowFlashcards(!showFlashcards)}
-                        className="text-sm text-pink-400 hover:text-pink-300 font-medium transition"
+                        className="text-sm text-pink-600 hover:text-pink-700 font-medium transition"
                       >
                         {showFlashcards ? 'Hide' : 'Show'}
                       </button>
@@ -3334,7 +3334,7 @@ ${svgStyleGuide}`;
                         {generatedFlashcards.map((card, index) => (
                           <div
                             key={card.id}
-                            className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:bg-gray-750 transition"
+                            className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-200 transition"
                           >
                             <div className="flex items-start gap-3">
                               <div className="flex-shrink-0 w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center font-semibold text-sm">
@@ -3342,17 +3342,17 @@ ${svgStyleGuide}`;
                               </div>
                               <div className="flex-1">
                                 <div className="mb-3">
-                                  <p className="text-sm font-semibold text-white mb-2">Question</p>
-                                  <p className="font-medium text-gray-200">{card.question}</p>
+                                  <p className="text-sm font-semibold text-gray-900 mb-2">Question</p>
+                                  <p className="font-medium text-gray-800">{card.question}</p>
                                 </div>
                                 <div>
-                                  <p className="text-sm font-semibold text-white mb-2">Answer</p>
-                                  <div className="text-sm text-gray-300 space-y-1">
+                                  <p className="text-sm font-semibold text-gray-900 mb-2">Answer</p>
+                                  <div className="text-sm text-gray-700 space-y-1">
                                     {card.answer.split('\n').map((line, idx) => {
                                       if (line.trim().startsWith('•')) {
                                         return (
                                           <div key={idx} className="flex gap-2">
-                                            <span className="text-pink-400 flex-shrink-0">•</span>
+                                            <span className="text-pink-600 flex-shrink-0">•</span>
                                             <span>{line.trim().substring(1).trim()}</span>
                                           </div>
                                         );
@@ -3373,17 +3373,17 @@ ${svgStyleGuide}`;
                 )}
 
                 {/* Knowledge Check Questions Section */}
-                <div className="mt-6 pt-6 border-t border-gray-700">
+                <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-white">Knowledge Check Questions</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">Knowledge Check Questions</h3>
                       {questionStatus ? (
-                        <p className="text-sm text-gray-400 mt-1">
+                        <p className="text-sm text-gray-600 mt-1">
                           {questionStatus.hasQuestions
                             ? `${questionStatus.questionCount} questions generated`
                             : 'No questions generated yet'}
                           {questionStatus.needsRegeneration && questionStatus.hasQuestions && (
-                            <span className="text-orange-400 ml-2">(Content changed - regenerate recommended)</span>
+                            <span className="text-orange-600 ml-2">(Content changed - regenerate recommended)</span>
                           )}
                         </p>
                       ) : (
@@ -3413,20 +3413,20 @@ ${svgStyleGuide}`;
                       </>
                     )}
                   </button>
-                  <p className="text-sm text-gray-400 text-center mt-2">
+                  <p className="text-sm text-gray-600 text-center mt-2">
                     Generate knowledge check questions after saving your lesson content
                   </p>
 
                   {/* Questions Display */}
                   {generatedQuestions.length > 0 && (
-                    <div className="mt-6 border-t border-gray-700 pt-6">
+                    <div className="mt-6 border-t border-gray-200 pt-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-white">
+                        <h3 className="text-lg font-semibold text-gray-900">
                           Generated Questions ({generatedQuestions.length})
                         </h3>
                         <button
                           onClick={() => setShowQuestions(!showQuestions)}
-                          className="text-sm text-purple-400 hover:text-purple-300 font-medium transition"
+                          className="text-sm text-purple-600 hover:text-purple-700 font-medium transition"
                         >
                           {showQuestions ? 'Hide' : 'Show'}
                         </button>
@@ -3437,7 +3437,7 @@ ${svgStyleGuide}`;
                           {generatedQuestions.map((question, index) => (
                             <div
                               key={question.id}
-                              className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:bg-gray-750 transition"
+                              className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-200 transition"
                             >
                               {editingQuestionId === question.id ? (
                                 /* Editing mode */
@@ -3449,7 +3449,7 @@ ${svgStyleGuide}`;
                                     <textarea
                                       value={editingQuestionText}
                                       onChange={(e) => setEditingQuestionText(e.target.value)}
-                                      className="flex-1 bg-gray-700 border border-gray-600 rounded-lg p-3 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                      className="flex-1 bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                                       rows={3}
                                       autoFocus
                                     />
@@ -3458,7 +3458,7 @@ ${svgStyleGuide}`;
                                     <select
                                       value={editingQuestionDifficulty}
                                       onChange={(e) => setEditingQuestionDifficulty(e.target.value)}
-                                      className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:ring-2 focus:ring-purple-500"
+                                      className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:ring-2 focus:ring-purple-500"
                                     >
                                       <option value="easy">Easy</option>
                                       <option value="medium">Medium</option>
@@ -3466,7 +3466,7 @@ ${svgStyleGuide}`;
                                     <div className="flex gap-2">
                                       <button
                                         onClick={cancelEditingQuestion}
-                                        className="px-3 py-1.5 text-sm text-gray-400 hover:text-gray-200 transition"
+                                        className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition"
                                         disabled={isSavingQuestion}
                                       >
                                         Cancel
@@ -3488,7 +3488,7 @@ ${svgStyleGuide}`;
                                     {index + 1}
                                   </div>
                                   <div className="flex-1">
-                                    <p className="text-gray-200">{question.question_text}</p>
+                                    <p className="text-gray-800">{question.question_text}</p>
                                     <div className="flex items-center gap-3 mt-2">
                                       <span className={`inline-block px-2 py-0.5 text-xs rounded-full ${
                                         question.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
@@ -3499,21 +3499,21 @@ ${svgStyleGuide}`;
                                       </span>
                                       <button
                                         onClick={() => startEditingQuestion(question)}
-                                        className="text-xs text-purple-400 hover:text-purple-300 transition"
+                                        className="text-xs text-purple-600 hover:text-purple-700 transition"
                                         disabled={isSavingQuestion}
                                       >
                                         Edit
                                       </button>
                                       <button
                                         onClick={() => deleteAndRegenerateQuestion(question)}
-                                        className="text-xs text-blue-400 hover:text-blue-300 transition"
+                                        className="text-xs text-blue-600 hover:text-blue-700 transition"
                                         disabled={isSavingQuestion}
                                       >
                                         Regenerate
                                       </button>
                                       <button
                                         onClick={() => deleteQuestion(question)}
-                                        className="text-xs text-red-400 hover:text-red-300 transition"
+                                        className="text-xs text-red-600 hover:text-red-700 transition"
                                         disabled={isSavingQuestion}
                                       >
                                         Delete
@@ -3536,26 +3536,26 @@ ${svgStyleGuide}`;
             {activeTab === 'coaches' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold text-white">Manage Office Hours Coaches</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">Manage Office Hours Coaches</h2>
                 </div>
 
                 {/* Coach Form */}
-                <form onSubmit={handleCoachSubmit} className="bg-gray-800 border border-gray-700 rounded-lg p-6 space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-4">
+                <form onSubmit={handleCoachSubmit} className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
                     {editingCoach ? 'Edit Coach' : 'Add New Coach'}
                   </h3>
 
                   <div className="grid grid-cols-2 gap-4">
                     {/* Name */}
                     <div>
-                      <label className="block text-sm font-medium mb-1 text-gray-300">
+                      <label className="block text-sm font-medium mb-1 text-gray-700">
                         Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={coachForm.name}
                         onChange={(e) => setCoachForm({ ...coachForm, name: e.target.value })}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                         placeholder="John Smith"
                         required
                       />
@@ -3563,12 +3563,12 @@ ${svgStyleGuide}`;
 
                     {/* Position */}
                     <div>
-                      <label className="block text-sm font-medium mb-1 text-gray-300">Position</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Position</label>
                       <input
                         type="text"
                         value={coachForm.position}
                         onChange={(e) => setCoachForm({ ...coachForm, position: e.target.value })}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                         placeholder="Senior Product Manager"
                       />
                     </div>
@@ -3576,13 +3576,13 @@ ${svgStyleGuide}`;
 
                   {/* Course Selection */}
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">
+                    <label className="block text-sm font-medium mb-1 text-gray-700">
                       Course <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={coachForm.course_id}
                       onChange={(e) => setCoachForm({ ...coachForm, course_id: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                       required
                     >
                       <option value="">Select a course</option>
@@ -3596,9 +3596,9 @@ ${svgStyleGuide}`;
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">
+                    <label className="block text-sm font-medium mb-1 text-gray-700">
                       Description
-                      <span className="text-gray-400 text-xs ml-2">
+                      <span className="text-gray-600 text-xs ml-2">
                         ({coachForm.description.length}/115 characters)
                       </span>
                     </label>
@@ -3610,7 +3610,7 @@ ${svgStyleGuide}`;
                         }
                       }}
                       maxLength={115}
-                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                       placeholder="Brief bio about the coach..."
                       rows={3}
                     />
@@ -3618,7 +3618,7 @@ ${svgStyleGuide}`;
 
                   {/* Image Upload/URL */}
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Coach Image</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Coach Image</label>
                     <div className="flex gap-2 mb-2">
                       <input
                         type="file"
@@ -3639,12 +3639,12 @@ ${svgStyleGuide}`;
                       />
                       <label
                         htmlFor="coach-image-upload"
-                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition cursor-pointer flex items-center gap-2"
+                        className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-300 transition cursor-pointer flex items-center gap-2"
                       >
                         <ImageIcon size={16} />
                         {isUploadingCoachImage ? 'Uploading...' : 'Upload Image'}
                       </label>
-                      <span className="text-gray-400 text-sm flex items-center">or enter URL below</span>
+                      <span className="text-gray-600 text-sm flex items-center">or enter URL below</span>
                     </div>
                     <input
                       type="url"
@@ -3653,12 +3653,12 @@ ${svgStyleGuide}`;
                         setCoachImageFile(null);
                         setCoachForm({ ...coachForm, image_url: e.target.value });
                       }}
-                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                       placeholder="https://example.com/photo.jpg"
                       disabled={coachImageFile !== null}
                     />
                     {coachImageFile && (
-                      <p className="text-sm text-gray-400 mt-1">Selected file: {coachImageFile.name}</p>
+                      <p className="text-sm text-gray-600 mt-1">Selected file: {coachImageFile.name}</p>
                     )}
                     {coachForm.image_url && (
                       <img
@@ -3674,12 +3674,12 @@ ${svgStyleGuide}`;
 
                   {/* LinkedIn URL */}
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">LinkedIn Profile URL</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">LinkedIn Profile URL</label>
                     <input
                       type="url"
                       value={coachForm.linkedin_url}
                       onChange={(e) => setCoachForm({ ...coachForm, linkedin_url: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
                       placeholder="https://linkedin.com/in/username"
                     />
                   </div>
@@ -3697,7 +3697,7 @@ ${svgStyleGuide}`;
                       <button
                         type="button"
                         onClick={handleCancelEdit}
-                        className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+                        className="px-6 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-300 transition"
                       >
                         Cancel
                       </button>
@@ -3706,18 +3706,18 @@ ${svgStyleGuide}`;
                 </form>
 
                 {/* Coaches List */}
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Existing Coaches</h3>
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Existing Coaches</h3>
 
                   {isLoadingCoaches ? (
                     <div className="text-center py-8">
                       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
-                      <p className="text-gray-400 mt-2">Loading coaches...</p>
+                      <p className="text-gray-600 mt-2">Loading coaches...</p>
                     </div>
                   ) : coaches.length === 0 ? (
                     <div className="text-center py-8">
                       <User size={48} className="mx-auto text-gray-600 mb-2" />
-                      <p className="text-gray-400">No coaches added yet</p>
+                      <p className="text-gray-600">No coaches added yet</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -3726,7 +3726,7 @@ ${svgStyleGuide}`;
                         return (
                           <div
                             key={coach.id}
-                            className="bg-gray-900 border border-gray-700 rounded-lg p-4 hover:bg-gray-850 transition"
+                            className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition"
                           >
                             <div className="flex items-start gap-4">
                               {coach.image_url && (
@@ -3742,18 +3742,18 @@ ${svgStyleGuide}`;
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between gap-2">
                                   <div>
-                                    <h4 className="text-white font-semibold">{coach.name}</h4>
+                                    <h4 className="text-gray-900 font-semibold">{coach.name}</h4>
                                     {coach.position && (
-                                      <p className="text-gray-400 text-sm">{coach.position}</p>
+                                      <p className="text-gray-600 text-sm">{coach.position}</p>
                                     )}
-                                    <p className="text-pink-400 text-sm mt-1">
+                                    <p className="text-pink-600 text-sm mt-1">
                                       {course?.title || coach.course_id}
                                     </p>
                                   </div>
                                   <div className="flex gap-2 flex-shrink-0">
                                     <button
                                       onClick={() => handleEditCoach(coach)}
-                                      className="p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+                                      className="p-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-300 transition"
                                       title="Edit coach"
                                     >
                                       <Edit size={16} />
@@ -3768,14 +3768,14 @@ ${svgStyleGuide}`;
                                   </div>
                                 </div>
                                 {coach.description && (
-                                  <p className="text-gray-300 text-sm mt-2 line-clamp-2">{coach.description}</p>
+                                  <p className="text-gray-700 text-sm mt-2 line-clamp-2">{coach.description}</p>
                                 )}
                                 {coach.linkedin_url && (
                                   <a
                                     href={coach.linkedin_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-pink-400 hover:text-pink-300 text-sm mt-1 inline-block"
+                                    className="text-pink-600 hover:text-pink-700 text-sm mt-1 inline-block"
                                   >
                                     View LinkedIn Profile →
                                   </a>
@@ -3856,22 +3856,22 @@ ${svgStyleGuide}`;
       {/* Version History Modal */}
       {showVersionHistory && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 Version History
               </h2>
               <button
                 onClick={() => setShowVersionHistory(false)}
-                className="text-gray-400 hover:text-white p-1"
+                className="text-gray-600 hover:text-gray-900 p-1"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 border-b border-gray-700 bg-gray-800/50">
-              <p className="text-gray-300 text-sm">
+            <div className="p-4 border-b border-gray-200 bg-gray-50">
+              <p className="text-gray-700 text-sm">
                 <span className="font-medium">{selectedCourseId}</span> → Module {selectedModuleNumber} → Lesson {selectedLessonNumber}
               </p>
               <p className="text-gray-500 text-xs mt-1">
@@ -3883,7 +3883,7 @@ ${svgStyleGuide}`;
               {isLoadingVersions ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
-                  <span className="ml-3 text-gray-400">Loading versions...</span>
+                  <span className="ml-3 text-gray-600">Loading versions...</span>
                 </div>
               ) : versionHistory.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
@@ -3896,19 +3896,19 @@ ${svgStyleGuide}`;
                   {versionHistory.map((backup) => (
                     <div
                       key={backup.id}
-                      className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors"
+                      className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-white font-medium">
+                            <span className="text-gray-900 font-medium">
                               Version {backup.version_number}
                             </span>
-                            <span className="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-300">
+                            <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-700">
                               {formatBackupReason(backup.backup_reason)}
                             </span>
                           </div>
-                          <p className="text-gray-400 text-sm">
+                          <p className="text-gray-600 text-sm">
                             {new Date(backup.created_at).toLocaleString()}
                           </p>
                           {backup.lesson_name && (
@@ -3923,7 +3923,7 @@ ${svgStyleGuide}`;
                         <button
                           onClick={() => handleRestoreVersion(backup)}
                           disabled={isRestoringVersion}
-                          className="px-3 py-1.5 bg-pink-600 hover:bg-pink-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded flex items-center gap-1.5 transition-colors"
+                          className="px-3 py-1.5 bg-pink-600 hover:bg-pink-500 disabled:bg-gray-200 disabled:text-gray-500 text-white text-sm rounded flex items-center gap-1.5 transition-colors"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
                           Restore
@@ -3935,10 +3935,10 @@ ${svgStyleGuide}`;
               )}
             </div>
 
-            <div className="p-4 border-t border-gray-700 bg-gray-800/50">
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={() => setShowVersionHistory(false)}
-                className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-300 text-gray-900 rounded-lg transition-colors"
               >
                 Close
               </button>

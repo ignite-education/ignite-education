@@ -153,7 +153,10 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
     }
 
     try {
-      // Retrieve the subscription to check if it's a trial
+      // Retrieve the subscription to check if it's a trial.
+      // LEGACY: new checkouts never trial — the 14-day Stripe trial was retired
+      // in favour of the referral free week. Kept for subscriptions that were
+      // already trialing at cutover, and for any trial reintroduced in Stripe.
       const subscription = await stripe.subscriptions.retrieve(session.subscription);
       const isTrialing = subscription.status === 'trialing';
 
@@ -2210,14 +2213,6 @@ app.post('/api/create-checkout-session', async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    // Check if user has already used their free trial
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-    if (userError) {
-      console.error('Error fetching user for trial check:', userError);
-      return res.status(500).json({ error: 'Failed to fetch user data' });
-    }
-
-    const hasUsedTrial = userData.user?.user_metadata?.has_used_trial === true;
     const origin = req.headers.origin || 'http://localhost:5173';
 
     const sessionConfig = {
@@ -2234,7 +2229,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
       },
     };
 
-    // Use hosted checkout (new tab) for returning subscribers, embedded for new trials
+    // Hosted checkout opens in a new tab; embedded mounts inline in the app
     if (hosted) {
       sessionConfig.success_url = `${origin}/progress?payment=success`;
       sessionConfig.cancel_url = `${origin}/progress`;
@@ -2243,17 +2238,15 @@ app.post('/api/create-checkout-session', async (req, res) => {
       sessionConfig.return_url = `${origin}/progress?payment=success`;
     }
 
-    // Only offer 14-day free trial if user hasn't used it before
-    if (!hasUsedTrial) {
-      sessionConfig.subscription_data = { trial_period_days: 14 };
-    }
+    // No trial. The 14-day Stripe trial was retired in favour of the referral
+    // free week (migrations/add_referrals.sql) — checkout charges immediately.
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
     if (hosted) {
       res.json({ url: session.url });
     } else {
-      res.json({ clientSecret: session.client_secret, hasTrial: !hasUsedTrial });
+      res.json({ clientSecret: session.client_secret });
     }
   } catch (error) {
     console.error('Error creating checkout session:', error);
@@ -2394,6 +2387,60 @@ const verifyAuth = async (req, res, next) => {
   }
 };
 
+/**
+ * Resolve Ignite Insider entitlement. Two independent sources, deliberately
+ * resolved in one place so the gates below can never drift apart:
+ *
+ *   1. Stripe  — user_metadata.is_ad_free, flipped by the webhook handlers at
+ *                the top of this file.
+ *   2. Grants  — a live row in public.insider_grants (a referral week, or a
+ *                manual comp). Compared against NOW() at read time, so the week
+ *                self-expires: no cron, and no dependence on a fresh JWT.
+ *
+ * The two share no storage, so a granted user who later subscribes needs no
+ * reconciliation — this short-circuits on is_ad_free and the grant lapses
+ * quietly. Never read is_ad_free directly for gating; call this.
+ *
+ * Pass `authUser` when the caller already has it to skip a second admin
+ * round-trip. The grants query runs only when Stripe says no.
+ *
+ * @returns {Promise<{insider: boolean, source: string|null, until: string|null}>}
+ */
+async function resolveInsider(userId, authUser = null) {
+  let user = authUser;
+  if (!user) {
+    const { data, error } = await supabase.auth.admin.getUserById(userId);
+    if (error) throw error;
+    user = data.user;
+  }
+
+  if (user?.user_metadata?.is_ad_free) {
+    return { insider: true, source: 'stripe', until: null };
+  }
+
+  const now = new Date().toISOString();
+  const { data: grant, error } = await supabase
+    .from('insider_grants')
+    .select('expires_at, source')
+    .eq('user_id', userId)
+    .lte('starts_at', now)
+    .gt('expires_at', now)
+    .order('expires_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  // migrations/add_referrals.sql is hand-applied. Degrade to "not an insider"
+  // rather than 500ing every gated action before it has been run.
+  if (error && !['42P01', 'PGRST205', 'PGRST116'].includes(error.code)) {
+    console.error('Error resolving insider grant:', error);
+  }
+
+  if (grant) {
+    return { insider: true, source: grant.source, until: grant.expires_at };
+  }
+  return { insider: false, source: null, until: null };
+}
+
 // POST /api/office-hours/start — Coach starts a live session
 app.post('/api/office-hours/start', verifyTeacherOrAdmin, async (req, res) => {
   try {
@@ -2520,7 +2567,8 @@ app.post('/api/office-hours/join', verifyAuth, async (req, res) => {
       return res.status(500).json({ error: 'Failed to verify membership' });
     }
 
-    if (!userData.user?.user_metadata?.is_ad_free) {
+    const { insider } = await resolveInsider(req.user.id, userData.user);
+    if (!insider) {
       return res.status(403).json({ error: 'Ignite Insider membership required' });
     }
 
@@ -2578,7 +2626,8 @@ app.post('/api/office-hours/queue/join', verifyAuth, async (req, res) => {
       return res.status(500).json({ error: 'Failed to verify membership' });
     }
 
-    if (!userData.user?.user_metadata?.is_ad_free) {
+    const { insider } = await resolveInsider(req.user.id, userData.user);
+    if (!insider) {
       return res.status(403).json({ error: 'Ignite Insider membership required' });
     }
 
@@ -6519,6 +6568,229 @@ console.log('⏰ Notification pruning cron job scheduled: 2 AM UTC');
 
 
 // ============================================================================
+// REFERRALS
+// ============================================================================
+
+// When someone creates an account from a public profile page, both sides get a
+// free week of Ignite Insider: the new user immediately, the profile owner once
+// that new user completes their first lesson (granted by the SECURITY DEFINER
+// trigger in migrations/add_referrals.sql).
+//
+// This block sits after verifyAuth (line ~2375) and verifyAdmin (line ~4880) so
+// user and admin routes can live together.
+
+const REFERRAL_WEEK_DAYS = parseInt(process.env.REFERRAL_WEEK_DAYS, 10) || 7;
+// Mirrors v_cap in qualify_referral_on_lesson(); Postgres can't read the app
+// env, so change both together.
+const REFERRAL_MONTHLY_CAP = parseInt(process.env.REFERRAL_MONTHLY_CAP, 10) || 10;
+// A claim is only honoured for an account this many minutes old. This is what
+// stops an existing user from signing out and farming their friends' links.
+const REFERRAL_SIGNUP_WINDOW_MINUTES = parseInt(process.env.REFERRAL_SIGNUP_WINDOW_MINUTES, 10) || 30;
+const REFERRAL_IP_DAILY_CAP = parseInt(process.env.REFERRAL_IP_DAILY_CAP, 10) || 3;
+
+// Render sits behind a proxy, so req.ip is the proxy's.
+const clientIp = (req) =>
+  req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || null;
+
+// POST /api/referrals/claim — attribute a brand-new signup to a profile owner
+//
+// Called from two places that can both fire for the same signup: the OAuth
+// callback route (?ref=) and the in-page Google One Tap handler. UNIQUE
+// (referee_id) on public.referrals makes that collision a no-op.
+//
+// This runs on the signup path, so it never fails the caller: every rejection
+// is a 200 with { claimed: false, reason }. A broken referral must not become a
+// broken sign-in.
+app.post('/api/referrals/claim', verifyAuth, async (req, res) => {
+  try {
+    const referrerUsername = (req.body?.referrerUsername || '').trim().toLowerCase();
+    if (!referrerUsername) {
+      return res.json({ claimed: false, reason: 'no_ref' });
+    }
+
+    // Only accounts created inside the signup window can claim.
+    const accountAgeMs = Date.now() - new Date(req.user.created_at).getTime();
+    if (accountAgeMs > REFERRAL_SIGNUP_WINDOW_MINUTES * 60 * 1000) {
+      return res.json({ claimed: false, reason: 'not_new' });
+    }
+
+    const { data: referrer, error: referrerError } = await supabase
+      .from('users')
+      .select('id, first_name, username')
+      .eq('username', referrerUsername)
+      .eq('is_public', true)
+      .maybeSingle();
+
+    if (referrerError) throw referrerError;
+    if (!referrer) {
+      return res.json({ claimed: false, reason: 'unknown_referrer' });
+    }
+    if (referrer.id === req.user.id) {
+      return res.json({ claimed: false, reason: 'self' });
+    }
+
+    // Burst throttle: one machine can only mint so many referrals a day.
+    const ip = clientIp(req);
+    if (ip) {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count, error: countError } = await supabase
+        .from('referrals')
+        .select('id', { count: 'exact', head: true })
+        .eq('claim_ip', ip)
+        .gte('created_at', since);
+
+      if (countError) throw countError;
+      if ((count ?? 0) >= REFERRAL_IP_DAILY_CAP) {
+        console.log(`🚫 Referral claim throttled for IP ${ip}`);
+        return res.json({ claimed: false, reason: 'ip_throttled' });
+      }
+    }
+
+    const { data: referral, error: insertError } = await supabase
+      .from('referrals')
+      .insert({
+        referrer_id: referrer.id,
+        referee_id: req.user.id,
+        referrer_username: referrer.username,
+        claim_ip: ip,
+      })
+      .select('id')
+      .single();
+
+    // Already claimed — the other entry point won the race. Report the referral
+    // that actually stuck rather than the one just requested: the crumb and the
+    // ?ref= param can name different profiles, and the first write wins.
+    if (insertError?.code === '23505') {
+      const { data: existing } = await supabase
+        .from('referrals')
+        .select('referrer_username')
+        .eq('referee_id', req.user.id)
+        .maybeSingle();
+      const { data: grant } = await supabase
+        .from('insider_grants')
+        .select('expires_at')
+        .eq('user_id', req.user.id)
+        .eq('source', 'referral_referee')
+        .maybeSingle();
+      return res.json({
+        claimed: true,
+        alreadyClaimed: true,
+        insiderUntil: grant?.expires_at || null,
+        referrer: { username: existing?.referrer_username || null, firstName: null },
+      });
+    }
+    if (insertError) throw insertError;
+
+    // The referee's week starts now. The referrer's is earned later, when this
+    // user completes a lesson.
+    const expiresAt = new Date(Date.now() + REFERRAL_WEEK_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const { error: grantError } = await supabase
+      .from('insider_grants')
+      .insert({
+        user_id: req.user.id,
+        source: 'referral_referee',
+        referral_id: referral.id,
+        expires_at: expiresAt,
+        note: `Signed up via ${referrer.username}`,
+      });
+
+    // Duplicate means the grant already exists — fine. Anything else is real.
+    if (grantError && grantError.code !== '23505') throw grantError;
+
+    console.log(`🎁 Referral claimed: ${referrer.username} → ${req.user.id}`);
+    res.json({
+      claimed: true,
+      insiderUntil: expiresAt,
+      referrer: { username: referrer.username, firstName: referrer.first_name },
+    });
+  } catch (error) {
+    console.error('Error claiming referral:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/referrals/me — the signed-in user's referral standing + entitlement
+app.get('/api/referrals/me', verifyAuth, async (req, res) => {
+  try {
+    const { insider, source, until } = await resolveInsider(req.user.id, req.user);
+
+    const { data: referrals, error } = await supabase
+      .from('referrals')
+      .select('status, qualified_at')
+      .eq('referrer_id', req.user.id);
+
+    // The migration is hand-applied — report zeroes rather than 500ing.
+    if (error && !['42P01', 'PGRST205'].includes(error.code)) throw error;
+
+    const rows = referrals || [];
+    const qualified = rows.filter((r) => r.status === 'qualified');
+    const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('username, is_public')
+      .eq('id', req.user.id)
+      .maybeSingle();
+
+    res.json({
+      insider,
+      source,
+      insiderUntil: until,
+      invited: rows.length,
+      qualified: qualified.length,
+      pending: rows.filter((r) => r.status === 'pending').length,
+      weeksEarned: qualified.length,
+      monthlyCap: REFERRAL_MONTHLY_CAP,
+      monthlyUsed: qualified.filter((r) => new Date(r.qualified_at).getTime() > monthAgo).length,
+      profileUrl:
+        profile?.username && profile.is_public
+          ? `https://ignite.education/${profile.username}`
+          : null,
+    });
+  } catch (error) {
+    console.error('Error fetching referral summary:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/referrals — referral log for the admin portal (admin only)
+app.get('/api/admin/referrals', verifyAdmin, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+    const { status } = req.query;
+
+    let query = supabase
+      .from('referrals')
+      .select('id, referrer_id, referee_id, referrer_username, status, qualified_at, created_at')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (status) query = query.eq('status', status);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    // Resolve display names in one round-trip rather than per row.
+    const ids = [...new Set((data || []).flatMap((r) => [r.referrer_id, r.referee_id]))];
+    const { data: people } = ids.length
+      ? await supabase.from('users').select('id, first_name, last_name, username').in('id', ids)
+      : { data: [] };
+    const byId = Object.fromEntries((people || []).map((p) => [p.id, p]));
+
+    res.json({
+      referrals: (data || []).map((r) => ({
+        ...r,
+        referrer: byId[r.referrer_id] || null,
+        referee: byId[r.referee_id] || null,
+      })),
+    });
+  } catch (error) {
+    console.error('Error listing referrals:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================================================
 // NOTIFICATIONS
 // ============================================================================
 
@@ -6526,7 +6798,7 @@ console.log('⏰ Notification pruning cron job scheduled: 2 AM UTC');
 // from SECURITY DEFINER triggers or the service role. So every admin write has
 // to go through these endpoints; the admin app's browser client can't do it.
 
-const NOTIFICATION_TYPES = ['certificate', 'release_note', 'blog_post', 'office_hours', 'announcement'];
+const NOTIFICATION_TYPES = ['certificate', 'release_note', 'blog_post', 'office_hours', 'announcement', 'referral'];
 
 // Broadcast a notification to every user (admin only)
 app.post('/api/notifications/broadcast', verifyAdmin, async (req, res) => {

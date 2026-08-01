@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
 import { enrollUserInCourse, registerInterestForUser } from '@/lib/enroll'
+import { readReferrer, clearReferrer, claimReferral } from '@/lib/referral'
 import ShareButtons from '@/components/ShareButtons'
 
 interface EnrollmentCTAProps {
@@ -66,6 +67,14 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
       setFirstName(extractFirstName(data.user))
       setCheckingStatus(false)
 
+      // One Tap never navigates, so /auth/callback never runs. If this visitor
+      // arrived from someone's public profile, claim it here.
+      const ref = readReferrer()
+      if (ref && data.session?.access_token) {
+        const result = await claimReferral(data.session.access_token, ref)
+        if (result?.claimed) clearReferrer()
+      }
+
       // Auto-enroll in the course
       await enrollUserInCourse({ supabase, userId: data.user.id, authUser: data.user, courseSlug, courseTitle, isComingSoon })
       setIsSaved(true)
@@ -80,15 +89,24 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
     autoPrompt: true,
   })
 
+  // Callback URL for the redirect flows. Carries the referral crumb as ?ref= so
+  // a visitor who came from a public profile, clicked a course card and signed
+  // up here still credits that profile — the callback route runs server-side
+  // and can't read localStorage itself.
+  const callbackUrl = () => {
+    const params = new URLSearchParams({ next: window.location.pathname })
+    const ref = readReferrer()
+    if (ref) params.set('ref', ref)
+    return `${window.location.origin}/auth/callback?${params.toString()}`
+  }
+
   // Handle Google OAuth redirect fallback (when One Tap is blocked)
   const handleGoogleOAuthFallback = useCallback(async () => {
     sessionStorage.setItem('pendingEnrollCourse', courseSlug)
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`,
-      },
+      options: { redirectTo: callbackUrl() },
     })
   }, [courseSlug])
 
@@ -98,9 +116,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`,
-      },
+      options: { redirectTo: callbackUrl() },
     })
   }, [courseSlug])
 

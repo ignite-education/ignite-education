@@ -1,9 +1,11 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import ShareButtons from '@/components/ShareButtons'
+import { claimReferral, clearReferrer } from '@/lib/referral'
 
 /**
  * The signed-out sign-up block for the public profile hero — the same two
@@ -15,16 +17,29 @@ import ShareButtons from '@/components/ShareButtons'
  * Google goes through One Tap first and falls back to the OAuth redirect when
  * the prompt is blocked, matching EnrollmentCTA. Both providers return to this
  * same profile via /auth/callback?next=.
+ *
+ * Signing up here credits `username` with a free week of Ignite Insider, and
+ * grants the new account one too. The two paths carry that attribution
+ * differently: the redirect flows put it in ?ref= for the callback route, while
+ * One Tap never navigates and so claims inline below.
  */
 export default function ProfileAuthCTA({
   onSignedIn,
   profileUrl,
   displayName,
+  username,
+  firstName,
 }: {
   onSignedIn: () => void
   profileUrl: string
   displayName: string
+  username: string
+  firstName: string
 }) {
+  // Set once a One Tap signup has been credited. The redirect flows never see
+  // this — they leave the page and land back signed in.
+  const [claimed, setClaimed] = useState(false)
+
   const handleGoogleSuccess = useCallback(
     async (credential: string, nonce: string) => {
       const supabase = createClient()
@@ -37,9 +52,20 @@ export default function ProfileAuthCTA({
         console.error('[ProfileAuthCTA] Google sign-in failed:', error)
         return
       }
+
+      // Claim before onSignedIn(): that unmounts this block in ProfileHero.
+      if (data.session?.access_token) {
+        const result = await claimReferral(data.session.access_token, username)
+        if (result?.claimed) {
+          clearReferrer()
+          setClaimed(true)
+          return
+        }
+      }
+
       onSignedIn()
     },
-    [onSignedIn]
+    [onSignedIn, username]
   )
 
   const { triggerPrompt } = useGoogleOneTap({
@@ -50,8 +76,15 @@ export default function ProfileAuthCTA({
     autoPrompt: false,
   })
 
-  const redirectTo = () =>
-    `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`
+  // ?ref= is what the server-side callback route reads to credit this profile —
+  // it can't see the localStorage crumb.
+  const redirectTo = useCallback(() => {
+    const params = new URLSearchParams({
+      next: window.location.pathname,
+      ref: username,
+    })
+    return `${window.location.origin}/auth/callback?${params.toString()}`
+  }, [username])
 
   const handleGoogleFallback = useCallback(async () => {
     const supabase = createClient()
@@ -59,7 +92,7 @@ export default function ProfileAuthCTA({
       provider: 'google',
       options: { redirectTo: redirectTo() },
     })
-  }, [])
+  }, [redirectTo])
 
   const handleLinkedInClick = useCallback(async () => {
     const supabase = createClient()
@@ -67,16 +100,36 @@ export default function ProfileAuthCTA({
       provider: 'linkedin_oidc',
       options: { redirectTo: redirectTo() },
     })
-  }, [])
+  }, [redirectTo])
 
   const buttonClass =
     'flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer btn-glow-on-dark'
 
+  // 268px matches the rendered width on the course pages, where EnrollmentCTA
+  // sits in the 315px enrollment rail at w-[85%] (315 * 0.85 = 267.75).
+  // text-white so the share glyph's `currentColor` renders on the black band,
+  // matching how EnrollmentCTA sets it via its onDark prop.
+  if (claimed) {
+    return (
+      <div className="w-full text-white text-center" style={{ maxWidth: '268px' }}>
+        <p className="text-[1.15rem] font-medium" style={{ letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+          You&apos;re in
+        </p>
+        <p className="text-base font-normal mt-2" style={{ letterSpacing: '-0.03em', lineHeight: 1.4 }}>
+          A week of Ignite Insider is unlocked on your new account.
+        </p>
+        <Link
+          href="/courses"
+          className={buttonClass}
+          style={{ width: '100%', height: '40px', marginTop: '1rem' }}
+        >
+          Pick a course
+        </Link>
+      </div>
+    )
+  }
+
   return (
-    // 268px matches the rendered width on the course pages, where EnrollmentCTA
-    // sits in the 315px enrollment rail at w-[85%] (315 * 0.85 = 267.75).
-    // text-white so the share glyph's `currentColor` renders on the black band,
-    // matching how EnrollmentCTA sets it via its onDark prop.
     <div className="w-full text-white" style={{ maxWidth: '268px' }}>
       <div className="space-y-2">
       <button
@@ -106,16 +159,28 @@ export default function ProfileAuthCTA({
       </button>
       </div>
 
-      {/* Caption + share row, same order and spacing as EnrollmentCTA */}
-      <p className="text-center text-white text-base font-normal mt-4 mb-4" style={{ letterSpacing: '-0.03em' }}>
+      {/* Caption + share row, same order and spacing as EnrollmentCTA.
+          The offer line is static — it reads the same on every profile, so it
+          costs the ISR'd page nothing. */}
+      <p className="text-center text-white text-base font-normal mt-4" style={{ letterSpacing: '-0.03em' }}>
         Create your free account
       </p>
+      <p
+        className="text-center text-white mt-1 mb-4"
+        style={{ fontSize: '0.85rem', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.35 }}
+      >
+        You and {firstName} both get a week of Ignite Insider, free.
+      </p>
 
-      <ShareButtons
-        url={profileUrl}
-        title={`${displayName} | Ignite Education`}
-        shareText={`Check out ${displayName} on Ignite Education`}
-      />
+      {/* Desktop only: on a phone this duplicates the OS share sheet the
+          visitor most likely arrived through, and the hero has no room for it. */}
+      <div className="hidden md:block">
+        <ShareButtons
+          url={profileUrl}
+          title={`${displayName} | Ignite Education`}
+          shareText={`Check out ${displayName} on Ignite Education`}
+        />
+      </div>
     </div>
   )
 }
