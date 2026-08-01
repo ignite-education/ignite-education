@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import SectionHeading from './SectionHeading';
-import SectionParagraph from './SectionParagraph';
-import SectionList from './SectionList';
+import SectionHeading from './SectionHeading.jsx';
+import SectionParagraph from './SectionParagraph.jsx';
+import SectionList from './SectionList.jsx';
 
 // ContentRenderer only renders text-based sections (left column).
 // Image and YouTube sections are handled by MediaPanel (right column).

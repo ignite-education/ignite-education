@@ -1,0 +1,53 @@
+/**
+ * Keyframes referenced by inline styles inside the shared lesson renderers.
+ *
+ * `SectionParagraph` and `SectionHeading` both set
+ * `animation: 'purplePulse 1.2s ease-in-out infinite'` on the idle typing
+ * cursor. Without these definitions the animation silently does nothing —
+ * which is what would happen in the admin app, whose index.css is 22 lines.
+ *
+ * Imported by both `src/index.css` and `admin-app/src/index.css`.
+ */
+
+@keyframes purplePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes mediaFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mediaFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes chatFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Student text-selection pink, scoped to lesson surfaces.
+ *
+ * The student app sets this globally (src/index.css) because the whole app is
+ * lesson-coloured. The admin app is not, so the canvas and the preview player
+ * opt in by wrapping themselves in `.ignite-lesson-surface`.
+ */
+.ignite-lesson-surface ::selection {
+  background-color: #FDE7F4;
+  color: #000;
+}
+
+.ignite-lesson-surface ::-moz-selection {
+  background-color: #FDE7F4;
+  color: #000;
+}

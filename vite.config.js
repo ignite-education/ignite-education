@@ -1,13 +1,27 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    // Lesson renderers, pagination and text normalisation shared with admin-app.
+    // `shared/` is inside this project root, so no server.fs.allow is needed here.
+    alias: { '@shared': path.resolve(__dirname, './shared') },
+  },
   server: {
     // Pin to 5174 so the OAuth redirect URL matches Supabase's allowlist (http://localhost:5174/**)
     port: 5174,
     strictPort: true,
+    watch: {
+      // Sibling app build output lives under this project root, so without this
+      // every admin-app or next-app build triggers a full reload of the SPA.
+      ignored: ['**/admin-app/dist/**', '**/next-app/.next/**', '**/dist/**'],
+    },
     proxy: {
       // Forward OAuth callback to local Next.js dev server (mirrors Vercel rewrite in production)
       '/auth/callback': {

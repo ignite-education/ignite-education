@@ -1,6 +1,9 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 
-const SectionSVG = React.memo(({ section }) => {
+// `live` re-injects markup on every change. The student player leaves it off so
+// CSS/SMIL animations don't restart on re-render; the admin editor turns it on
+// so typing in the SVG code box actually updates the preview.
+const SectionSVG = React.memo(({ section, live = false }) => {
   const content = section.content || {};
   const markup = content.markup || '';
   const width = content.width || '200';
@@ -17,11 +20,16 @@ const SectionSVG = React.memo(({ section }) => {
 
   // Inject SVG markup only once via ref to avoid restarting animations on re-render
   useEffect(() => {
-    if (svgRef.current && renderedMarkup && !injectedRef.current) {
+    if (!svgRef.current) return;
+    if (live) {
+      svgRef.current.innerHTML = renderedMarkup;
+      return;
+    }
+    if (renderedMarkup && !injectedRef.current) {
       svgRef.current.innerHTML = renderedMarkup;
       injectedRef.current = true;
     }
-  }, [renderedMarkup]);
+  }, [renderedMarkup, live]);
 
   if (!markup) return null;
 
@@ -39,6 +47,8 @@ const SectionSVG = React.memo(({ section }) => {
     </div>
   );
 }, (prev, next) => {
+  // In live (editor) mode never memoise — the markup is being typed.
+  if (prev.live || next.live) return false;
   // Only re-render if the actual content changed
   const pc = prev.section.content || {};
   const nc = next.section.content || {};

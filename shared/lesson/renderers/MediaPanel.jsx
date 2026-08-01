@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import SectionImage from './SectionImage';
-import SectionYouTube from './SectionYouTube';
-import SectionSVG from './SectionSVG';
+import SectionImage from './SectionImage.jsx';
+import SectionYouTube from './SectionYouTube.jsx';
+import SectionSVG from './SectionSVG.jsx';
 
 const MediaPanel = ({ sections }) => {
   // Filter to only media sections (image, youtube, svg)

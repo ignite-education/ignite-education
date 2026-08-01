@@ -8,17 +8,18 @@ import useFadeTransition from '../../hooks/useFadeTransition';
 import useLessonData from './hooks/useLessonData';
 import useLessonNavigation from './hooks/useLessonNavigation';
 import useNarration from './hooks/useNarration';
-import useIsMobile from './hooks/useIsMobile';
-import { normalizeTextForNarration, splitIntoWords } from '../../utils/textNormalization';
+import useIsMobile from '@shared/lesson/hooks/useIsMobile';
+import { normalizeTextForNarration, splitIntoWords } from '@shared/lesson/textNormalization';
+import { groupSectionsByHeading, selectGroupMediaSections, selectGroupSuggestedQuestion, selectGroupHeadings } from '@shared/lesson/groupSections';
 import LessonHeader from './components/LessonHeader';
-import ContentRenderer from './components/ContentRenderer';
-import MediaPanel from './components/MediaPanel';
+import ContentRenderer from '@shared/lesson/renderers/ContentRenderer';
+import MediaPanel from '@shared/lesson/renderers/MediaPanel';
 import ChatInput from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';
 import ThumbsFeedback from './components/ThumbsFeedback';
 import LessonSummary from './components/LessonSummary';
 import useChat from './hooks/useChat';
-import useTypewriter from './hooks/useTypewriter';
+import useTypewriter from '@shared/lesson/hooks/useTypewriter';
 import Footer from '../Footer';
 
 // Auto-retry: triggers retry after a 1.5s pause so the user can read the feedback
@@ -90,48 +91,9 @@ const RevisitMessage = ({ sectionName, onRevisit }) => {
   );
 };
 
-// Group sections into screens — each paragraph gets its own screen.
-// A heading attaches to the next paragraph (same screen). Media/lists attach to the current screen.
-const groupSectionsByHeading = (sections) => {
-  const groups = [];
-  let currentGroup = [];
-  let hasContentInGroup = false; // tracks if we've seen a paragraph/scored_question in this group
-
-  sections.forEach((section) => {
-    const level = section.content?.level || 2;
-    const isHeading = section.content_type === 'heading' && (level === 2 || level === 3);
-    const isParagraph = section.content_type === 'paragraph';
-    const isScoredQuestion = section.content_type === 'scored_question';
-
-    if (isHeading) {
-      // Headings always start a new group
-      if (currentGroup.length > 0) {
-        groups.push(currentGroup);
-        currentGroup = [];
-        hasContentInGroup = false;
-      }
-      currentGroup.push(section);
-    } else if (isParagraph || isScoredQuestion) {
-      // Each paragraph/scored_question gets its own screen
-      if (hasContentInGroup) {
-        groups.push(currentGroup);
-        currentGroup = [];
-        hasContentInGroup = false;
-      }
-      currentGroup.push(section);
-      hasContentInGroup = true;
-    } else {
-      // Media, lists, bulletlists — attach to current group
-      currentGroup.push(section);
-    }
-  });
-
-  if (currentGroup.length > 0) {
-    groups.push(currentGroup);
-  }
-
-  return groups;
-};
+// `groupSectionsByHeading` and the media-resolution rules now live in
+// `@shared/lesson/groupSections` so the admin editor's canvas can draw its
+// screen-break dividers from the exact same logic this player paginates with.
 
 const LearningHubV2 = () => {
   const { user, firstName } = useAuth();
@@ -338,36 +300,14 @@ const LearningHubV2 = () => {
     return activeGroupAll.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube' && s.content_type !== 'svg');
   }, [activeGroupAll]);
 
-  // Media sections for right column (with persistent media support)
-  // Rules: only show ONE media item at a time; persistent media carries forward
-  // until a new media item appears, which replaces it.
-  const activeGroupMedia = useMemo(() => {
-    const MEDIA_TYPES = ['image', 'youtube', 'svg'];
-
-    // Current group's own media — if present, it replaces any persistent media
-    const currentMedia = activeGroupAll.filter(s => MEDIA_TYPES.includes(s.content_type));
-    console.log('[MediaDebug] group', currentGroupIndex, 'allSections:', activeGroupAll.map(s => s.content_type), 'media:', currentMedia.map(s => ({ type: s.content_type, id: s.id })));
-    if (currentMedia.length > 0) {
-      // Only show the first media item (never multiple at once)
-      return [currentMedia[0]];
-    }
-
-    // No media in current group — walk backwards to find the latest persistent media
-    for (let i = currentGroupIndex - 1; i >= 0; i--) {
-      const group = allGroups[i] || [];
-      const persistentInGroup = group.filter(
-        s => MEDIA_TYPES.includes(s.content_type) && s.content?.persist
-      );
-      if (persistentInGroup.length > 0) {
-        return [persistentInGroup[persistentInGroup.length - 1]];
-      }
-      // If this group had non-persistent media, stop looking further back
-      const anyMedia = group.some(s => MEDIA_TYPES.includes(s.content_type));
-      if (anyMedia) break;
-    }
-
-    return [];
-  }, [activeGroupAll, allGroups, currentGroupIndex]);
+  // Media sections for right column (with persistent media support).
+  // Rules live in @shared/lesson/groupSections so the admin canvas resolves
+  // media identically: only ONE media item shows at a time, and persistent
+  // media carries forward until a new media item replaces it.
+  const activeGroupMedia = useMemo(
+    () => selectGroupMediaSections(allGroups, currentGroupIndex),
+    [allGroups, currentGroupIndex]
+  );
 
   // Section number of the H2 heading for the current group (for feedback key)
   const currentSectionNumber = useMemo(() => {
@@ -424,27 +364,13 @@ const LearningHubV2 = () => {
     return activeGroupAll.some(s => s.user_question?.trim());
   }, [activeGroupAll]);
 
-  // Get suggested question — persists from parent H2 across H3 sub-sections
-  const suggestedQuestion = useMemo(() => {
-    // Check current group for its own H2
-    const h2InGroup = activeGroup.find(
-      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
-    );
-    if (h2InGroup) {
-      return h2InGroup.suggested_question?.trim() || null;
-    }
-
-    // H3 sub-group — walk backwards to find the parent H2's suggested question
-    for (let i = currentGroupIndex - 1; i >= 0; i--) {
-      const group = allGroups[i] || [];
-      for (let j = group.length - 1; j >= 0; j--) {
-        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
-          return group[j].suggested_question?.trim() || null;
-        }
-      }
-    }
-    return null;
-  }, [activeGroup, allGroups, currentGroupIndex]);
+  // Suggested question — carries forward from the owning H2 until either the
+  // next H2 or a screen the author explicitly marked as ending it. Resolved in
+  // @shared/lesson/groupSections so the admin canvas shows the same answer.
+  const suggestedQuestion = useMemo(
+    () => selectGroupSuggestedQuestion(allGroups, currentGroupIndex).question,
+    [allGroups, currentGroupIndex]
+  );
 
   // Track whether the suggested question persisted unchanged across a group transition
   // so the chip doesn't flicker off and back on during H3 transitions
@@ -584,54 +510,16 @@ const LearningHubV2 = () => {
   }, [buildLessonContext, sendMessage, sendScoredMessage, addMessagePair, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredIntroPhase, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent, user?.id, user?.role, userCourseId, currentModule, currentLesson, scoredSectionNumber]);
 
   // Find parent H2 and H3 headings to persist across paragraph-only screens
-  const hasOwnH2 = activeGroup?.some(s => s.content_type === 'heading' && (s.content?.level || 2) === 2) || false;
-  const hasOwnH3 = activeGroup?.some(s => s.content_type === 'heading' && s.content?.level === 3) || false;
 
-  // Resolve the active H2 — either from this group or inherited from a previous one
-  const persistentH2 = useMemo(() => {
-    // Check current group first
-    if (hasOwnH2) {
-      const own = activeGroup?.find(s => s.content_type === 'heading' && (s.content?.level || 2) === 2);
-      if (own) return own;
-    }
-    // Walk backwards
-    for (let i = currentGroupIndex - 1; i >= 0; i--) {
-      const group = allGroups[i];
-      if (!group?.length) continue;
-      for (let j = group.length - 1; j >= 0; j--) {
-        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
-          return group[j];
-        }
-      }
-    }
-    return null;
-  }, [allGroups, activeGroup, currentGroupIndex, hasOwnH2]);
-
-
-  // Resolve the active H3 — either from this group or inherited (scoped within current H2)
-  const persistentH3 = useMemo(() => {
-    // If this group has a new H2 (new section), no inherited H3
-    if (hasOwnH2 && !hasOwnH3) return null;
-    // Check current group first
-    if (hasOwnH3) {
-      const own = activeGroup?.find(s => s.content_type === 'heading' && s.content?.level === 3);
-      if (own) return own;
-    }
-    // Walk backwards — stop at H2 boundary
-    for (let i = currentGroupIndex - 1; i >= 0; i--) {
-      const group = allGroups[i];
-      if (!group?.length) continue;
-      for (let j = group.length - 1; j >= 0; j--) {
-        if (group[j].content_type === 'heading' && group[j].content?.level === 3) {
-          return group[j];
-        }
-        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
-          return null;
-        }
-      }
-    }
-    return null;
-  }, [allGroups, activeGroup, currentGroupIndex, hasOwnH3, hasOwnH2]);
+  // Headings pinned above the content — either this group's own, or carried
+  // forward from an earlier one. Resolved in @shared/lesson/groupSections so
+  // the admin canvas can show authors exactly where a heading keeps applying.
+  const activeHeadings = useMemo(
+    () => selectGroupHeadings(allGroups, currentGroupIndex),
+    [allGroups, currentGroupIndex]
+  );
+  const persistentH2 = activeHeadings.h2;
+  const persistentH3 = activeHeadings.h3;
 
 
   // Get the group index of the current H2 (for revisiting after failed scored question)

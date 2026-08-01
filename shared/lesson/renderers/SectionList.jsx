@@ -1,5 +1,5 @@
 import React from 'react';
-import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
+import { normalizeTextForNarration, splitIntoWords } from '../textNormalization.js';
 
 const renderNarrationWords = (text, startOffset, revealIndex = -1, sentenceStart = -1, sentenceEnd = -1) => {
   if (!text) return { element: null, wordCount: 0 };

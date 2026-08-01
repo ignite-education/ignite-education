@@ -1,45 +1,89 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X, Pen, HelpCircle } from 'lucide-react';
-import CourseManagement from '../components/CourseManagement';
-import { getAllCoaches, createCoach, updateCoach, deleteCoach, createLessonBackup, getLessonBackups, restoreLessonFromBackup, getSectionFeedbackStats } from '../lib/api';
+import { Plus, Trash2, MoveUp, MoveDown, Save, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X, Pen, HelpCircle, Type, Pilcrow, Eye } from 'lucide-react';
+import Courses from '../components/Courses';
+import LessonCanvas from '../components/LessonCanvas';
+import { useAuth } from '../contexts/AuthContext';
+import { toRow } from '@shared/lesson/blockAdapter';
+import { createLessonBackup, getLessonBackups, restoreLessonFromBackup, getSectionFeedbackStats } from '../lib/api';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
+// Module scope so the array identity is stable across renders.
+// `requests` is admin-only — teachers manage curriculum, not course demand.
+// Course requests now sit inside the Courses tab, next to the list they are
+// demand signal for, rather than on a tab of their own.
+// 'content' is deliberately not a tab. A lesson content editor with no lesson
+// chosen is meaningless, so it's reached from a lesson in the Courses outline
+// (and stays deep-linkable), not from a nav item.
+// Two views, no tab row: 'courses' is the page, and 'content' is the lesson
+// editor you reach from a lesson in the outline. A single-tab sub-nav just
+// repeated the "Courses" item already in the header.
+const VIEWS = ['courses', 'content'];
+
+/**
+ * Deep-link support: `?tab=content&course=<id>&module=<n>&lesson=<n>` opens the
+ * Lessons tab straight onto one lesson. The Courses outline links here so an
+ * author can jump from a lesson in the outline to writing its content.
+ *
+ * Read once at mount — `loadCourses` only picks a default course when none is
+ * selected, and the module/lesson effect preserves an existing selection, so
+ * seeding the initial state is enough.
+ */
+const initialFromUrl = () => {
+  if (typeof window === 'undefined') return {};
+  const p = new URLSearchParams(window.location.search);
+  const num = (key) => {
+    const v = parseInt(p.get(key), 10);
+    return Number.isFinite(v) && v >= 1 ? v : null;
+  };
+  return {
+    tab: VIEWS.includes(p.get('tab')) ? p.get('tab') : null,
+    course: p.get('course'),
+    module: num('module'),
+    lesson: num('lesson'),
+  };
+};
+const URL_INIT = initialFromUrl();
+
 const CurriculumUpload = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('courses'); // 'courses', 'modules', 'lessons', 'content'
+  const { user, userRole } = useAuth();
+  const [activeTab, setActiveTab] = useState(URL_INIT.tab || 'courses');
+
+  // Content-tab editor view. 'canvas' is the WYSIWYG surface that mirrors the
+  // student player; 'blocks' is the original form editor, kept as a fallback
+  // until the canvas has covered every field for a while.
+  const [editorView, setEditorView] = useState(
+    () => localStorage.getItem('lessonEditorView') || 'canvas'
+  );
+  const selectEditorView = (view) => {
+    setEditorView(view);
+    localStorage.setItem('lessonEditorView', view);
+  };
+
+  // Which block is mid AI-generation on the canvas (suggested or engagement
+  // question). Keyed by id so one spinner doesn't disable every other block.
+  const [generatingQuestionForId, setGeneratingQuestionForId] = useState(null);
 
   // Course state
   const [courses, setCourses] = useState([]);
-  const [selectedCourseId, setSelectedCourseId] = useState('');
-  const [courseName, setCourseName] = useState('');
-  const [courseDescription, setCourseDescription] = useState('');
-  const [tutorName, setTutorName] = useState('');
-  const [tutorPosition, setTutorPosition] = useState('');
-  const [tutorDescription, setTutorDescription] = useState('');
-  const [tutorImage, setTutorImage] = useState('');
-  const [linkedinLink, setLinkedinLink] = useState('');
-  const [calendlyLink, setCalendlyLink] = useState('');
+  const [selectedCourseId, setSelectedCourseId] = useState(URL_INIT.course || '');
 
   // Module state (from module_structure in courses table)
   const [moduleStructure, setModuleStructure] = useState([]);
   const [modules, setModules] = useState([]);
-  const [selectedModuleNumber, setSelectedModuleNumber] = useState(1);
-  const [selectedModuleIndex, setSelectedModuleIndex] = useState(0);
+  const [selectedModuleNumber, setSelectedModuleNumber] = useState(URL_INIT.module || 1);
+  const [selectedModuleIndex, setSelectedModuleIndex] = useState(URL_INIT.module ? URL_INIT.module - 1 : 0);
   const [moduleName, setModuleName] = useState('');
   const [moduleDescription, setModuleDescription] = useState('');
   const [moduleBulletPoints, setModuleBulletPoints] = useState(['']);
 
   // Lesson state
   const [lessons, setLessons] = useState([]);
-  const [selectedLessonNumber, setSelectedLessonNumber] = useState(1);
-  const [selectedLessonIndex, setSelectedLessonIndex] = useState(0);
+  const [selectedLessonNumber, setSelectedLessonNumber] = useState(URL_INIT.lesson || 1);
+  const [selectedLessonIndex, setSelectedLessonIndex] = useState(URL_INIT.lesson ? URL_INIT.lesson - 1 : 0);
   const [lessonName, setLessonName] = useState('');
-  const [lessonDescription, setLessonDescription] = useState('');
-  const [lessonBulletPoints, setLessonBulletPoints] = useState(['', '', '']); // 3 bullet points for cards
 
   // Content state
   const [contentBlocks, setContentBlocks] = useState([
@@ -57,8 +101,14 @@ const CurriculumUpload = () => {
   const [sectionFeedbackStats, setSectionFeedbackStats] = useState({});
 
   // SVG generation state
-  const [svgPrompt, setSvgPrompt] = useState('');
-  const [isGeneratingSvg, setIsGeneratingSvg] = useState(false);
+  // Keyed by block id. These were previously a single string and a single
+  // boolean shared by every SVG block on the lesson, so typing a prompt into one
+  // block showed it in all of them, Generate used whichever prompt was last
+  // typed, and generating for one block disabled the buttons on all the others.
+  const [svgPrompts, setSvgPrompts] = useState({});
+  const [generatingSvgId, setGeneratingSvgId] = useState(null);
+  const setSvgPromptFor = (blockId, value) =>
+    setSvgPrompts(prev => ({ ...prev, [blockId]: value }));
   const [svgStyleGuide, setSvgStyleGuide] = useState(() =>
     localStorage.getItem('svgStyleGuide') || 'Purple (#8200EA) and pink (#EF0B72) colour palette. Clean line art with 2-3px strokes. Minimal fills with low opacity. Modern, professional aesthetic. Simple geometric shapes. Transparent background.'
   );
@@ -89,30 +139,11 @@ const CurriculumUpload = () => {
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
   const [isRestoringVersion, setIsRestoringVersion] = useState(false);
 
-  // Coaches state
-  const [coaches, setCoaches] = useState([]);
-  const [isLoadingCoaches, setIsLoadingCoaches] = useState(false);
-  const [editingCoach, setEditingCoach] = useState(null);
-  const [coachImageFile, setCoachImageFile] = useState(null);
-  const [isUploadingCoachImage, setIsUploadingCoachImage] = useState(false);
-  const [coachForm, setCoachForm] = useState({
-    name: '',
-    position: '',
-    description: '',
-    image_url: '',
-    linkedin_url: '',
-    course_id: ''
-  });
 
   useEffect(() => {
     loadCourses();
   }, []);
 
-  useEffect(() => {
-    if (activeTab === 'coaches') {
-      loadCoaches();
-    }
-  }, [activeTab]);
 
   useEffect(() => {
     if (selectedCourseId) {
@@ -120,14 +151,6 @@ const CurriculumUpload = () => {
       // Load course details when course is selected
       const selectedCourse = courses.find(c => c.name === selectedCourseId);
       if (selectedCourse) {
-        setCourseName(selectedCourse.name || '');
-        setCourseDescription(selectedCourse.description || '');
-        setTutorName(selectedCourse.tutor_name || '');
-        setTutorPosition(selectedCourse.tutor_position || '');
-        setTutorDescription(selectedCourse.tutor_description || '');
-        setTutorImage(selectedCourse.tutor_image || '');
-        setLinkedinLink(selectedCourse.linkedin_link || '');
-        setCalendlyLink(selectedCourse.calendly_link || '');
 
         // Load module structure from course
         if (selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure)) {
@@ -356,16 +379,10 @@ const CurriculumUpload = () => {
         metadata = metadataFromTable;
       }
 
-      if (metadata) {
-        setLessonName(metadata.lesson_name || '');
-        setLessonDescription(metadata.description || '');
-        setLessonBulletPoints(metadata.bullet_points || ['', '', '']);
-      } else {
-        // No metadata exists, reset to defaults
-        setLessonName('');
-        setLessonDescription('');
-        setLessonBulletPoints(['', '', '']);
-      }
+      // Only the name is needed here — it labels the breadcrumb and is written
+      // to lessons.lesson_name on save. Description and card bullets belong to
+      // courses.module_structure, which the Courses outline owns.
+      setLessonName(metadata?.lesson_name || '');
 
       // Load lesson content blocks
       const { data: content, error: contentError } = await supabase
@@ -661,38 +678,6 @@ const CurriculumUpload = () => {
   };
 
   // Course management
-  const saveCourse = async () => {
-    if (!selectedCourseId.trim() || !courseName.trim()) {
-      alert('Please enter course ID and name');
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const { error } = await supabase
-        .from('courses')
-        .upsert({
-          name: selectedCourseId,
-          title: courseName,
-          description: courseDescription,
-          tutor_name: tutorName,
-          tutor_position: tutorPosition,
-          tutor_description: tutorDescription,
-          tutor_image: tutorImage,
-          linkedin_link: linkedinLink,
-          calendly_link: calendlyLink
-        });
-
-      if (error) throw error;
-      alert('Course saved successfully!');
-      await loadCourses();
-    } catch (error) {
-      console.error('Error saving course:', error);
-      alert(`Failed to save course: ${error.message}`);
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   // Module management
   const saveModule = async () => {
@@ -805,101 +790,9 @@ const CurriculumUpload = () => {
     }
   };
 
-  // Lesson metadata management
-  const saveLessonMetadata = async () => {
-    if (!selectedCourseId || !lessonName.trim()) {
-      alert('Please select a course and enter lesson name');
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      // Get the current course data
-      const selectedCourse = courses.find(c => c.name === selectedCourseId);
-
-      if (!selectedCourse) {
-        throw new Error('Course not found');
-      }
-
-      // Check if we should update module_structure or lessons_metadata table
-      if (selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure)) {
-        // Update module_structure in courses table
-        const updatedModuleStructure = [...selectedCourse.module_structure];
-
-        // Ensure the module exists
-        if (!updatedModuleStructure[selectedModuleNumber - 1]) {
-          throw new Error(`Module ${selectedModuleNumber} not found in course structure`);
-        }
-
-        // Ensure lessons array exists
-        if (!updatedModuleStructure[selectedModuleNumber - 1].lessons) {
-          updatedModuleStructure[selectedModuleNumber - 1].lessons = [];
-        }
-
-        // Update or create the lesson in the module structure
-        const lessonIndex = selectedLessonNumber - 1;
-        const lessonsArray = updatedModuleStructure[selectedModuleNumber - 1].lessons;
-
-        // Ensure the lesson slot exists
-        while (lessonsArray.length <= lessonIndex) {
-          lessonsArray.push({ name: '', description: '', bullet_points: ['', '', ''] });
-        }
-
-        // Update the lesson data
-        lessonsArray[lessonIndex] = {
-          name: lessonName,
-          description: lessonDescription,
-          bullet_points: lessonBulletPoints
-        };
-
-        // Save back to database
-        const { error: updateError } = await supabase
-          .from('courses')
-          .update({ module_structure: updatedModuleStructure })
-          .eq('name', selectedCourseId);
-
-        if (updateError) throw updateError;
-
-        // Also sync lesson_name in lessons table so the learning hub right panel stays in sync
-        const { error: syncError } = await supabase
-          .from('lessons')
-          .update({ lesson_name: lessonName })
-          .eq('course_id', selectedCourseId)
-          .eq('module_number', selectedModuleNumber)
-          .eq('lesson_number', selectedLessonNumber);
-
-        if (syncError) {
-          console.error('Warning: Failed to sync lesson name to lessons table:', syncError);
-        }
-
-        alert('Lesson metadata saved successfully!');
-        await loadCourses(); // Reload courses to get updated module_structure
-      } else {
-        // Fallback to old lessons_metadata table
-        const { error } = await supabase
-          .from('lessons_metadata')
-          .upsert({
-            course_id: selectedCourseId,
-            module_number: selectedModuleNumber,
-            lesson_number: selectedLessonNumber,
-            lesson_name: lessonName,
-            description: lessonDescription,
-            bullet_points: lessonBulletPoints.filter(bp => bp.trim())
-          }, {
-            onConflict: 'course_id,module_number,lesson_number'
-          });
-
-        if (error) throw error;
-        alert('Lesson metadata saved successfully!');
-        await loadLessons(selectedCourseId, selectedModuleNumber);
-      }
-    } catch (error) {
-      console.error('Error saving lesson metadata:', error);
-      alert(`Failed to save lesson: ${error.message}`);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  // Lesson card metadata (name + bullets) is edited in the Courses outline,
+  // which owns courses.module_structure. The duplicate form that lived here
+  // and its saveLessonMetadata writer have been removed.
 
   // Content management
   const addBlock = (type) => {
@@ -1286,10 +1179,13 @@ const CurriculumUpload = () => {
           ? { ...block, content: { ...block.content, url: data.publicUrl } }
           : block
       ));
-      alert('Image uploaded successfully! Check console for URL details.');
+      // Returned as well as applied, so callers that manage their own content
+      // patch (the canvas media drawer) don't have to rely on the side effect.
+      return data.publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
       alert(`Failed to upload image: ${error.message}`);
+      return null;
     }
   };
 
@@ -1357,6 +1253,16 @@ const CurriculumUpload = () => {
       return;
     }
 
+    // Saving is a delete-then-reinsert, so an empty array silently wipes the
+    // lesson. Require an explicit confirmation rather than making it a no-op —
+    // deleting all blocks is a legitimate, if rare, thing to want.
+    if (contentBlocks.length === 0) {
+      const confirmed = window.confirm(
+        'This lesson has no content blocks. Saving will delete all existing content for this lesson. Continue?'
+      );
+      if (!confirmed) return;
+    }
+
     setIsUploading(true);
     try {
       // First, create a backup of existing content before deleting
@@ -1370,17 +1276,26 @@ const CurriculumUpload = () => {
 
       if (existingContent && existingContent.length > 0) {
         try {
+          // Signature is (courseId, moduleNumber, lessonNumber, reason, userId).
+          // This previously passed 6 args, shifting the lesson name into `reason`
+          // and the string 'auto_before_save' into `userId` — a uuid FK column —
+          // so every insert was rejected and every save deleted the lesson with
+          // no backup. The function re-reads the rows itself, so the old 6th
+          // `existingContent` argument was never needed.
           await createLessonBackup(
             selectedCourseId,
             selectedModuleNumber,
             selectedLessonNumber,
-            existingContent[0]?.lesson_name || lessonName,
             'auto_before_save',
-            existingContent
+            user?.id ?? null
           );
           console.log('Backup created before save');
         } catch (backupError) {
-          console.error('Backup failed (continuing with save):', backupError);
+          // A failed backup must not be followed by a destructive delete.
+          console.error('Backup failed — aborting save:', backupError);
+          alert('Could not back up the current lesson, so the save was cancelled to avoid data loss. Please try again.');
+          setIsUploading(false);
+          return;
         }
       }
 
@@ -1395,26 +1310,16 @@ const CurriculumUpload = () => {
       if (deleteError) console.error('Error deleting old content:', deleteError);
 
       // Insert new content blocks
+      // Row shape comes from the shared `toRow`, which the canvas also renders
+      // through — so the editor cannot show something different from what gets
+      // written. It also folds in the "suggested question ends here" marker,
+      // which this mapping previously knew nothing about and silently dropped.
       const blocksToInsert = contentBlocks.map((block, index) => ({
         course_id: selectedCourseId,
         module_number: selectedModuleNumber,
         lesson_number: selectedLessonNumber,
-        section_number: index + 1,
         lesson_name: lessonName,
-        title: block.type === 'heading' ? (typeof block.content === 'object' ? block.content.text : block.content) : `Section ${index + 1}`,
-        content_type: block.type,
-        content: typeof block.content === 'object' ? block.content : { text: block.content },
-        content_text: typeof block.content === 'string' ? block.content :
-                     block.type === 'heading' && block.content.text ? block.content.text :
-                     block.type === 'youtube' && block.content.title ? block.content.title :
-                     block.type === 'bulletlist' && block.content.items ? block.content.items.join(', ') : '',
-        order_index: index,
-        suggested_question: block.suggestedQuestion || null, // Save suggested question
-        section_question: Array.isArray(block.sectionQuestion) && block.sectionQuestion.some(q => q)
-          ? JSON.stringify(block.sectionQuestion)
-          : null, // Save section questions as JSON array
-        user_question: block.userQuestion || null,
-        save_feedback: block.saveFeedback || false
+        ...toRow(block, index),
       }));
 
       const { data, error } = await supabase
@@ -1458,7 +1363,7 @@ ${contentBlocks.map((block, index) => {
     const text = typeof block.content === 'object' ? block.content.text : block.content;
     const level = typeof block.content === 'object' ? block.content.level : 2;
     blockContent = `${'#'.repeat(level)} ${text}`;
-  } else if (block.type === 'text') {
+  } else if (block.type === 'paragraph') {
     blockContent = typeof block.content === 'object' ? block.content.text : block.content;
   } else if (block.type === 'bulletlist') {
     const items = typeof block.content === 'object' ? block.content.items : [];
@@ -1578,26 +1483,15 @@ ${contentBlocks.map((block, index) => {
 
     setIsRestoringVersion(true);
     try {
-      // First, create a backup of current state
+      // First, back up the currently-saved state. createLessonBackup reads the
+      // rows from the database itself, so there is nothing to map here.
       if (contentBlocks.length > 0) {
-        const currentContent = contentBlocks.map((block, index) => ({
-          course_id: selectedCourseId,
-          module_number: selectedModuleNumber,
-          lesson_number: selectedLessonNumber,
-          section_number: index + 1,
-          lesson_name: lessonName,
-          content_type: block.type,
-          content: typeof block.content === 'object' ? block.content : { text: block.content },
-          order_index: index
-        }));
-
         await createLessonBackup(
           selectedCourseId,
           selectedModuleNumber,
           selectedLessonNumber,
-          lessonName,
           'auto_before_restore',
-          currentContent
+          user?.id ?? null
         );
       }
 
@@ -1845,143 +1739,11 @@ ${contentBlocks.map((block, index) => {
     );
   };
 
-  // =====================================================
-  // COACHES FUNCTIONS
-  // =====================================================
 
-  const loadCoaches = async () => {
-    setIsLoadingCoaches(true);
-    try {
-      const data = await getAllCoaches();
-      setCoaches(data);
-    } catch (error) {
-      console.error('Error loading coaches:', error);
-    } finally {
-      setIsLoadingCoaches(false);
-    }
-  };
 
-  const handleCoachImageUpload = async (file) => {
-    try {
-      setIsUploadingCoachImage(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `coach_${Date.now()}.${fileExt}`;
-      const filePath = `coaches/${fileName}`;
 
-      // Convert file to arrayBuffer for reliable upload
-      const arrayBuffer = await file.arrayBuffer();
 
-      const { error: uploadError } = await supabase.storage
-        .from('assets')
-        .upload(filePath, arrayBuffer, {
-          contentType: file.type,
-          upsert: false
-        });
 
-      if (uploadError) {
-        if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
-          throw new Error('Permission denied: Please configure Row-Level Security policies in Supabase for the assets bucket.');
-        }
-        throw uploadError;
-      }
-
-      const { data } = supabase.storage
-        .from('assets')
-        .getPublicUrl(filePath);
-
-      setCoachForm({ ...coachForm, image_url: data.publicUrl });
-      setCoachImageFile(null);
-      alert('Image uploaded successfully!');
-    } catch (error) {
-      console.error('Error uploading coach image:', error);
-      alert(`Failed to upload image: ${error.message}`);
-    } finally {
-      setIsUploadingCoachImage(false);
-    }
-  };
-
-  const handleCoachSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!coachForm.name || !coachForm.course_id) {
-      alert('Please fill in at least the coach name and select a course');
-      return;
-    }
-
-    try {
-      // Upload image if a new file is selected
-      if (coachImageFile) {
-        await handleCoachImageUpload(coachImageFile);
-        return; // The form will be submitted after image upload via state update
-      }
-
-      if (editingCoach) {
-        // Update existing coach
-        await updateCoach(editingCoach.id, coachForm);
-        alert('Coach updated successfully!');
-      } else {
-        // Create new coach
-        await createCoach(coachForm);
-        alert('Coach created successfully!');
-      }
-
-      // Reset form and reload coaches
-      setCoachForm({
-        name: '',
-        position: '',
-        description: '',
-        image_url: '',
-        linkedin_url: '',
-        course_id: ''
-      });
-      setEditingCoach(null);
-      setCoachImageFile(null);
-      await loadCoaches();
-    } catch (error) {
-      console.error('Error saving coach:', error);
-      alert('Error saving coach: ' + error.message);
-    }
-  };
-
-  const handleEditCoach = (coach) => {
-    setEditingCoach(coach);
-    setCoachForm({
-      name: coach.name,
-      position: coach.position || '',
-      description: coach.description || '',
-      image_url: coach.image_url || '',
-      linkedin_url: coach.linkedin_url || '',
-      course_id: coach.course_id
-    });
-  };
-
-  const handleDeleteCoach = async (coachId) => {
-    if (!confirm('Are you sure you want to delete this coach?')) {
-      return;
-    }
-
-    try {
-      await deleteCoach(coachId);
-      alert('Coach deleted successfully!');
-      await loadCoaches();
-    } catch (error) {
-      console.error('Error deleting coach:', error);
-      alert('Error deleting coach: ' + error.message);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingCoach(null);
-    setCoachImageFile(null);
-    setCoachForm({
-      name: '',
-      position: '',
-      description: '',
-      image_url: '',
-      linkedin_url: '',
-      course_id: ''
-    });
-  };
 
   const getSectionContextForBlock = (blockIndex) => {
     const textTypes = ['heading', 'paragraph', 'list', 'bulletlist'];
@@ -1993,12 +1755,12 @@ ${contentBlocks.map((block, index) => {
         const text = b.type === 'heading' ? b.content?.text : b.content?.text || b.content?.html || '';
         if (text) parts.unshift(text);
       }
-      if (b.type === 'heading' && b.content?.level === 'h2') break;
+      if (b.type === 'heading' && b.content?.level === 2) break;
     }
     // Walk forwards to find the H2 below (exclusive)
     for (let i = blockIndex + 1; i < contentBlocks.length; i++) {
       const b = contentBlocks[i];
-      if (b.type === 'heading' && b.content?.level === 'h2') break;
+      if (b.type === 'heading' && b.content?.level === 2) break;
       if (textTypes.includes(b.type)) {
         const text = b.type === 'heading' ? b.content?.text : b.content?.text || b.content?.html || '';
         if (text) parts.push(text);
@@ -2036,7 +1798,7 @@ ${svgStyleGuide}`;
     if (rules) fullPrompt += `\n\n${rules}`;
     if (existingMarkup) fullPrompt += `\n\nEXISTING SVG TO MODIFY:\n${existingMarkup}`;
 
-    setIsGeneratingSvg(true);
+    setGeneratingSvgId(blockId);
     try {
       const response = await fetch(`${API_URL}/api/admin/generate-svg`, {
         method: 'POST',
@@ -2049,7 +1811,7 @@ ${svgStyleGuide}`;
         setContentBlocks(prevBlocks => prevBlocks.map(b =>
           b.id === blockId ? { ...b, content: { ...b.content, markup: data.markup } } : b
         ));
-        setSvgPrompt('');
+        setSvgPromptFor(blockId, '');
       } else {
         alert('Failed to generate SVG: ' + (data.error || 'Unknown error'));
       }
@@ -2057,7 +1819,7 @@ ${svgStyleGuide}`;
       console.error('Error generating SVG:', error);
       alert('Error generating SVG. Make sure the backend server is running.');
     } finally {
-      setIsGeneratingSvg(false);
+      setGeneratingSvgId(null);
     }
   };
 
@@ -2595,11 +2357,11 @@ ${svgStyleGuide}`;
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
-                  value={svgPrompt}
-                  onChange={(e) => setSvgPrompt(e.target.value)}
+                  value={svgPrompts[block.id] || ''}
+                  onChange={(e) => setSvgPromptFor(block.id, e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && svgPrompt.trim() && !isGeneratingSvg) {
-                      generateSvg(block.id, svgPrompt, svgFullPrompt, block.content.markup);
+                    if (e.key === 'Enter' && (svgPrompts[block.id] || '').trim() && !generatingSvgId) {
+                      generateSvg(block.id, svgPrompts[block.id] || '', svgFullPrompt, block.content.markup);
                     }
                   }}
                   placeholder={block.content.markup
@@ -2607,7 +2369,7 @@ ${svgStyleGuide}`;
                     : 'e.g., "A lightbulb with gears inside", "A brain connected to a network"'
                   }
                   className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:outline-none text-sm"
-                  disabled={isGeneratingSvg}
+                  disabled={generatingSvgId === block.id}
                 />
                 <button
                   onClick={() => {
@@ -2616,7 +2378,7 @@ ${svgStyleGuide}`;
                       alert('No section content found above this SVG block.');
                       return;
                     }
-                    setSvgPrompt(context);
+                    setSvgPromptFor(block.id, context);
                   }}
                   className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium whitespace-nowrap transition"
                 >
@@ -2625,11 +2387,11 @@ ${svgStyleGuide}`;
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => generateSvg(block.id, svgPrompt, svgFullPrompt, block.content.markup)}
-                  disabled={!svgPrompt.trim() || isGeneratingSvg}
+                  onClick={() => generateSvg(block.id, svgPrompts[block.id] || '', svgFullPrompt, block.content.markup)}
+                  disabled={!(svgPrompts[block.id] || '').trim() || generatingSvgId === block.id}
                   className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition flex items-center justify-center gap-2"
                 >
-                  {isGeneratingSvg ? (
+                  {generatingSvgId === block.id ? (
                     <>
                       <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -2643,7 +2405,7 @@ ${svgStyleGuide}`;
                 </button>
                 <button
                   onClick={() => {
-                    const combined = svgPrompt + (svgFullPrompt ? `\n\n${svgFullPrompt}` : '') + (block.content.markup ? `\n\nEXISTING SVG TO MODIFY:\n${block.content.markup}` : '');
+                    const combined = (svgPrompts[block.id] || '') + (svgFullPrompt ? `\n\n${svgFullPrompt}` : '') + (block.content.markup ? `\n\nEXISTING SVG TO MODIFY:\n${block.content.markup}` : '');
                     navigator.clipboard.writeText(combined + '\n\nRespond with ONLY the SVG markup. No explanation, no markdown code blocks, just the raw SVG starting with <svg> and ending with </svg>.');
                   }}
                   className="px-3 py-2 bg-white text-gray-600 rounded-lg text-sm hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200"
@@ -2876,128 +2638,174 @@ ${svgStyleGuide}`;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 p-6" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition text-gray-900">
-              <ArrowLeft size={24} />
-            </button>
-            <div
-              style={{
-                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'left center',
-                width: '108.8px',
-                height: '36px',
-                marginLeft: '-5.44px'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="bg-white rounded-lg border border-gray-200 mb-6">
-          <div className="flex border-b border-gray-200">
-            {['courses', 'content', 'coaches'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-4 font-medium capitalize ${
-                  activeTab === tab
-                    ? 'border-b-2 border-pink-500 text-pink-500'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="p-6">
+    // Content fills the page directly — no grey backdrop, no floating card.
+    // The canvas mirrors the student player's two-column layout, so both the
+    // width cap and the card chrome would misrepresent it. The back button,
+    // logo and the page tabs that used to sit here are now in the AdminLayout
+    // header.
+    <div className="bg-white text-gray-900 min-h-full" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <div className="p-6">
             {/* Courses Tab */}
             {activeTab === 'courses' && (
-              <CourseManagement />
+              <Courses isAdmin={userRole === 'admin'} />
             )}
 
             {/* Content Tab */}
             {activeTab === 'content' && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">Manage Lesson Content</h2>
+                {/* Which lesson this is. The course/module/lesson selectors
+                    and the card-title/bullets row that used to sit here are gone
+                    — you reach this editor from a lesson in the Courses outline,
+                    which is also where the card title and bullets are edited.
 
-                {/* Lesson Selection */}
-                <div className="bg-white border border-gray-200 p-4 rounded-lg space-y-3">
-                  <div className="flex gap-4 items-end">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1 text-gray-700">Course</label>
-                      <select
-                        value={selectedCourseId}
-                        onChange={(e) => setSelectedCourseId(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                      >
-                        {courses.map((course) => (
-                          <option key={course.name} value={course.name}>
-                            {course.title || course.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1 text-gray-700">Module</label>
-                      <select
-                        value={selectedModuleIndex}
-                        onChange={(e) => {
-                          const moduleIdx = parseInt(e.target.value);
-                          setSelectedModuleIndex(moduleIdx);
-                          setSelectedModuleNumber(moduleIdx + 1);
-                          // Reset lesson selection to first lesson in this module
-                          if (moduleStructure[moduleIdx]?.lessons?.length > 0) {
-                            setSelectedLessonIndex(0);
-                            setSelectedLessonNumber(1);
-                          }
-                        }}
-                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                      >
-                        {moduleStructure.map((module, idx) => (
-                          <option key={idx} value={idx}>
-                            {module.name || `Module ${idx + 1}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1 text-gray-700">Lesson</label>
-                      <select
-                        value={selectedLessonIndex}
-                        onChange={(e) => {
-                          const lessonIdx = parseInt(e.target.value);
-                          setSelectedLessonIndex(lessonIdx);
-                          setSelectedLessonNumber(lessonIdx + 1);
-                          // Content will be loaded automatically by useEffect
-                        }}
-                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                      >
-                        {moduleStructure[selectedModuleIndex]?.lessons?.map((lesson, idx) => (
-                          <option key={idx} value={idx}>
-                            {lesson.name || `Lesson ${idx + 1}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <label className="block text-sm font-medium mb-1 text-gray-700">&nbsp;</label>
+                    Full-bleed (-mx-6 matches the page padding) and sharing one
+                    grey with the toolbar below, so the two read as a single
+                    band of chrome rather than two floating rows. */}
+                <div
+                  className="flex items-center gap-2 flex-wrap text-xs -mx-6 px-6 py-2"
+                  style={{ background: '#242424', marginBottom: 0, marginTop: -24 }}
+                >
+                  <button
+                    onClick={() => setActiveTab('courses')}
+                    className="text-gray-400 hover:text-white transition"
+                  >
+                    All courses
+                  </button>
+                  <span className="text-white/25">/</span>
+                  <span className="text-gray-400">
+                    {courses.find(c => c.name === selectedCourseId)?.title || selectedCourseId}
+                  </span>
+                  <span className="text-white/25">/</span>
+                  <span className="text-gray-400">
+                    {moduleStructure[selectedModuleIndex]?.name || `Module ${selectedModuleNumber}`}
+                  </span>
+                  <span className="text-white/25">/</span>
+                  <span className="font-medium text-white">
+                    {lessonName || `Lesson ${selectedLessonNumber}`}
+                  </span>
+                  <div className="flex-1" />
+                  <button
+                    onClick={handleShowVersionHistory}
+                    disabled={!selectedCourseId}
+                    className="px-2 py-1 border border-white/15 rounded-md hover:bg-white/10 disabled:opacity-40 text-xs text-gray-300 flex items-center gap-1.5"
+                    title="View version history"
+                  >
+                    <History size={13} />
+                    History
+                  </button>
+                </div>
+
+
+                {/* Content Block Buttons - Sticky */}
+                {/* -mx must match the parent's p-6, or the bar overflows the
+                    page and adds a horizontal scrollbar at full width. */}
+                {/* One row, never wrapping. `flex-nowrap` + horizontal scroll
+                    degrades gracefully on a narrow window instead of pushing the
+                    canvas down a line. Add-buttons are quiet because they are
+                    used constantly; Save is the only filled control. */}
+                <div
+                  className="sticky top-0 z-10 py-2 -mx-6 px-6 flex gap-2 flex-nowrap items-center justify-between overflow-x-auto hide-scrollbar"
+                  style={{ background: '#242424', borderBottom: '1px solid rgba(255,255,255,0.12)', marginTop: 0 }}
+                >
+                  <div className="flex gap-1 flex-nowrap items-center flex-shrink-0">
+                    {[
+                      { type: 'heading', label: 'Heading', Icon: Type },
+                      { type: 'paragraph', label: 'Paragraph', Icon: Pilcrow },
+                      { type: 'bulletlist', label: 'List', Icon: ListIcon },
+                      { type: 'image', label: 'Image', Icon: ImageIcon },
+                      { type: 'youtube', label: 'Video', Icon: Youtube },
+                      { type: 'svg', label: 'SVG', Icon: Pen },
+                    ].map(({ type, label, Icon }) => (
                       <button
-                        onClick={handleShowVersionHistory}
-                        disabled={!selectedCourseId}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-500 text-gray-900 rounded-lg flex items-center gap-2 transition-colors"
-                        title="View version history"
+                        key={type}
+                        onClick={() => addBlock(type)}
+                        title={`Add ${label.toLowerCase()} block`}
+                        className="px-2.5 py-1.5 border border-white/15 rounded-md hover:bg-white/10 text-xs text-gray-300 flex items-center gap-1.5 whitespace-nowrap transition"
                       >
-                        <History className="w-4 h-4" />
-                        History
+                        <Icon size={13} /> {label}
                       </button>
+                    ))}
+                    <button
+                      onClick={() => addBlock('scored_question')}
+                      title="Add a scored question — a full-screen gate students must pass"
+                      className="px-2.5 py-1.5 bg-pink-500/15 border border-pink-500/40 rounded-md hover:bg-pink-500/25 text-xs text-pink-300 flex items-center gap-1.5 whitespace-nowrap transition"
+                    >
+                      <HelpCircle size={13} /> Quiz
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2 items-center flex-nowrap flex-shrink-0">
+                    {/* Canvas ⟷ Blocks view toggle. Both views read and write the
+                        same contentBlocks array, so switching never loses edits. */}
+                    <div className="flex rounded-md border border-white/15 overflow-hidden">
+                      {['canvas', 'blocks'].map((view) => (
+                        <button
+                          key={view}
+                          onClick={() => selectEditorView(view)}
+                          className={`px-2.5 py-1.5 text-xs capitalize transition whitespace-nowrap ${
+                            editorView === view
+                              ? 'bg-white text-gray-900'
+                              : 'text-gray-400 hover:text-white hover:bg-white/10'
+                          }`}
+                          title={view === 'canvas'
+                            ? 'Edit on a canvas that mirrors the student view'
+                            : 'Edit as a list of form blocks'}
+                        >
+                          {view}
+                        </button>
+                      ))}
                     </div>
+
+                    <div className="w-px h-5" style={{ background: 'rgba(255,255,255,0.12)' }} />
+
+                    <button
+                      onClick={handleGenerateAudio}
+                      disabled={isGeneratingAudio}
+                      className="px-2.5 py-1.5 border border-white/15 rounded-md hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs text-gray-300 whitespace-nowrap transition"
+                      title={
+                        audioStatus?.needsRegeneration
+                          ? 'Narration is out of date — content changed since it was generated'
+                          : audioStatus?.hasAudio
+                            ? 'Narration is up to date'
+                            : 'No narration generated yet'
+                      }
+                    >
+                      {/* Status is a dot on the button rather than a separate
+                          pill — it only ever describes this action. */}
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 6, height: 6, borderRadius: 999, flexShrink: 0,
+                          background: !audioStatus
+                            ? 'rgba(255,255,255,0.3)'
+                            : audioStatus.needsRegeneration
+                              ? '#E0A800'
+                              : audioStatus.hasAudio
+                                ? '#2E9E5B'
+                                : '#D8D8D8',
+                        }}
+                      />
+                      <Volume2 size={13} />
+                      {isGeneratingAudio ? 'Generating…' : 'Audio'}
+                    </button>
+
+                    <button
+                      onClick={() => setShowPreview(true)}
+                      disabled={!lessonName || contentBlocks.length === 0}
+                      className="px-2.5 py-1.5 border border-white/15 rounded-md hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs text-gray-300 whitespace-nowrap transition"
+                      title="Preview how the lesson will look to students"
+                    >
+                      <Eye size={13} /> Preview
+                    </button>
+
+                    <button
+                      onClick={saveContent}
+                      disabled={isUploading}
+                      className="px-3 py-1.5 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs font-medium whitespace-nowrap transition" style={{ background: '#EF0B72' }}
+                    >
+                      <Save size={13} />
+                      {isUploading ? 'Saving…' : 'Save'}
+                    </button>
                   </div>
                 </div>
 
@@ -3013,120 +2821,74 @@ ${svgStyleGuide}`;
                   </div>
                 )}
 
-                {/* Lesson Metadata Section */}
-                <div className="bg-white border border-gray-200 p-4 rounded-lg space-y-3">
-                  <h3 className="text-md font-semibold text-gray-900 mb-3">Lesson Information</h3>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Lesson Name *</label>
-                    <p className="text-xs text-gray-500 mb-2">The name that will appear on the lesson card</p>
-                    <input
-                      type="text"
-                      value={lessonName}
-                      onChange={(e) => setLessonName(e.target.value)}
-                      placeholder="e.g., Introduction to Product Management"
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none mb-4"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Bullet Points (for Upcoming Lessons Card) *</label>
-                    <p className="text-xs text-gray-500 mb-2">Add 3 bullet points that will appear on the upcoming lessons card</p>
-                    {lessonBulletPoints.map((bp, idx) => (
-                      <input
-                        key={idx}
-                        type="text"
-                        value={bp}
-                        onChange={(e) => {
-                          const newBps = [...lessonBulletPoints];
-                          newBps[idx] = e.target.value;
-                          setLessonBulletPoints(newBps);
-                        }}
-                        placeholder={`Bullet point ${idx + 1}...`}
-                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none mb-2"
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={saveLessonMetadata}
-                    disabled={isUploading}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
-                  >
-                    {isUploading ? 'Saving...' : 'Save Lesson Info'}
-                  </button>
-                </div>
-
-                {/* Content Block Buttons - Sticky */}
-                <div className="sticky top-0 z-10 bg-white border border-gray-200 py-3 -mx-8 px-8 shadow-sm flex gap-2 flex-wrap items-center justify-between">
-                  <div className="flex gap-2 flex-wrap">
-                    <button onClick={() => addBlock('heading')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm text-gray-900 transition">
-                      + Heading
-                    </button>
-                    <button onClick={() => addBlock('paragraph')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm text-gray-900 transition">
-                      + Paragraph
-                    </button>
-                    <button onClick={() => addBlock('bulletlist')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
-                      <ListIcon size={14} /> Bullet List
-                    </button>
-                    <button onClick={() => addBlock('image')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
-                      <ImageIcon size={14} /> Image
-                    </button>
-                    <button onClick={() => addBlock('youtube')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
-                      <Youtube size={14} /> YouTube
-                    </button>
-                    <button onClick={() => addBlock('svg')} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-200 text-sm flex items-center gap-1 text-gray-900 transition">
-                      <Pen size={14} /> SVG Icon
-                    </button>
-                    <button onClick={() => addBlock('scored_question')} className="px-3 py-2 bg-pink-700 border border-pink-600 rounded-lg hover:bg-pink-600 text-sm flex items-center gap-1 text-white transition">
-                      <HelpCircle size={14} /> Quiz
-                    </button>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowPreview(true)}
-                      disabled={!lessonName || contentBlocks.length === 0}
-                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium whitespace-nowrap transition"
-                      title="Preview how the lesson will look to users"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                      Preview
-                    </button>
-                    <button
-                      onClick={saveContent}
-                      disabled={isUploading}
-                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium whitespace-nowrap transition"
-                    >
-                      <Save size={16} />
-                      {isUploading ? 'Saving...' : 'Save Lesson'}
-                    </button>
-                    <button
-                      onClick={handleGenerateAudio}
-                      disabled={isGeneratingAudio}
-                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium whitespace-nowrap transition"
-                      title="Generate narration audio for this lesson"
-                    >
-                      <Volume2 size={16} />
-                      {isGeneratingAudio ? 'Generating...' : 'Generate Audio'}
-                    </button>
-                    {audioStatus && (
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        audioStatus.needsRegeneration
-                          ? 'bg-yellow-100 text-yellow-600'
-                          : audioStatus.hasAudio
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {audioStatus.hasAudio
-                          ? (audioStatus.needsRegeneration ? '⚠️ Content changed' : '✅ Audio ready')
-                          : '❌ No audio'}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                {/* Canvas view — mirrors the student player, paginated by the
+                    same groupSectionsByHeading the player uses. */}
+                {editorView === 'canvas' && (
+                  <LessonCanvas
+                    contentBlocks={contentBlocks}
+                    lessonName={lessonName}
+                    lessonNumber={selectedLessonNumber}
+                    onMoveUp={moveBlockUp}
+                    onMoveDown={moveBlockDown}
+                    onRemove={removeBlock}
+                    onUpdateContent={(blockId, content) =>
+                      setContentBlocks(prev =>
+                        prev.map(b => (b.id === blockId ? { ...b, content } : b))
+                      )
+                    }
+                    onUpdateBlock={(blockId, patch) =>
+                      setContentBlocks(prev =>
+                        prev.map(b => (b.id === blockId ? { ...b, ...patch } : b))
+                      )
+                    }
+                    generatingQuestionForId={generatingQuestionForId}
+                    svgPrompts={svgPrompts}
+                    onSvgPromptChange={setSvgPromptFor}
+                    generatingSvgId={generatingSvgId}
+                    onUploadImage={uploadImage}
+                    onGenerateSvg={(blockId, index) => {
+                      const block = contentBlocks[index];
+                      generateSvg(blockId, svgPrompts[blockId] || '', svgFullPrompt, block?.content?.markup);
+                    }}
+                    onUseSectionContent={(blockId, index) => {
+                      const context = getSectionContextForBlock(index);
+                      if (!context) {
+                        alert('No section content found above this SVG block.');
+                        return;
+                      }
+                      setSvgPromptFor(blockId, context);
+                    }}
+                    onGenerateSuggested={async (blockId, index) => {
+                      setGeneratingQuestionForId(blockId);
+                      try {
+                        const q = await generateQuestionForH2(index);
+                        if (q) {
+                          setContentBlocks(prev =>
+                            prev.map(b => (b.id === blockId ? { ...b, suggestedQuestion: q } : b))
+                          );
+                        }
+                      } finally {
+                        setGeneratingQuestionForId(null);
+                      }
+                    }}
+                    onGenerateUser={async (blockId, index) => {
+                      setGeneratingQuestionForId(blockId);
+                      try {
+                        const q = await generateUserQuestion(index);
+                        if (q) {
+                          setContentBlocks(prev =>
+                            prev.map(b => (b.id === blockId ? { ...b, userQuestion: q } : b))
+                          );
+                        }
+                      } finally {
+                        setGeneratingQuestionForId(null);
+                      }
+                    }}
+                  />
+                )}
 
                 {/* Content Blocks */}
-                <div className="space-y-4">
+                <div className="space-y-4" style={{ display: editorView === 'blocks' ? undefined : 'none' }}>
                   {contentBlocks.map((block, index) => (
                     <div key={block.id}>
                       {/* Insert Above Buttons */}
@@ -3532,266 +3294,6 @@ ${svgStyleGuide}`;
               </div>
             )}
 
-            {/* Coaches Tab */}
-            {activeTab === 'coaches' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold text-gray-900">Manage Office Hours Coaches</h2>
-                </div>
-
-                {/* Coach Form */}
-                <form onSubmit={handleCoachSubmit} className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    {editingCoach ? 'Edit Coach' : 'Add New Coach'}
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Name */}
-                    <div>
-                      <label className="block text-sm font-medium mb-1 text-gray-700">
-                        Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={coachForm.name}
-                        onChange={(e) => setCoachForm({ ...coachForm, name: e.target.value })}
-                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                        placeholder="John Smith"
-                        required
-                      />
-                    </div>
-
-                    {/* Position */}
-                    <div>
-                      <label className="block text-sm font-medium mb-1 text-gray-700">Position</label>
-                      <input
-                        type="text"
-                        value={coachForm.position}
-                        onChange={(e) => setCoachForm({ ...coachForm, position: e.target.value })}
-                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                        placeholder="Senior Product Manager"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Course Selection */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">
-                      Course <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={coachForm.course_id}
-                      onChange={(e) => setCoachForm({ ...coachForm, course_id: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                      required
-                    >
-                      <option value="">Select a course</option>
-                      {courses.map((course) => (
-                        <option key={course.name} value={course.name}>
-                          {course.title || course.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">
-                      Description
-                      <span className="text-gray-600 text-xs ml-2">
-                        ({coachForm.description.length}/115 characters)
-                      </span>
-                    </label>
-                    <textarea
-                      value={coachForm.description}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 115) {
-                          setCoachForm({ ...coachForm, description: e.target.value });
-                        }
-                      }}
-                      maxLength={115}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                      placeholder="Brief bio about the coach..."
-                      rows={3}
-                    />
-                  </div>
-
-                  {/* Image Upload/URL */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Coach Image</label>
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            setCoachImageFile(e.target.files[0]);
-                            // Create preview URL
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              setCoachForm({ ...coachForm, image_url: event.target.result });
-                            };
-                            reader.readAsDataURL(e.target.files[0]);
-                          }
-                        }}
-                        className="hidden"
-                        id="coach-image-upload"
-                      />
-                      <label
-                        htmlFor="coach-image-upload"
-                        className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-300 transition cursor-pointer flex items-center gap-2"
-                      >
-                        <ImageIcon size={16} />
-                        {isUploadingCoachImage ? 'Uploading...' : 'Upload Image'}
-                      </label>
-                      <span className="text-gray-600 text-sm flex items-center">or enter URL below</span>
-                    </div>
-                    <input
-                      type="url"
-                      value={coachImageFile ? '' : coachForm.image_url}
-                      onChange={(e) => {
-                        setCoachImageFile(null);
-                        setCoachForm({ ...coachForm, image_url: e.target.value });
-                      }}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                      placeholder="https://example.com/photo.jpg"
-                      disabled={coachImageFile !== null}
-                    />
-                    {coachImageFile && (
-                      <p className="text-sm text-gray-600 mt-1">Selected file: {coachImageFile.name}</p>
-                    )}
-                    {coachForm.image_url && (
-                      <img
-                        src={coachForm.image_url}
-                        alt="Preview"
-                        className="mt-2 w-20 h-20 rounded-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  {/* LinkedIn URL */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">LinkedIn Profile URL</label>
-                    <input
-                      type="url"
-                      value={coachForm.linkedin_url}
-                      onChange={(e) => setCoachForm({ ...coachForm, linkedin_url: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:border-pink-500 focus:outline-none"
-                      placeholder="https://linkedin.com/in/username"
-                    />
-                  </div>
-
-                  {/* Form Actions */}
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      type="submit"
-                      className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition flex items-center gap-2"
-                    >
-                      <Save size={16} />
-                      {editingCoach ? 'Update Coach' : 'Add Coach'}
-                    </button>
-                    {editingCoach && (
-                      <button
-                        type="button"
-                        onClick={handleCancelEdit}
-                        className="px-6 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-300 transition"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </form>
-
-                {/* Coaches List */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Existing Coaches</h3>
-
-                  {isLoadingCoaches ? (
-                    <div className="text-center py-8">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
-                      <p className="text-gray-600 mt-2">Loading coaches...</p>
-                    </div>
-                  ) : coaches.length === 0 ? (
-                    <div className="text-center py-8">
-                      <User size={48} className="mx-auto text-gray-600 mb-2" />
-                      <p className="text-gray-600">No coaches added yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {coaches.map((coach) => {
-                        const course = courses.find(c => c.name === coach.course_id);
-                        return (
-                          <div
-                            key={coach.id}
-                            className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition"
-                          >
-                            <div className="flex items-start gap-4">
-                              {coach.image_url && (
-                                <img
-                                  src={coach.image_url}
-                                  alt={coach.name}
-                                  className="w-16 h-16 rounded-full object-cover flex-shrink-0"
-                                  onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/64';
-                                  }}
-                                />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div>
-                                    <h4 className="text-gray-900 font-semibold">{coach.name}</h4>
-                                    {coach.position && (
-                                      <p className="text-gray-600 text-sm">{coach.position}</p>
-                                    )}
-                                    <p className="text-pink-600 text-sm mt-1">
-                                      {course?.title || coach.course_id}
-                                    </p>
-                                  </div>
-                                  <div className="flex gap-2 flex-shrink-0">
-                                    <button
-                                      onClick={() => handleEditCoach(coach)}
-                                      className="p-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-300 transition"
-                                      title="Edit coach"
-                                    >
-                                      <Edit size={16} />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteCoach(coach.id)}
-                                      className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                                      title="Delete coach"
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
-                                  </div>
-                                </div>
-                                {coach.description && (
-                                  <p className="text-gray-700 text-sm mt-2 line-clamp-2">{coach.description}</p>
-                                )}
-                                {coach.linkedin_url && (
-                                  <a
-                                    href={coach.linkedin_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-pink-600 hover:text-pink-700 text-sm mt-1 inline-block"
-                                  >
-                                    View LinkedIn Profile →
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Preview Modal */}

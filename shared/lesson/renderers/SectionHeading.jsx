@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import useTypewriter from '../hooks/useTypewriter';
-import useIsMobile from '../hooks/useIsMobile';
-import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
+import useTypewriter from '../hooks/useTypewriter.js';
+import useIsMobile from '../hooks/useIsMobile.js';
+import { normalizeTextForNarration, splitIntoWords } from '../textNormalization.js';
 
 const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, revealIndex = -1, sentenceStart = -1, sentenceEnd = -1, skipAnimation = false }) => {
   const level = section.content?.level || 2;

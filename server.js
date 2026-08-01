@@ -41,6 +41,67 @@ const elevenlabs = new ElevenLabsClient({
   apiKey: process.env.ELEVENLABS_API_KEY
 });
 
+// ── Narration voice ─────────────────────────────────────────────────────────
+// One voice for every narration we generate, lessons and blog posts alike.
+// Override per environment with ELEVENLABS_NARRATION_VOICE_ID.
+//
+// Deliberately NOT reusing ELEVENLABS_VOICE_ID: that variable is already set to
+// Alice on Render and feeds the two legacy /api/text-to-speech endpoints, so
+// repointing it would change more than narration — and it never reached the
+// lesson path anyway, which took a hardcoded branch.
+const NARRATION_VOICE_ID =
+  process.env.ELEVENLABS_NARRATION_VOICE_ID || 'G7ILShrCNLfmS0A37SXS';
+
+// Every knob that shapes the output. These are part of the audio's identity,
+// not incidental config — see narrationHash below.
+const NARRATION_TTS = {
+  model_id: 'eleven_multilingual_v2',
+  output_format: 'mp3_44100_128',
+  voice_settings: {
+    stability: 0.5,
+    similarity_boost: 0.75,
+    style: 0.0,
+    use_speaker_boost: true
+  }
+};
+
+/**
+ * Identity of a piece of narration: the text AND the voice AND the settings it
+ * was spoken with.
+ *
+ * The previous hash covered text alone, so after a voice change every lesson
+ * still reported "up to date" and a regeneration pass would skip the lot. Any
+ * input that changes what a listener hears belongs in here.
+ */
+const narrationHash = (text, voiceId = NARRATION_VOICE_ID) =>
+  crypto
+    .createHash('sha256')
+    .update([
+      text,
+      voiceId,
+      NARRATION_TTS.model_id,
+      JSON.stringify(NARRATION_TTS.voice_settings)
+    ].join('\u0000'))
+    .digest('hex');
+
+// Text is normalised to single spaces before both hashing and TTS, because the
+// player derives word boundaries by splitting the same text on spaces.
+const normalizeNarrationText = (text) => text.replace(/\s+/g, ' ').trim();
+
+/**
+ * Public URL for a narration object, tagged with the hash of what it contains.
+ *
+ * Regeneration overwrites the object in place, so the underlying URL is
+ * identical before and after. Supabase serves it with `max-age=3600`, which
+ * means a browser can pair a cached old-voice MP3 with the new timings it reads
+ * live from Postgres — highlighting drifts for up to an hour with no error
+ * anywhere. The version tag makes the URL change whenever the audio does.
+ */
+const narrationUrl = (storagePath, contentHash) => {
+  const { data } = supabase.storage.from('lesson-audio').getPublicUrl(storagePath);
+  return `${data.publicUrl}?v=${contentHash.substring(0, 12)}`;
+};
+
 // Initialize Resend (optional) - will be loaded dynamically when needed
 let resend = null;
 
@@ -3496,7 +3557,7 @@ app.get('/api/office-hours/feedback', verifyTeacherOrAdmin, async (req, res) => 
 // Text-to-speech endpoint using ElevenLabs
 app.post('/api/text-to-speech', async (req, res) => {
   try {
-    let { text, voiceGender } = req.body;
+    let { text } = req.body;
 
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
@@ -3515,15 +3576,9 @@ app.post('/api/text-to-speech', async (req, res) => {
       }
     }
 
-    // Select voice based on gender preference
-    let voiceId;
-    if (voiceGender === 'male') {
-      // George - British male voice (warm, clear)
-      voiceId = 'JBFqnCBsd6RMkjVDRZzb';
-    } else {
-      // Alice - British female voice (default)
-      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2';
-    }
+    // No live caller reaches this endpoint (see docs/ARCHITECTURE.md); the
+    // narration voice is used so a future caller cannot pick up a stale one.
+    const voiceId = NARRATION_VOICE_ID;
 
     // Generate speech with ElevenLabs
     const audio = await elevenlabs.textToSpeech.convert(voiceId, {
@@ -3565,7 +3620,7 @@ app.post('/api/text-to-speech', async (req, res) => {
 // Text-to-speech with character-level timestamps endpoint (with caching)
 app.post('/api/text-to-speech-timestamps', async (req, res) => {
   try {
-    let { text, voiceGender, courseName } = req.body;
+    let { text, courseName } = req.body;
 
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
@@ -3584,18 +3639,14 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
       }
     }
 
-    // Select voice based on gender preference
-    let voiceId;
-    if (voiceGender === 'male') {
-      // George - British male voice (warm, clear)
-      voiceId = 'JBFqnCBsd6RMkjVDRZzb';
-    } else {
-      // Alice - British female voice (default)
-      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2';
-    }
+    // No live caller reaches this endpoint (see docs/ARCHITECTURE.md); the
+    // narration voice is used so a future caller cannot pick up a stale one.
+    const voiceId = NARRATION_VOICE_ID;
 
-    // 1. Calculate SHA-256 hash of the text for cache lookup
-    const contentHash = crypto.createHash('sha256').update(text).digest('hex');
+    // 1. Calculate hash of the text for cache lookup. Keyed on the voice too —
+    // a text-only key would keep serving audio in whichever voice happened to
+    // be current when the row was first written.
+    const contentHash = narrationHash(text, voiceId);
     console.log('🔍 Cache lookup for hash:', contentHash.substring(0, 12) + '...');
 
     // 2. Check cache in database
@@ -3665,7 +3716,7 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
         original_text: text,
         audio_base64: result.audio_base64,
         alignment_data: result.alignment,
-        voice_gender: voiceGender,
+        voice_gender: null,
         voice_id: voiceId,
         access_count: 1
       });
@@ -3886,8 +3937,10 @@ app.get('/api/admin/lesson-audio-status/:courseId/:module/:lesson', async (req, 
 
     // Get lesson name from first section or default
     const lessonName = sections?.[0]?.lesson_name || `Lesson ${lessonNum}`;
-    const fullText = extractLessonText(lessonName, sections || []);
-    const currentHash = crypto.createHash('sha256').update(fullText).digest('hex');
+    // Must normalise and hash exactly as the generator does, or every lesson
+    // whose text contains a newline reads as permanently out of date.
+    const fullText = normalizeNarrationText(extractLessonText(lessonName, sections || []));
+    const currentHash = narrationHash(fullText);
 
     // Check existing audio
     const { data: audio, error: audioError } = await supabase
@@ -3965,9 +4018,13 @@ app.delete('/api/admin/lesson-audio/:courseId/:module/:lesson', async (req, res)
 // NEW: Generates per-section audio for perfect word highlighting sync
 app.post('/api/admin/generate-lesson-audio', async (req, res) => {
   try {
-    const { courseId, moduleNumber, lessonNumber, forceRegenerate = false, voiceGender = 'male' } = req.body;
+    const { courseId, moduleNumber, lessonNumber, forceRegenerate = false } = req.body;
 
-    console.log(`🎤 Generating single-file lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    // Resolved up front because it is an input to the content hash — audio
+    // generated in a different voice is stale even when the text is identical.
+    const voiceId = req.body.voiceId || NARRATION_VOICE_ID;
+
+    console.log(`🎤 Generating single-file lesson audio for ${courseId} M${moduleNumber}L${lessonNumber} (voice ${voiceId})`);
 
     // 1. Fetch lesson sections
     const { data: sections, error: sectionsError } = await supabase
@@ -3992,8 +4049,8 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
     const fullText = extractLessonText(lessonName, sections);
 
     // Normalize the full text to match frontend word splitting
-    const normalizedText = fullText.replace(/\s+/g, ' ').trim();
-    const contentHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
+    const normalizedText = normalizeNarrationText(fullText);
+    const contentHash = narrationHash(normalizedText, voiceId);
 
     console.log(`📝 Lesson text: ${normalizedText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
     console.log(`📝 Word count: ${normalizedText.split(' ').filter(w => w.length > 0).length} words`);
@@ -4020,27 +4077,12 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       }
     }
 
-    // 4. Select voice
-    let voiceId;
-    if (voiceGender === 'male') {
-      voiceId = 'JBFqnCBsd6RMkjVDRZzb'; // George - British male
-    } else {
-      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
-    }
-
-    // 5. Generate single audio file for entire lesson (like blog audio)
+    // 4. Generate single audio file for entire lesson (like blog audio)
     console.log(`🎵 Generating audio for entire lesson: "${lessonName.substring(0, 50)}..."`);
 
     const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
       text: normalizedText,
-      model_id: 'eleven_multilingual_v2',
-      output_format: 'mp3_44100_128',
-      voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.75,
-        style: 0.0,
-        use_speaker_boost: true
-      }
+      ...NARRATION_TTS
     });
 
     // Debug: Log response structure to verify SDK format
@@ -4054,7 +4096,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
     const endTimes = response.alignment?.characterEndTimesSeconds || [];
     const duration = endTimes.length > 0 ? endTimes[endTimes.length - 1] : 0;
 
-    // 6. Upload single audio file to Storage
+    // 5. Upload single audio file to Storage
     const audioBuffer = Buffer.from(response.audioBase64, 'base64');
     const storagePath = `${courseId}/${moduleNumber}/${lessonNumber}/full.mp3`;
 
@@ -4072,15 +4114,12 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(500).json({ error: 'Failed to upload audio', message: uploadError.message });
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('lesson-audio')
-      .getPublicUrl(storagePath);
-
-    const audioUrl = urlData.publicUrl;
+    // Version-tagged so the URL changes whenever the audio does — the object
+    // itself is overwritten in place and cached for an hour.
+    const audioUrl = narrationUrl(storagePath, contentHash);
     console.log(`✅ Uploaded to ${audioUrl}`);
 
-    // 7. Convert character timestamps to word timestamps (like blog audio)
+    // 6. Convert character timestamps to word timestamps (like blog audio)
     // IMPORTANT: Matches frontend word splitting exactly
     const wordTimestamps = [];
     if (response.alignment) {
@@ -4140,7 +4179,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
     const titleWordCount = titleWords.length;
     console.log(`📊 Title has ${titleWordCount} words (indices 0-${titleWordCount - 1} should skip highlight)`);
 
-    // 9. Store metadata in database (new single-file format)
+    // 8. Store metadata in database (new single-file format)
     const upsertData = {
       course_id: courseId,
       module_number: moduleNumber,
@@ -4151,7 +4190,9 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       audio_url: audioUrl,
       word_timestamps: wordTimestamps,
       title_word_count: titleWordCount, // Frontend uses this to skip highlighting title words
-      voice_gender: voiceGender,
+      // Narration is no longer picked by gender — voice_id is the record that
+      // matters, and it is what the backfill query filters on.
+      voice_gender: null,
       voice_id: voiceId,
       duration_seconds: duration,
       character_count: normalizedText.length,
@@ -4219,7 +4260,10 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
  */
 app.post('/api/admin/generate-blog-audio', async (req, res) => {
   try {
-    const { blogPostId, forceRegenerate = false, voiceGender = 'male' } = req.body;
+    const { blogPostId, forceRegenerate = false } = req.body;
+
+    // Same narrator as lessons — see NARRATION_VOICE_ID.
+    const voiceId = req.body.voiceId || NARRATION_VOICE_ID;
 
     if (!blogPostId) {
       return res.status(400).json({ error: 'Blog post ID is required' });
@@ -4276,7 +4320,7 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
     };
 
     const plainText = extractTextFromHtml(post.content);
-    const contentHash = crypto.createHash('sha256').update(plainText).digest('hex');
+    const contentHash = narrationHash(plainText, voiceId);
 
     console.log(`📝 Blog text: ${plainText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
 
@@ -4299,33 +4343,18 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
       }
     }
 
-    // 4. Select voice
-    let voiceId;
-    if (voiceGender === 'male') {
-      voiceId = 'JBFqnCBsd6RMkjVDRZzb'; // George - British male
-    } else {
-      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
-    }
-
-    // 5. Generate audio with timestamps
-    console.log(`🎵 Generating audio for blog post: "${post.title.substring(0, 50)}..."`);
+    // 4. Generate audio with timestamps
+    console.log(`🎵 Generating audio for blog post: "${post.title.substring(0, 50)}..." (voice ${voiceId})`);
 
     const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
       text: plainText,
-      model_id: 'eleven_multilingual_v2',
-      output_format: 'mp3_44100_128',
-      voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.75,
-        style: 0.0,
-        use_speaker_boost: true
-      }
+      ...NARRATION_TTS
     });
 
     const endTimes = response.alignment?.characterEndTimesSeconds || [];
     const duration = endTimes.length > 0 ? endTimes[endTimes.length - 1] : 0;
 
-    // 6. Upload audio to Storage
+    // 5. Upload audio to Storage
     const audioBuffer = Buffer.from(response.audioBase64, 'base64');
     const storagePath = `blog/${post.slug}/narration.mp3`;
 
@@ -4343,12 +4372,10 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
       return res.status(500).json({ error: 'Failed to upload audio', message: uploadError.message });
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('lesson-audio')
-      .getPublicUrl(storagePath);
-
-    const audioUrl = urlData.publicUrl;
+    // Version-tagged: the blog page bakes word_timestamps into an ISR page with
+    // revalidate = 3600, so a stable URL would let a fresh page pair new timings
+    // with a browser-cached old MP3.
+    const audioUrl = narrationUrl(storagePath, contentHash);
     console.log(`✅ Uploaded to ${audioUrl}`);
 
     // 7. Convert character timestamps to word timestamps for highlighting
@@ -7339,6 +7366,268 @@ Return ONLY valid JSON, no other text or markdown.`;
     console.error('Error generating course content:', error);
     res.status(500).json({ error: `Failed to generate course content: ${error.message}` });
   }
+});
+
+// Shared house style for anything that writes course outlines, so the three
+// generators below stay consistent with /api/generate-course-content.
+const OUTLINE_STYLE = `- Lesson names must be specific and descriptive, not generic ("Lesson 1")
+- Lesson descriptions: one sentence, under 120 characters
+- Each lesson must have exactly 3 bullet points naming concrete skills or knowledge gained
+- Bullet points under 50 characters, Title Case, but keep minor words (a, an, and, as, at, but, by, for, if, in, nor, of, on, or, so, the, to, up, yet, vs) lowercase unless they start the phrase
+- Be specific and practical, not generic`;
+
+const COMPLEXITY_HINT = {
+  beginner: 'Target complete beginners. Simple, accessible language; no jargon.',
+  intermediate: 'Target learners with some knowledge. Professional but clear; balance theory and practice.',
+  advanced: 'Target experienced practitioners. Expert language; nuance, edge cases, strategy.',
+};
+
+/** Parse Claude's reply as JSON, tolerating a markdown code fence. */
+const parseJsonReply = (responseText) => {
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (jsonMatch) return JSON.parse(jsonMatch[1].trim());
+    throw new Error('Failed to parse AI response as JSON');
+  }
+};
+
+/** Force a lesson into the exact shape module_structure expects. */
+const normaliseLesson = (lesson, idx) => ({
+  name: lesson?.name || `Lesson ${idx + 1}`,
+  description: lesson?.description || '',
+  bullet_points: [
+    lesson?.bullet_points?.[0] || '',
+    lesson?.bullet_points?.[1] || '',
+    lesson?.bullet_points?.[2] || '',
+  ],
+});
+
+// POST /api/generate-course-outline — whole modules+lessons tree for a course
+app.post('/api/generate-course-outline', async (req, res) => {
+  try {
+    const { courseTitle, courseType, complexity, moduleCount, lessonsPerModule } = req.body;
+    if (!courseTitle) return res.status(400).json({ error: 'courseTitle is required' });
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Anthropic API key not configured on server' });
+    }
+
+    const mods = Math.min(Math.max(parseInt(moduleCount) || 5, 1), 12);
+    const per = Math.min(Math.max(parseInt(lessonsPerModule) || 4, 1), 10);
+    const level = COMPLEXITY_HINT[complexity] || COMPLEXITY_HINT.intermediate;
+
+    const prompt = `Generate a complete course outline for "${courseTitle}" (${courseType || 'skill'} course).
+
+${level}
+
+Produce exactly ${mods} modules, each containing exactly ${per} lessons.
+Modules must progress logically from foundations to advanced application.
+
+${OUTLINE_STYLE}
+- Module names should be short and thematic, without a "Module N" prefix
+
+Return a JSON object with this exact structure:
+{
+  "description": "Course description under 250 characters",
+  "modules": [
+    { "name": "Module name", "lessons": [ { "name": "...", "description": "...", "bullet_points": ["...","...","..."] } ] }
+  ]
+}
+
+Return ONLY valid JSON, no other text or markdown.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: Math.min(16000, 500 + mods * per * 220),
+      temperature: 0.7,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const parsed = parseJsonReply(message.content[0].text.trim());
+    if (!Array.isArray(parsed.modules)) throw new Error('Invalid response structure from AI');
+
+    const modules = parsed.modules.slice(0, mods).map((m, i) => ({
+      name: m?.name || `Module ${i + 1}`,
+      lessons: (Array.isArray(m?.lessons) ? m.lessons : []).slice(0, per).map(normaliseLesson),
+    }));
+
+    let description = parsed.description || '';
+    if (description.length > 250) description = `${description.substring(0, 247)}...`;
+
+    res.json({ description, modules });
+  } catch (error) {
+    console.error('Error generating course outline:', error);
+    res.status(500).json({ error: `Failed to generate course outline: ${error.message}` });
+  }
+});
+
+// POST /api/generate-module-lessons — lessons for one module, in context
+app.post('/api/generate-module-lessons', async (req, res) => {
+  try {
+    const { courseTitle, moduleName, lessonCount, complexity, otherModules } = req.body;
+    if (!courseTitle || !moduleName) {
+      return res.status(400).json({ error: 'courseTitle and moduleName are required' });
+    }
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Anthropic API key not configured on server' });
+    }
+
+    const count = Math.min(Math.max(parseInt(lessonCount) || 4, 1), 10);
+    const level = COMPLEXITY_HINT[complexity] || COMPLEXITY_HINT.intermediate;
+    const context = Array.isArray(otherModules) && otherModules.length
+      ? `\nThe course's other modules are: ${otherModules.join('; ')}. Do not duplicate their material.`
+      : '';
+
+    const prompt = `Generate exactly ${count} lessons for the module "${moduleName}", part of the course "${courseTitle}".
+
+${level}${context}
+
+${OUTLINE_STYLE}
+
+Return a JSON object: { "lessons": [ { "name": "...", "description": "...", "bullet_points": ["...","...","..."] } ] }
+
+Return ONLY valid JSON, no other text or markdown.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: Math.min(8000, 400 + count * 220),
+      temperature: 0.7,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const parsed = parseJsonReply(message.content[0].text.trim());
+    if (!Array.isArray(parsed.lessons)) throw new Error('Invalid response structure from AI');
+
+    res.json({ lessons: parsed.lessons.slice(0, count).map(normaliseLesson) });
+  } catch (error) {
+    console.error('Error generating module lessons:', error);
+    res.status(500).json({ error: `Failed to generate lessons: ${error.message}` });
+  }
+});
+
+// POST /api/generate-lesson-bullets — the 3 card bullets for one lesson
+app.post('/api/generate-lesson-bullets', async (req, res) => {
+  try {
+    const { courseTitle, moduleName, lessonName, lessonDescription } = req.body;
+    if (!lessonName) return res.status(400).json({ error: 'lessonName is required' });
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Anthropic API key not configured on server' });
+    }
+
+    const prompt = `Write exactly 3 bullet points for the lesson "${lessonName}"${moduleName ? ` in the module "${moduleName}"` : ''}${courseTitle ? ` of the course "${courseTitle}"` : ''}.${lessonDescription ? `\n\nLesson description: ${lessonDescription}` : ''}
+
+These appear on the lesson card in the student app and should name concrete skills or knowledge the learner gains.
+- Under 50 characters each
+- Title Case, but keep minor words (a, an, and, as, at, but, by, for, if, in, nor, of, on, or, so, the, to, up, yet, vs) lowercase unless they start the phrase
+- Specific and practical, not generic
+
+Return a JSON object: { "bullet_points": ["...", "...", "..."] }
+
+Return ONLY valid JSON, no other text or markdown.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 400,
+      temperature: 0.7,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const parsed = parseJsonReply(message.content[0].text.trim());
+    const bp = Array.isArray(parsed.bullet_points) ? parsed.bullet_points : [];
+    res.json({ bullet_points: [bp[0] || '', bp[1] || '', bp[2] || ''] });
+  } catch (error) {
+    console.error('Error generating lesson bullets:', error);
+    res.status(500).json({ error: `Failed to generate bullet points: ${error.message}` });
+  }
+});
+
+/**
+ * The house style for lesson body text. Kept server-side as the default so a
+ * new author gets sensible output without configuring anything, but the client
+ * sends its own `guidance` which replaces this when present.
+ */
+const DEFAULT_PARAGRAPH_GUIDANCE = `- Write in British English, second person ("you"), warm but not chatty
+- 2 to 4 sentences. This is one screen of a lesson, not an essay
+- Lead with the point; no throat-clearing ("In this section we will...")
+- Concrete over abstract: prefer a real example to a generality
+- No headings, no closing summary, no rhetorical questions
+- Formatting is plain text with these markers only:
+    **bold** for a key term the learner should retain
+    *italic* for emphasis, sparingly
+    [link text](https://url) for links
+    a line starting "• " becomes a bullet
+- Do not use markdown headings, numbered lists, or code fences`;
+
+// POST /api/admin/generate-paragraph — write or rewrite one lesson paragraph
+app.post('/api/admin/generate-paragraph', async (req, res) => {
+  try {
+    const {
+      mode = 'generate',
+      existingText = '',
+      instruction = '',
+      guidance = '',
+      lessonName = '',
+      headingText = '',
+      precedingText = '',
+    } = req.body || {};
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Anthropic API key not configured on server' });
+    }
+    if (mode === 'enhance' && !existingText.trim()) {
+      return res.status(400).json({ error: 'Nothing to enhance — the paragraph is empty' });
+    }
+
+    const context = [
+      lessonName && `Lesson: ${lessonName}`,
+      headingText && `Section heading: ${headingText}`,
+      precedingText && `Earlier text in this section (do not repeat it):\n${precedingText}`,
+    ].filter(Boolean).join('\n\n');
+
+    const task = mode === 'enhance'
+      ? `Rewrite the paragraph below so it reads better while keeping its meaning and any facts intact. Do not invent new claims.
+
+Current paragraph:
+${existingText}`
+      : 'Write the next paragraph of this lesson.';
+
+    const prompt = `You are writing body text for an online lesson.
+
+${context || '(no surrounding context supplied)'}
+
+${task}
+${instruction ? `\nAuthor's instruction for this paragraph: ${instruction}` : ''}
+
+Style rules:
+${guidance.trim() || DEFAULT_PARAGRAPH_GUIDANCE}
+
+Return ONLY the paragraph text. No preamble, no quotes around it, no markdown code fences.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 1200,
+      temperature: 0.7,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    let text = message.content[0].text.trim();
+    // Strip a code fence or wrapping quotes if the model adds them anyway.
+    const fence = text.match(/^```(?:\w+)?\s*([\s\S]*?)```$/);
+    if (fence) text = fence[1].trim();
+    if (text.length > 1 && text.startsWith('"') && text.endsWith('"')) text = text.slice(1, -1).trim();
+
+    res.json({ text, defaultGuidance: DEFAULT_PARAGRAPH_GUIDANCE });
+  } catch (error) {
+    console.error('Error generating paragraph:', error);
+    res.status(500).json({ error: `Failed to generate paragraph: ${error.message}` });
+  }
+});
+
+// GET /api/admin/paragraph-guidance — the built-in house style, so the editor
+// can show it as the starting point rather than an empty box.
+app.get('/api/admin/paragraph-guidance', (req, res) => {
+  res.json({ guidance: DEFAULT_PARAGRAPH_GUIDANCE });
 });
 
 // ============================================================================

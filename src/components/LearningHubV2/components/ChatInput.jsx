@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import useIsMobile from '../hooks/useIsMobile';
+import useIsMobile from '@shared/lesson/hooks/useIsMobile';
 
 const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '', disabled = false }, ref) => {
   const textareaRef = useRef(null);

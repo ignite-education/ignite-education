@@ -20,14 +20,19 @@ function getAll() {
   })
 }
 
+// On http://localhost the browser rejects both `domain=.ignite.education` and
+// `secure`, so setting them unconditionally meant the admin app could never
+// hold a session in local dev. Mirrors the guard in src/lib/supabase.js.
+const isLocalDev = import.meta.env.DEV && window.location.hostname === 'localhost'
+
 function setAll(cookiesToSet) {
   cookiesToSet.forEach(({ name, value, options }) => {
     const parts = [`${name}=${value}`]
     parts.push(`path=${options?.path || '/'}`)
-    parts.push('domain=.ignite.education')
+    if (!isLocalDev) parts.push('domain=.ignite.education')
     if (options?.maxAge != null) parts.push(`max-age=${options.maxAge}`)
     if (options?.sameSite) parts.push(`samesite=${options.sameSite}`)
-    if (options?.secure !== false) parts.push('secure')
+    if (!isLocalDev && options?.secure !== false) parts.push('secure')
     document.cookie = parts.join('; ')
   })
 }

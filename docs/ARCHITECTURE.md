@@ -35,6 +35,51 @@ Ignite Education is a learning platform built as a **multi-app architecture** wi
 
 ---
 
+## Shared Code (`/shared`)
+
+The three apps are otherwise fully independent (separate `package.json`, lockfile and `node_modules` each), and historically the only sharing mechanism was copy-paste. `/shared` is the one exception.
+
+**What lives there:** the lesson rendering layer, shared by the student player (`src/components/LearningHubV2/`) and the admin curriculum editor (`admin-app/`).
+
+```
+shared/lesson/
+  blockTypes.js          Block type registry, default content shapes, createBlock()
+  blockAdapter.js        editor block ⇄ `lessons` row ⇄ renderer section
+  groupSections.js       groupSectionsByHeading() + selectGroupMedia()  ← lesson pagination
+  inlineMarkup / textNormalization.js
+  hooks/                 useTypewriter, useIsMobile
+  renderers/             ContentRenderer, MediaPanel, Section{Heading,Paragraph,List,Image,YouTube,SVG}
+  styles/lesson.css      keyframes referenced by inline styles in the renderers
+```
+
+**Why it exists.** The admin editor's preview was a hand-copied fork of the student view. It drifted: it still rendered the v1 black-box design and silently dropped `svg` and `scored_question` blocks. Sharing the renderers *and* the pagination logic makes that class of drift structurally impossible.
+
+`groupSectionsByHeading` is the important one — it turns a flat block list into the screens a student steps through (a heading starts a new screen; each paragraph and quiz gets its own; media and lists attach to the current one). The admin canvas draws its screen-break dividers from the same function the player paginates with.
+
+### Rules for `/shared`
+
+- **It may import React and nothing else.** Vercel runs `npm install` only inside each app's root directory, so any other dependency would resolve locally and fail in CI.
+- **Never add a `package.json` or lockfile.** That would create a phantom workspace root and risks re-triggering the Next.js root inference that `next-app/next.config.ts`'s `turbopack.root` exists to suppress.
+- **React files must be `.jsx`.** `@vitejs/plugin-react` filters by extension, not location.
+
+### How it is wired
+
+| Concern | Main app | Admin app |
+|---|---|---|
+| Alias | `@shared` → `./shared` | `@shared` → `../shared` |
+| Dev server FS access | not needed (inside root) | `server.fs.allow: ['..']` |
+| Tailwind sources | `@source "../shared"` | `@source "../../shared"` |
+| Keyframes | `@import "../shared/lesson/styles/lesson.css"` | `@import "../../shared/lesson/styles/lesson.css"` |
+
+Two non-obvious failure modes this configuration prevents:
+
+1. **Tailwind silently dropping classes.** Neither app has an `@config` directive, so `tailwind.config.js` is *not* loaded under Tailwind v4 — both rely on automatic source detection, which does not follow outside the project root. Without the `@source` lines, utilities used only in `/shared` (`font-light`, `leading-relaxed`, `aspect-video`, `text-blue-600`) compile to nothing and the admin canvas renders unstyled with no error. A black link in the editor means this broke.
+2. **Duplicate React in admin dev.** `/shared` sits above `admin-app/`, so Node resolution walks up from it and finds the *main app's* `node_modules/react` — two React copies in one bundle, i.e. `Invalid hook call`. `admin-app/vite.config.js` pins `react`/`react-dom` to its own `node_modules` and sets `dedupe`. This bites local dev only; the Vercel build container has no root `node_modules`.
+
+> **Deployment prerequisite:** the admin Vercel project has Root Directory `admin-app`, so **"Include source files outside of the Root Directory in the Build Step" must be enabled** in its dashboard settings. Without it, `../shared` is not uploaded and the build fails on `Failed to resolve import "@shared/…"`.
+
+---
+
 ## Applications
 
 ### 1. Vite SPA (Main App)
@@ -144,7 +189,8 @@ Ignite Education is a learning platform built as a **multi-app architecture** wi
 | **AI Chat & Tutoring** | `/api/chat`, `/api/score-answer`, `/api/generate-user-question` | None (API key server-side) |
 | **Knowledge Checks** | `/api/knowledge-check/question`, `/api/knowledge-check/evaluate` | None |
 | **Flashcards** | `/api/generate-flashcards`, `/api/lesson-scores/global/:courseId` | None |
-| **Text-to-Speech** | `/api/text-to-speech`, `/api/text-to-speech-timestamps`, `/api/lesson-audio/:courseId/:module/:lesson` | None / Admin |
+| **Narration (live)** | `/api/admin/generate-lesson-audio`, `/api/admin/generate-blog-audio`, `/api/admin/lesson-audio-status/:courseId/:module/:lesson` | None |
+| **Text-to-Speech (unused)** | `/api/text-to-speech`, `/api/text-to-speech-timestamps`, `/api/lesson-audio/:courseId/:module/:lesson` | None |
 | **Office Hours** | `/api/office-hours/start`, `/api/office-hours/join`, `/api/office-hours/queue/*` | Auth / Teacher+Admin |
 | **Payments** | `/api/webhook/stripe`, `/api/create-checkout-session` | Stripe signature / Auth |
 | **Certificates** | `/api/certificate/generate`, `/api/certificate/:id`, `/api/certificate/verify/:number` | Varies |
@@ -161,6 +207,26 @@ Ignite Education is a learning platform built as a **multi-app architecture** wi
 1. **`verifyAuth`** — Any authenticated user (JWT from Supabase)
 2. **`verifyTeacherOrAdmin`** — Teacher or admin role (checked against `users.role`)
 3. **`verifyAdmin`** — Admin role only
+
+#### Narration
+
+Narration is **pre-generated**, never synthesised at play time. Both players read
+`lesson_audio` straight from Supabase (`useNarration.js`), so changing the voice
+needs no frontend deploy — but students keep hearing the old voice until each
+lesson's audio is rebuilt.
+
+| Concern | Where |
+|---------|-------|
+| The voice | `NARRATION_VOICE_ID` in `server.js` — override with `ELEVENLABS_NARRATION_VOICE_ID` (set in the Render dashboard; `render.yaml` does not declare it) |
+| TTS settings | `NARRATION_TTS` — model and voice settings, shared by lessons and blog posts |
+| Staleness | `narrationHash(text, voiceId)` covers text **and** voice **and** settings, so a voice change correctly marks existing audio out of date |
+| Cache busting | `narrationUrl()` appends `?v=<hash>`; the storage object is overwritten in place and served with `max-age=3600`, so a stable URL would pair a cached old MP3 with new word timings |
+| Rollout tracking | `lesson_audio.voice_id` records what each lesson holds — the backfill worklist is exact and resumable |
+| Bulk rebuild | `node scripts/renarrate-lessons.mjs --dry-run` (costs are per character; use `--limit` to stay inside a monthly quota) |
+
+`ELEVENLABS_VOICE_ID` is legacy and only reaches the two unused
+`/api/text-to-speech*` endpoints. Voice Library voices need a paid ElevenLabs
+plan to use via the API; the premade voices do not.
 
 #### Scheduled jobs (node-cron)
 

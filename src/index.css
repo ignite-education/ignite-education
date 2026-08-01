@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/* Keyframes shared with the admin editor (purplePulse, mediaFadeIn/Out,
+   chatFadeIn). Previously defined inline below; now the single copy. */
+@import "../shared/lesson/styles/lesson.css";
+
+/* Lesson renderers moved to /shared — register them as a Tailwind source so
+   their utilities keep getting emitted. */
+@source "../shared";
 
 * {
   box-sizing: border-box;
@@ -299,31 +306,9 @@ body {
   animation: expandUnderline 0.4s ease-out forwards;
 }
 
-@keyframes purplePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-
-@keyframes mediaFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes mediaFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes chatFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* purplePulse, mediaFadeIn, mediaFadeOut and chatFadeIn now live in
+   shared/lesson/styles/lesson.css, imported at the top of this file, so the
+   admin editor gets the same definitions. */
 
 /* Auth page desktop overrides - content-based section heights */
 @media (min-width: 768px) {

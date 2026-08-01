@@ -1,6 +1,6 @@
 import React from 'react';
-import useTypewriter from '../hooks/useTypewriter';
-import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
+import useTypewriter from '../hooks/useTypewriter.js';
+import { normalizeTextForNarration, splitIntoWords } from '../textNormalization.js';
 
 // Highlight colours for narration: the whole current sentence in light pink,
 // with the word currently being spoken a shade darker.

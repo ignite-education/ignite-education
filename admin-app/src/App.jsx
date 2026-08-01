@@ -7,7 +7,6 @@ import LoadingScreen from './components/LoadingScreen';
 
 const CurriculumUpload = lazy(() => import('./pages/CurriculumUpload'));
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'));
-const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'));
 const BlogManagement = lazy(() => import('./pages/BlogManagement'));
 const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'));
 const PromptsManagement = lazy(() => import('./pages/PromptsManagement'));
@@ -21,14 +20,19 @@ const App = () => {
       <BrowserRouter>
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            <Route path="/" element={<Navigate to="/curriculum" replace />} />
+            <Route path="/" element={<Navigate to="/courses" replace />} />
 
-            {/* Teacher + Admin */}
-            <Route path="/curriculum" element={
+            {/* Teacher + Admin.
+                Courses, lessons, requests and coaches are all one page — the
+                old standalone /courses dashboard duplicated course CRUD without
+                writing module_structure, so courses created there had no
+                outline. /curriculum redirects for existing bookmarks. */}
+            <Route path="/courses" element={
               <AdminRoute>
                 <AdminLayout><CurriculumUpload /></AdminLayout>
               </AdminRoute>
             } />
+            <Route path="/curriculum" element={<Navigate to="/courses" replace />} />
             <Route path="/office-hours" element={
               <AdminRoute>
                 <AdminLayout><OfficeHours /></AdminLayout>
@@ -39,11 +43,6 @@ const App = () => {
             <Route path="/analytics" element={
               <AdminRoute requireAdmin>
                 <AdminLayout><AnalyticsDashboard /></AdminLayout>
-              </AdminRoute>
-            } />
-            <Route path="/courses" element={
-              <AdminRoute requireAdmin>
-                <AdminLayout><CoursesDashboard /></AdminLayout>
               </AdminRoute>
             } />
             <Route path="/blog" element={
@@ -74,7 +73,7 @@ const App = () => {
               </AdminRoute>
             } />
 
-            <Route path="*" element={<Navigate to="/curriculum" replace />} />
+            <Route path="*" element={<Navigate to="/courses" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

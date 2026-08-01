@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useTypewriter from '../hooks/useTypewriter';
+import useTypewriter from '@shared/lesson/hooks/useTypewriter';
 
 
 const getFirstSentence = (text) => {

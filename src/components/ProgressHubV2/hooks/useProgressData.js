@@ -36,7 +36,6 @@ const useProgressData = () => {
   const [completedLessons, setCompletedLessons] = useState([]);
   const [totalCompletedLessons, setTotalCompletedLessons] = useState(0);
   const [coaches, setCoaches] = useState([]);
-  const [calendlyLink, setCalendlyLink] = useState('');
   const [userCertificate, setUserCertificate] = useState(null);
   const [courseReddit, setCourseReddit] = useState({
     channel: 'r/ProductManagement',
@@ -160,7 +159,6 @@ const useProgressData = () => {
 
         if (courseDataResult) {
           setCourseData(courseDataResult);
-          setCalendlyLink(courseDataResult.calendly_link || '');
           courseDataResultRef.current = courseDataResult;
 
           // Set reddit info for community forum
@@ -466,7 +464,6 @@ const useProgressData = () => {
     completedLessons,
     totalCompletedLessons,
     coaches,
-    calendlyLink,
     userCertificate,
     courseReddit,
     communityPosts,

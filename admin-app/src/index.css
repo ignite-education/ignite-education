@@ -1,4 +1,13 @@
 @import "tailwindcss";
+/* Keyframes the shared renderers reference from inline styles. */
+@import "../../shared/lesson/styles/lesson.css";
+
+/* Tailwind v4 auto-detects sources from this project root and will NOT look
+   above it, so the shared lesson renderers must be registered explicitly.
+   Without this their utilities (font-light, leading-relaxed, aspect-video,
+   list-disc, text-blue-600 …) compile to nothing and the canvas silently
+   renders unstyled. */
+@source "../../shared";
 
 * {
   box-sizing: border-box;

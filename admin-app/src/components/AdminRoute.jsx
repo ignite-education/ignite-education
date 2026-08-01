@@ -119,7 +119,7 @@ const AdminRoute = ({ children, requireAdmin = false }) => {
   // Teacher trying to access admin-only route
   if (requireAdmin && userRole !== 'admin') {
     console.log('[AdminRoute] → redirecting to /curriculum (teacher on admin-only route)');
-    return <Navigate to="/curriculum" replace />;
+    return <Navigate to="/courses" replace />;
   }
 
   console.log('[AdminRoute] → rendering children');
