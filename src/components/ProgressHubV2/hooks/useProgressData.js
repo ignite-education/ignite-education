@@ -28,7 +28,7 @@ const extractSubredditFromUrl = (url) => {
 };
 
 const useProgressData = () => {
-  const { user: authUser, firstName, isInitialized, isInsider, insiderUntil, profilePicture, hasHighQualityAvatar, signOut } = useAuth();
+  const { user: authUser, firstName, isInitialized, isInsider, profilePicture, hasHighQualityAvatar, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [courseData, setCourseData] = useState(null);
   const [groupedLessons, setGroupedLessons] = useState({});
@@ -457,9 +457,6 @@ const useProgressData = () => {
     firstName,
     authUser,
     isInsider,
-    // Only set when Insider access came from a referral week or a comp, not
-    // from Stripe — see AuthContext.
-    insiderUntil,
     profilePicture,
     hasHighQualityAvatar,
     signOut,

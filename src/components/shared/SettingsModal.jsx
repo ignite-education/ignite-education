@@ -728,7 +728,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                  surface now that there is no self-serve trial. */
               <div>
                 <h4 className="font-medium text-purple-700 mb-[2px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
-                  {isGrantInsider ? 'Ignite Insider — free week' : 'Ignite Insider'}
+                  Ignite Insider
                 </h4>
                 <div className="flex gap-4">
                   <div style={{ width: '70%' }}>

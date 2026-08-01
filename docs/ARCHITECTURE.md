@@ -372,6 +372,12 @@ use `resolveInsider()` in `server.js` or `isInsider` from `AuthContext`:
   `AFTER INSERT ON lesson_completions` and grants it only once the referee completes a lesson,
   capped at 10 credited referrals per rolling 30 days. Grants **stack** onto the end of any live
   grant rather than overlapping, so two invites really are two weeks.
+- **Every grant notifies its recipient** via `notify_insider_granted()`, an `AFTER INSERT` trigger
+  on `insider_grants` rather than code inside the qualification path — so a referrer's earned
+  week, a new signup's week and a manual comp all behave identically, and a hand-inserted grant
+  is a faithful test. The body names the referee only for `source = 'referral_referrer'`.
+  `source_id` is the grant id, so one grant is one notification; `expires_at` retires the row
+  when the week does.
 - **Attribution survives three journeys**: `?ref=` on the OAuth callback URL, an inline claim for
   Google One Tap (which never navigates), and a 30-day `localStorage` crumb written by
   `ProfileHero` for anyone who signs up later from `/sign-in` or a course page. All three hit the

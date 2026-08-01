@@ -12,7 +12,6 @@ import SeamSticker from './SeamSticker';
 import ProgressGraph from './sections/ProgressGraph';
 import LessonSlider from './sections/LessonSlider';
 import OfficeHoursCard from './sections/OfficeHoursCard';
-import InviteCard from './sections/InviteCard';
 import ResourcesSlider from './sections/ResourcesSlider';
 import CommunityForumCard from './sections/CommunityForumCard';
 import CreatePostModal from './sections/CreatePostModal';
@@ -36,7 +35,6 @@ const ProgressHubV2 = () => {
     firstName,
     authUser,
     isInsider,
-    insiderUntil,
     profilePicture,
     hasHighQualityAvatar,
     signOut,
@@ -141,7 +139,6 @@ const ProgressHubV2 = () => {
         joinedAt={authUser?.created_at}
         totalCompletedLessons={totalCompletedLessons}
         isInsider={isInsider}
-        insiderUntil={insiderUntil}
         userId={authUser?.id}
         courseId={courseData?.name}
         onSettingsClick={() => setShowSettings(true)}
@@ -170,7 +167,6 @@ const ProgressHubV2 = () => {
         left={
           <>
             <OfficeHoursCard coaches={coaches} courseId={courseData?.name} />
-            <InviteCard />
             <ResourcesSlider resources={resources} />
           </>
         }

@@ -153,6 +153,7 @@ DECLARE
   v_ref        public.referrals%ROWTYPE;
   v_used       INT;
   v_stack_from TIMESTAMPTZ;
+  v_expires    TIMESTAMPTZ;
 BEGIN
   -- Index probe on idx_referrals_pending_referee. Returns nothing for almost
   -- every completion, so this costs effectively zero on the hot path.
@@ -195,27 +196,20 @@ BEGIN
    WHERE user_id = v_ref.referrer_id
      AND expires_at > NOW();
 
+  v_expires := v_stack_from + INTERVAL '7 days';
+
   INSERT INTO public.insider_grants
     (user_id, source, referral_id, starts_at, expires_at, note)
   VALUES (
     v_ref.referrer_id, 'referral_referrer', v_ref.id,
-    v_stack_from, v_stack_from + INTERVAL '7 days',
+    v_stack_from, v_expires,
     'Referral qualified'
   )
   ON CONFLICT DO NOTHING;
 
-  -- The referrer's reward moment. source_id makes it idempotent against
-  -- idx_notifications_source_unique.
-  INSERT INTO public.notifications
-    (audience, user_id, type, title, body, link_url, source_table, source_id)
-  VALUES (
-    'user', v_ref.referrer_id, 'referral',
-    'Someone you invited just started learning',
-    'Your free week of Ignite Insider is now active.',
-    '/progress',
-    'referrals', v_ref.id
-  )
-  ON CONFLICT DO NOTHING;
+  -- No notification here: notify_insider_granted() below fires off the
+  -- insider_grants insert, so every route to a free week is covered by one
+  -- piece of code rather than just this one.
 
   RETURN NEW;
 END;
@@ -225,6 +219,67 @@ DROP TRIGGER IF EXISTS trg_qualify_referral_on_lesson ON public.lesson_completio
 CREATE TRIGGER trg_qualify_referral_on_lesson
   AFTER INSERT ON public.lesson_completions
   FOR EACH ROW EXECUTE FUNCTION public.qualify_referral_on_lesson();
+
+-- ============================================================================
+-- 6. GRANT NOTIFICATION
+-- ============================================================================
+-- Any Insider grant tells its recipient. This hangs off insider_grants rather
+-- than living inside qualify_referral_on_lesson() so that every route to a free
+-- week is covered by one piece of code: the referrer's earned week, the new
+-- signup's week, and a manual comp. It also means a hand-inserted grant behaves
+-- exactly like a real one, which is what makes this testable without staging a
+-- two-account referral.
+--
+-- source_table/source_id make it idempotent against idx_notifications_source_unique,
+-- so one grant is one notification no matter how many times the insert is retried.
+-- expires_at retires the row when the week does, so a stale "free access until
+-- 08-Aug" doesn't linger in the bell; prune_notifications() sweeps it nightly.
+CREATE OR REPLACE FUNCTION public.notify_insider_granted()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_body  TEXT;
+  v_name  TEXT;
+  -- FM suppresses the leading zero: "8-Aug", not "08-Aug".
+  v_until TEXT := to_char(NEW.expires_at, 'FMDD-Mon');
+BEGIN
+  IF NEW.source = 'referral_referrer' THEN
+    -- Name the person whose signup earned it. Falls back to 'Someone' when the
+    -- referee has no first name (OAuth providers don't always supply one).
+    SELECT NULLIF(TRIM(u.first_name), '')
+      INTO v_name
+      FROM public.referrals r
+      JOIN public.users u ON u.id = r.referee_id
+     WHERE r.id = NEW.referral_id;
+
+    v_body := format(
+      '%s just signed up. You''ve got free access to Ignite Insider until %s.',
+      COALESCE(v_name, 'Someone'), v_until
+    );
+  ELSE
+    -- The new signup's own week, or a comp. Nobody to name.
+    v_body := format('You''ve got free access to Ignite Insider until %s.', v_until);
+  END IF;
+
+  INSERT INTO public.notifications
+    (audience, user_id, type, title, body, link_url, expires_at, source_table, source_id)
+  VALUES (
+    'user', NEW.user_id, 'referral',
+    'Ignite Insider',
+    v_body,
+    '/progress',
+    NEW.expires_at,
+    'insider_grants', NEW.id
+  )
+  ON CONFLICT DO NOTHING;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+DROP TRIGGER IF EXISTS trg_notify_insider_granted ON public.insider_grants;
+CREATE TRIGGER trg_notify_insider_granted
+  AFTER INSERT ON public.insider_grants
+  FOR EACH ROW EXECUTE FUNCTION public.notify_insider_granted();
 
 -- ============================================================================
 COMMENT ON TABLE public.referrals IS

@@ -32,19 +32,6 @@ function HeroBand({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** "Max Shillam" -> "Max". Falls back to "they" so the offer copy still reads. */
-function firstNameOf(displayName: string): string {
-  return (displayName || '').trim().split(/\s+/).filter(Boolean)[0] || 'they'
-}
-
-/** "Max Shillam" -> "Max S". Single-word names are returned unchanged. */
-function shortName(displayName: string): string {
-  const parts = (displayName || '').trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return ''
-  if (parts.length === 1) return parts[0]
-  return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}`
-}
-
 /**
  * Public-fields-only port of the "intro" hero from the private progress page
  * (src/components/ProgressHubV2/sections/IntroSection.jsx), recoloured to the
@@ -54,12 +41,10 @@ function shortName(displayName: string): string {
  * No logo here — the sticky <Navbar variant="black" /> in page.tsx owns it, the
  * same way CourseHero leaves it to the navbar.
  *
- * A client component so one auth subscription drives both the heading and the
- * sign-up buttons. Next still server-renders it, so the H1 and tags are in the
- * static HTML — but the SSR pass necessarily runs with the signed-out state
- * (the page is ISR; there are no request cookies), so the *indexed* H1 is the
- * "Join X on Ignite" variant, not the profile name. The name remains in the
- * <title>, meta description and Person JSON-LD.
+ * A client component so one auth subscription drives the sign-up buttons. The
+ * H1 does not depend on it: it is always the profile name, which means the
+ * server-rendered (and therefore indexed) H1 matches the <title>, meta
+ * description and Person JSON-LD rather than diverging from them.
  */
 export default function ProfileHero({ profile }: { profile: PublicProfile }) {
   const joined = formatJoinDate(profile.joined_at)
@@ -97,10 +82,6 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
 
     return () => subscription.unsubscribe()
   }, [profile.username])
-
-  const heading = signedIn
-    ? profile.display_name
-    : `Join ${shortName(profile.display_name)} on Ignite`
 
   return (
     <section
@@ -144,14 +125,14 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
             )}
           </div>
 
-          {/* Name — becomes a join prompt for signed-out visitors.
+          {/* Name — the same for every visitor, signed in or out.
               Type matches the course-page title (CourseHero.tsx): semibold,
               2rem / 40px at md, -0.02em. */}
           <h1
             className="text-[2rem] md:text-[40px] font-semibold text-white"
             style={{ lineHeight: '1.2', letterSpacing: '-0.02em' }}
           >
-            {heading}
+            {profile.display_name}
           </h1>
 
           {/* Tags Row */}
@@ -203,7 +184,6 @@ export default function ProfileHero({ profile }: { profile: PublicProfile }) {
               profileUrl={`https://ignite.education/${profile.username}`}
               displayName={profile.display_name}
               username={profile.username}
-              firstName={firstNameOf(profile.display_name)}
             />
           )}
         </div>

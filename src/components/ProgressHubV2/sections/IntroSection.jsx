@@ -405,7 +405,7 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, insiderUntil, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, username, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, username, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
   const isMobile = useIsMobile();
   const avatarSize = isMobile ? 42.35 : 150; // mobile: 42.35 (top-right)
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
@@ -419,20 +419,13 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const confettiShownRef = useRef(confettiShown);
   confettiShownRef.current = confettiShown;
   const confettiFiredRef = useRef(new Set());
+  // Pending show/hide timers live in a ref, not in the effect's closure, so a
+  // dependency change during the 2s arming window can't cancel a burst that has
+  // already been marked fired and persisted. Cleared on unmount only.
+  const confettiTimersRef = useRef([]);
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
   const animatedCount = useCountUp(communityCount, 1200, 1000);
-
-  // "3 days left" / "1 day left" / "today" for a time-limited Insider grant.
-  // null for Stripe subscribers, whose access has no end date.
-  const insiderDaysLeft = useMemo(() => {
-    if (!insiderUntil) return null;
-    const msLeft = new Date(insiderUntil).getTime() - Date.now();
-    if (!(msLeft > 0)) return null;
-    const days = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
-    if (days === 1) return 'last day';
-    return `${days} days left`;
-  }, [insiderUntil]);
 
   const introText = useMemo(() => generateIntroText({
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
@@ -525,11 +518,11 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         if (forceLesson) lessonCelebrated = true;
         if (!shown[key]) newlyShown.push(key); // only persist the first-ever showing
         confettiFiredRef.current.add(key);
-        timers.push(setTimeout(() => {
+        confettiTimersRef.current.push(setTimeout(() => {
           console.log(`🎊 [Confetti] ${key}: Timer fired — setting activeConfetti to TRUE`);
           setActiveConfetti(prev => ({ ...prev, [key]: true }));
         }, 2000));
-        timers.push(setTimeout(() => {
+        confettiTimersRef.current.push(setTimeout(() => {
           console.log(`🎊 [Confetti] ${key}: Timer fired — setting activeConfetti to FALSE`);
           setActiveConfetti(prev => ({ ...prev, [key]: false }));
         }, 5000));
@@ -543,8 +536,13 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
       if (newlyShown.length > 0) {
         console.log('🎊 [Confetti] Persisting confetti_shown:', newlyShown);
+        // Merge from confettiFiredRef, not just newlyShown: when tags fire on
+        // separate effect runs (a new referral signup fires 'joined' first, then
+        // 'insider' once the grant resolves), `shown` is still the pre-write
+        // metadata on the second run. Writing only that snapshot would drop the
+        // first tag's key and let its confetti fire again on a later visit.
         const updated = { ...shown };
-        newlyShown.forEach(key => { updated[key] = true; });
+        confettiFiredRef.current.forEach(key => { updated[key] = true; });
         updateProfile({ confetti_shown: updated });
       } else {
         console.log('🎊 [Confetti] No new tags to fire');
@@ -552,19 +550,29 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
     };
 
-    const timers = [];
     if (document.readyState === 'complete') {
       startConfetti();
-    } else {
-      window.addEventListener('load', startConfetti);
-      timers.push(() => window.removeEventListener('load', startConfetti));
+      return undefined;
     }
 
+    window.addEventListener('load', startConfetti);
+    // Only the listener is torn down on a dependency change. The burst timers
+    // deliberately survive: several of these deps (totalCompletedLessons,
+    // userRole, and isInsider itself) resolve asynchronously and can land inside
+    // the 2s window, and cancelling then would lose a burst that startConfetti
+    // has already recorded in confettiFiredRef and persisted to confetti_shown —
+    // i.e. it would never fire again. Cleared on unmount instead.
     return () => {
-      console.log('🎊 [Confetti] Cleanup — clearing', timers.length, 'timers');
-      timers.forEach(t => typeof t === 'function' ? t() : clearTimeout(t));
+      console.log('🎊 [Confetti] Cleanup — removing load listener');
+      window.removeEventListener('load', startConfetti);
     };
   }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole]);
+
+  // Unmount-only teardown for any confetti timers still pending.
+  useEffect(() => () => {
+    confettiTimersRef.current.forEach(clearTimeout);
+    confettiTimersRef.current = [];
+  }, []);
 
   useEffect(() => {
     if (lottieData && lottieRef.current) {
@@ -716,9 +724,9 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
               </span>
             )}
 
-            {/* Insider Tag — counts down when the access is a referral week or
-                a comp rather than a subscription (insiderUntil is null for
-                Stripe subscribers, who have no end date to show). */}
+            {/* Insider Tag — reads the same whether the access came from Stripe
+                or a referral week. The countdown for a time-limited grant lives
+                in Settings, not here. */}
             {isInsider && (
               <span style={{ position: 'relative', display: 'inline-block' }}>
                 {activeConfetti.insider && <ConfettiBurst />}
@@ -726,7 +734,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                   className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
                   style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', zIndex: 2 }}
                 >
-                  {insiderDaysLeft !== null ? `Insider · ${insiderDaysLeft}` : 'Insider'}
+                  Insider
                 </span>
               </span>
             )}

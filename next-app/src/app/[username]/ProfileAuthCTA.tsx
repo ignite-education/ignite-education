@@ -28,13 +28,11 @@ export default function ProfileAuthCTA({
   profileUrl,
   displayName,
   username,
-  firstName,
 }: {
   onSignedIn: () => void
   profileUrl: string
   displayName: string
   username: string
-  firstName: string
 }) {
   // Set once a One Tap signup has been credited. The redirect flows never see
   // this — they leave the page and land back signed in.
@@ -159,17 +157,13 @@ export default function ProfileAuthCTA({
       </button>
       </div>
 
-      {/* Caption + share row, same order and spacing as EnrollmentCTA.
-          The offer line is static — it reads the same on every profile, so it
-          costs the ISR'd page nothing. */}
-      <p className="text-center text-white text-base font-normal mt-4" style={{ letterSpacing: '-0.03em' }}>
-        Create your free account
-      </p>
-      <p
-        className="text-center text-white mt-1 mb-4"
-        style={{ fontSize: '0.85rem', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.35 }}
-      >
-        You and {firstName} both get a week of Ignite Insider, free.
+      {/* Caption + share row, same order and spacing as EnrollmentCTA. Static
+          copy — it reads the same on every profile, so it costs the ISR'd page
+          nothing. */}
+      {/* Hard break rather than a natural wrap: at 268px the line would otherwise
+          break after "unlock", which reads worse than splitting on the clause. */}
+      <p className="text-center text-white text-base font-normal mt-4 mb-4" style={{ letterSpacing: '-0.03em', lineHeight: 1.35 }}>
+        Create your free account<br />to unlock access to Ignite Insider
       </p>
 
       {/* Desktop only: on a phone this duplicates the OS share sheet the
