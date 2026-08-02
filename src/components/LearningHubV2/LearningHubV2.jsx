@@ -577,13 +577,32 @@ const LearningHubV2 = () => {
   const completedSectionsRef = useRef(completedSections);
   completedSectionsRef.current = completedSections;
 
-  // Only a scored question (a full-screen interrupt) forces the typewriter path.
+  // A scored question (a full-screen interrupt) or a box-matching exercise forces
+  // the typewriter path. Both gate on `completedSections`, and audio mode reveals
+  // every section at once and derives completion from `revealComplete` instead —
+  // which would walk straight past the gate.
   // Inline user questions still narrate — the question is shown after the group's
   // narration finishes (see the deferred effect below).
   const groupHasGate = useMemo(
-    () => activeGroup.some(s => s.content_type === 'scored_question'),
+    () => activeGroup.some(s => s.content_type === 'scored_question' || s.content_type === 'box_match'),
     [activeGroup]
   );
+
+  // Box-matching exercises already solved this lesson, by section id.
+  //
+  // Held here rather than inside the exercise because the content container is
+  // keyed on `currentGroupIndex`, so pressing Back unmounts it — component-local
+  // state would silently re-lock a gate the student had already cleared.
+  const [matchSolvedIds, setMatchSolvedIds] = useState(() => new Set());
+  const handleMatchSolved = useCallback((sectionId) => {
+    if (!sectionId) return;
+    setMatchSolvedIds(prev => (prev.has(sectionId) ? prev : new Set(prev).add(sectionId)));
+  }, []);
+  // Reset per lesson, deliberately NOT per group — surviving navigation within
+  // the lesson is the entire point.
+  useEffect(() => {
+    setMatchSolvedIds(new Set());
+  }, [currentModule, currentLesson]);
   // The inline user question in the current group, if any (shown post-narration in audio mode).
   const groupUserQuestionSection = useMemo(
     () => activeGroup.find(s => s.user_question?.trim()) || null,
@@ -765,11 +784,17 @@ const LearningHubV2 = () => {
   // Continuous scroll loop — runs for lifetime of component
   // Scrolls toward the typing cursor (data-scroll-anchor) rather than the full container bottom,
   // so hidden layout-reserve text doesn't cause premature scroll jumps.
+  //
+  // `[data-drag-active]` pauses it. A shared renderer sets that marker while the
+  // student is dragging something (the box-matching exercise does), because
+  // otherwise this loop keeps creeping the column downward mid-gesture and walks
+  // the content out from under their pointer. A DOM marker rather than a prop, so
+  // any future draggable renderer opts in without threading state up to here.
   useEffect(() => {
     let rafId;
     const tick = () => {
       const el = contentScrollRef.current;
-      if (el && !userScrolledUpRef.current) {
+      if (el && !userScrolledUpRef.current && !el.querySelector('[data-drag-active]')) {
         const anchor = el.querySelector('[data-scroll-anchor]');
         let target;
         if (anchor) {
@@ -1504,6 +1529,8 @@ const LearningHubV2 = () => {
                           sentenceStart={sentenceStart}
                           sentenceEnd={sentenceEnd}
                           extraDelay={isFirstVisible && !progressBarDone ? 3000 : 0}
+                          matchSolvedIds={matchSolvedIds}
+                          onMatchSolved={handleMatchSolved}
                         />
                       </div>
                       );

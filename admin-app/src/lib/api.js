@@ -1292,7 +1292,7 @@ export async function getAllUsers() {
   // Try to get all users from public.users table
   const { data, error, count } = await supabase
     .from('users')
-    .select('id, first_name, last_name, role, created_at, enrolled_course', { count: 'exact' })
+    .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public', { count: 'exact' })
     .order('created_at', { ascending: false });
 
   if (error) {

@@ -8,6 +8,7 @@ import {
 import { toSections } from '@shared/lesson/blockAdapter';
 import { isMediaType } from '@shared/lesson/blockTypes';
 import CanvasBlock from './CanvasBlock';
+import InsertPoint from './InsertPoint';
 import ScreenBreak from './ScreenBreak';
 import SuggestedQuestionEditor from './editable/SuggestedQuestionEditor';
 import SuggestedQuestionStop from './SuggestedQuestionStop';
@@ -32,6 +33,7 @@ const LessonCanvas = ({
   onMoveUp,
   onMoveDown,
   onRemove,
+  onInsertAt,
   onUpdateContent,
   onUpdateBlock,
   onGenerateSuggested,
@@ -94,6 +96,20 @@ const LessonCanvas = ({
     return m;
   }, [contentBlocks]);
 
+  /**
+   * Where a block inserted "below this one" actually lands.
+   *
+   * Naively that is `flatIndex + 1`, but media attaches to the screen it follows.
+   * Inserting a quiz straight after a paragraph that owns an image would push the
+   * image onto the quiz's screen and leave the paragraph unillustrated. Stepping
+   * over trailing media keeps the screen it belongs to intact.
+   */
+  const insertIndexAfter = useCallback((flatIndex) => {
+    let i = flatIndex + 1;
+    while (i < contentBlocks.length && isMediaType(contentBlocks[i].type)) i++;
+    return i;
+  }, [contentBlocks]);
+
   if (contentBlocks.length === 0) {
     return (
       <div
@@ -152,7 +168,10 @@ const LessonCanvas = ({
             );
           }
           const hasBody = screen.some(
-            (s) => s.content_type === 'paragraph' || s.content_type === 'scored_question'
+            (s) =>
+              s.content_type === 'paragraph' ||
+              s.content_type === 'scored_question' ||
+              s.content_type === 'box_match'
           );
           if (!hasBody) warnings.push('No body text on this screen');
 
@@ -190,6 +209,15 @@ const LessonCanvas = ({
                     here even though they were authored elsewhere. */}
                 <InheritedHeadings {...selectGroupHeadings(screens, screenIdx)} />
 
+                {/* Insert above the very first block — the only position the
+                    per-block "insert below" control below cannot reach. */}
+                {onInsertAt && screenIdx === 0 && (
+                  <InsertPoint
+                    onInsert={(type) => onInsertAt(type, 0)}
+                    label="Insert a block at the start of the lesson"
+                  />
+                )}
+
                 {/* Media is edited in the grey column where students see it,
                     so the text column carries text blocks only. */}
                 {screen.filter((s) => !isMediaType(s.content_type)).map((section) => {
@@ -197,22 +225,29 @@ const LessonCanvas = ({
                   if (!block) return null;
                   const flatIndex = indexById.get(block.id);
                   return (
-                    <CanvasBlock
-                      key={block.id}
-                      block={block}
-                      section={section}
-                      index={flatIndex}
-                      isFirst={flatIndex === 0}
-                      isLast={flatIndex === contentBlocks.length - 1}
-                      onMoveUp={() => onMoveUp(flatIndex)}
-                      onMoveDown={() => onMoveDown(flatIndex)}
-                      onRemove={() => onRemove(block.id)}
-                      onUpdateContent={(content) => onUpdateContent(block.id, content)}
-                      onUpdateBlock={(patch) => onUpdateBlock(block.id, patch)}
-                      onGenerateUser={() => onGenerateUser(block.id, flatIndex)}
-                      isGeneratingUser={generatingQuestionForId === block.id}
-                      aiContext={aiContextFor(block.id)}
-                    />
+                    <React.Fragment key={block.id}>
+                      <CanvasBlock
+                        block={block}
+                        section={section}
+                        index={flatIndex}
+                        isFirst={flatIndex === 0}
+                        isLast={flatIndex === contentBlocks.length - 1}
+                        onMoveUp={() => onMoveUp(flatIndex)}
+                        onMoveDown={() => onMoveDown(flatIndex)}
+                        onRemove={() => onRemove(block.id)}
+                        onUpdateContent={(content) => onUpdateContent(block.id, content)}
+                        onUpdateBlock={(patch) => onUpdateBlock(block.id, patch)}
+                        onGenerateUser={() => onGenerateUser(block.id, flatIndex)}
+                        isGeneratingUser={generatingQuestionForId === block.id}
+                        aiContext={aiContextFor(block.id)}
+                      />
+                      {onInsertAt && (
+                        <InsertPoint
+                          onInsert={(type) => onInsertAt(type, insertIndexAfter(flatIndex))}
+                          label="Insert a block below this one"
+                        />
+                      )}
+                    </React.Fragment>
                   );
                 })}
                 </div>

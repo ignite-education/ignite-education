@@ -48,13 +48,42 @@ shared/lesson/
   groupSections.js       groupSectionsByHeading() + selectGroupMedia()  ← lesson pagination
   inlineMarkup / textNormalization.js
   hooks/                 useTypewriter, useIsMobile
-  renderers/             ContentRenderer, MediaPanel, Section{Heading,Paragraph,List,Image,YouTube,SVG}
+  renderers/             ContentRenderer, MediaPanel, Section{Heading,Paragraph,List,Image,YouTube,SVG,BoxMatch}
   styles/lesson.css      keyframes referenced by inline styles in the renderers
 ```
 
 **Why it exists.** The admin editor's preview was a hand-copied fork of the student view. It drifted: it still rendered the v1 black-box design and silently dropped `svg` and `scored_question` blocks. Sharing the renderers *and* the pagination logic makes that class of drift structurally impossible.
 
-`groupSectionsByHeading` is the important one — it turns a flat block list into the screens a student steps through (a heading starts a new screen; each paragraph and quiz gets its own; media and lists attach to the current one). The admin canvas draws its screen-break dividers from the same function the player paginates with.
+`groupSectionsByHeading` is the important one — it turns a flat block list into the screens a student steps through (a heading starts a new screen; each paragraph and quiz gets its own; media, lists and matching exercises attach to the current one). The admin canvas draws its screen-break dividers from the same function the player paginates with.
+
+### Progression gates
+
+Two block types stop a student advancing, and they gate by opposite mechanisms:
+
+| | `scored_question` (Quiz) | `box_match` (Matching) |
+|---|---|---|
+| Screen | its own, full-screen takeover | inline, under the paragraph it follows |
+| Renderer | none — `ContentRenderer` returns `null` and `LearningHubV2` owns the flow | `renderers/SectionBoxMatch.jsx` |
+| How it gates | player intercepts in `handleSectionComplete` and returns `prev` | renderer withholds `onComplete()` until solved — no player branch needed |
+| Released by | passing 5/10 on a Claude-graded answer | matching every pair |
+| Admin authoring | `LessonCanvas/QuizCard.jsx` (read-only) | `LessonCanvas/MatchCard.jsx` (editable) |
+
+Both must appear in `LearningHubV2`'s `groupHasGate`. That flag flows into `useNarration`, where `groupAudioMode = audioReady && !groupHasGate` — in audio mode every section on a screen renders at once and completion comes from `revealComplete` rather than `completedSections`, which walks straight past either gate. The cost is that a screen holding a gate is never narrated.
+
+`box_match` is a positional reorder, not a drop-onto-target: the names are static down the left, and the student drags the description boxes on the right until each sits in the row opposite its name. It behaves as a sortable list — lifting a box and dropping it three rows down shifts the rows between it up by one, rather than swapping the two endpoints. A row that comes out correct locks and can no longer be moved or targeted, so "is this row correct" is derived from the arrangement rather than tracked separately, and locked rows are pinned out of the shuffle so a solved pairing is never disturbed. Because the pairing has to read *across* a row, the layout is a list of rows — a name cell beside a description cell — not two independently stacked columns, which would drift apart as soon as one description wrapped to a different number of lines.
+
+`SectionBoxMatch` hand-rolls its drag on pointer events. No DnD library is installed in any app and `/shared` cannot take one (see the rules below); one pointer implementation also covers mouse, touch and pen, where HTML5 drag events would have needed a separate touch path. Tapping one description then another moves the first into the second's row, which is what makes it keyboard- and screen-reader-operable.
+
+The reorder happens **live**: as the box passes another row, the list rearranges immediately and the rows it has passed shuffle out of its way, leaving a gap at the insertion point. Releasing only settles and scores the arrangement that is already on screen.
+
+Two traps worth knowing if you touch the drag:
+
+- The box being dragged is translated to follow the pointer, and `getBoundingClientRect` reports that translated position. It therefore sits under the cursor for the whole gesture, and the hit test must exclude it explicitly — otherwise every drop resolves to the dragged row itself and silently no-ops. Excluding it is also what stops the live reorder thrashing: once the box occupies the target slot the pointer is over the excluded row, so no further reorder fires until it genuinely crosses into another.
+- A live reorder moves the box into a different row, so its *untransformed* position jumps by the height of everything that shuffled past it. A `useLayoutEffect` measures that delta and shifts the drag origin by exactly the same amount, which leaves the visual position unchanged and keeps the box glued to the pointer. Without it the box leaps away the instant the list rearranges. Row heights vary with how far each description wraps, so the delta has to be measured rather than assumed.
+
+One consequence: a live reorder can carry the dragged box through its own correct row mid-gesture. It must stay enabled while that is true — disabling the element under the pointer drops the pointer capture and strands the drag.
+
+Solved state lives in `LearningHubV2` (`matchSolvedIds`, keyed by section id), not in the exercise. The content container is keyed on `currentGroupIndex`, so Back unmounts the exercise — component-local state would silently re-lock a gate the student had already cleared. It resets per lesson, deliberately not per screen.
 
 ### Rules for `/shared`
 
@@ -390,6 +419,23 @@ Key tables (non-exhaustive):
 - `release_notes` — product changelog
 - `notifications` — Progress Hub notification feed (see below)
 - `referrals`, `insider_grants` — profile-page referrals and the free weeks they earn (see below)
+
+Database triggers on `public.users`:
+- `on_auth_user_created` (`AFTER INSERT ON auth.users` → `handle_new_user()`) — mirrors every
+  signup into `public.users`
+- `ensure_public_profile_fields_on_insert` (`BEFORE INSERT`) — fills `username` (via
+  `generate_username()`) and `avatar_url` (from `auth.users` metadata) whenever the insert
+  omits them. This is what activates the public profile at `ignite.education/{username}`.
+  It lives on `public.users` rather than only in `handle_new_user()` because three app code
+  paths insert user rows directly and bypass the auth trigger entirely
+  ([ProtectedRoute.jsx](src/components/ProtectedRoute.jsx), [enroll.ts](next-app/src/lib/enroll.ts),
+  [EnrollmentCTA.tsx](next-app/src/app/courses/[courseSlug]/EnrollmentCTA.tsx)) — a row with a
+  NULL username silently drops out of the `public_profiles` view and 404s
+- `upgrade_placeholder_username_on_update` (`BEFORE UPDATE OF first_name, last_name`) — re-slugs
+  only the `user` / `user-N` placeholder, for signups that collect the name after the row exists
+
+See `migrations/fix_username_on_signup.sql`; `scripts/backfill-usernames.js` and
+`scripts/backfill-profile-avatars.js` repair existing rows.
 
 Supabase RPCs:
 - `refresh_community_stats()` — nightly community metrics

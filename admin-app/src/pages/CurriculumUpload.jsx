@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, MoveUp, MoveDown, Save, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X, Pen, HelpCircle, Type, Pilcrow, Eye } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Save, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X, Pen, HelpCircle, Type, Pilcrow, Eye, ArrowLeftRight } from 'lucide-react';
 import Courses from '../components/Courses';
 import LessonCanvas from '../components/LessonCanvas';
 import { useAuth } from '../contexts/AuthContext';
 import { toRow } from '@shared/lesson/blockAdapter';
+import { createBlock, BLOCK_LABELS, BOX_MATCH_MAX_PAIRS, BOX_MATCH_MIN_PAIRS, boxMatchPairs } from '@shared/lesson/blockTypes';
+
+// Block types that stop a student advancing until they've done something.
+const GATE_BLOCK_TYPES = ['scored_question', 'box_match'];
 import { createLessonBackup, getLessonBackups, restoreLessonFromBackup, getSectionFeedbackStats } from '../lib/api';
 
 // API URL for backend calls
@@ -795,37 +799,23 @@ const CurriculumUpload = () => {
   // and its saveLessonMetadata writer have been removed.
 
   // Content management
+  /**
+   * A new editor block, straight from the shared registry.
+   *
+   * There used to be two byte-identical copies of a default-content ternary
+   * here — one per insert path — and they had already drifted from
+   * `defaultContentFor`, which is the class of bug `blockTypes.js` exists to
+   * prevent. `createBlock` also ids with `crypto.randomUUID()` rather than
+   * `Date.now()`, which collided when two blocks were added inside the same
+   * millisecond and left React keys ambiguous — easy to hit now that the canvas
+   * has a per-block insert menu.
+   */
   const addBlock = (type) => {
-    const newBlock = {
-      id: Date.now(),
-      type,
-      content: type === 'youtube' ? { videoId: '', title: '', description: '' } :
-              type === 'image' ? { url: '', alt: '', caption: '', width: 'medium', description: '' } :
-              type === 'heading' ? { text: '', level: 2 } :
-              type === 'bulletlist' ? { items: [''] } :
-              type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '', animated: 'once' } :
-              type === 'scored_question' ? { questions: ['', '', ''], difficulties: ['easy', 'medium', 'medium'] } : '',
-      suggestedQuestion: '',
-      sectionQuestion: ['', '', '']
-    };
-    setContentBlocks(prevBlocks => [...prevBlocks, newBlock]);
+    setContentBlocks(prevBlocks => [...prevBlocks, createBlock(type)]);
   };
 
   const addBlockAt = (type, index) => {
-    const newBlock = {
-      id: Date.now(),
-      type,
-      content: type === 'youtube' ? { videoId: '', title: '', description: '' } :
-              type === 'image' ? { url: '', alt: '', caption: '', width: 'medium', description: '' } :
-              type === 'heading' ? { text: '', level: 2 } :
-              type === 'bulletlist' ? { items: [''] } :
-              type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '', animated: 'once' } :
-              type === 'scored_question' ? { questions: ['', '', ''], difficulties: ['easy', 'medium', 'medium'] } : '',
-      suggestedQuestion: '',
-      sectionQuestion: ['', '', '']
-    };
+    const newBlock = createBlock(type);
     setContentBlocks(prevBlocks => {
       const newBlocks = [...prevBlocks];
       newBlocks.splice(index, 0, newBlock);
@@ -2632,6 +2622,62 @@ ${svgStyleGuide}`;
         );
       }
 
+      case 'box_match': {
+        const pairs = block.content?.pairs || [];
+        const complete = boxMatchPairs(block.content).length;
+        const writePairs = (next) => setContentBlocks(prev => prev.map((b, i) =>
+          i === index ? { ...b, content: { ...b.content, pairs: next } } : b
+        ));
+        return (
+          <div className="space-y-3">
+            <p className="text-xs text-gray-600">
+              Students drag each name onto its description and cannot continue until all pairs are matched.
+              Incomplete pairs are dropped — below {BOX_MATCH_MIN_PAIRS} the block does not render at all.
+            </p>
+            {complete < BOX_MATCH_MIN_PAIRS && (
+              <p className="text-xs text-orange-600">
+                Only {complete} complete {complete === 1 ? 'pair' : 'pairs'} — students would see nothing here.
+              </p>
+            )}
+            {pairs.map((pair, pIdx) => (
+              <div key={pIdx} className="flex gap-2 items-start">
+                <span className="text-xs text-gray-500 w-4 shrink-0 pt-2.5">{pIdx + 1}.</span>
+                <input
+                  value={pair?.name || ''}
+                  onChange={(e) => writePairs(pairs.map((p, i) => (i === pIdx ? { ...p, name: e.target.value } : p)))}
+                  placeholder={`Name ${pIdx + 1}`}
+                  className="w-1/3 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none text-sm"
+                />
+                <textarea
+                  value={pair?.description || ''}
+                  onChange={(e) => writePairs(pairs.map((p, i) => (i === pIdx ? { ...p, description: e.target.value } : p)))}
+                  placeholder={`Description ${pIdx + 1}`}
+                  rows={2}
+                  className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none text-sm resize-none"
+                />
+                {pairs.length > BOX_MATCH_MIN_PAIRS && (
+                  <button
+                    onClick={() => writePairs(pairs.filter((_, i) => i !== pIdx))}
+                    className="p-2 bg-gray-100 hover:bg-red-100 text-gray-700 hover:text-red-600 rounded-lg transition shrink-0"
+                    title="Remove this pair"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+            {pairs.length < BOX_MATCH_MAX_PAIRS && (
+              <button
+                onClick={() => writePairs([...pairs, { name: '', description: '' }])}
+                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-300 text-gray-700 rounded-lg text-xs font-medium transition"
+              >
+                + Add pair
+              </button>
+            )}
+          </div>
+        );
+      }
+
       default:
         return null;
     }
@@ -2725,12 +2771,21 @@ ${svgStyleGuide}`;
                         <Icon size={13} /> {label}
                       </button>
                     ))}
+                    {/* Both gates get the pink treatment — they are the two
+                        block types that stop a student advancing. */}
                     <button
                       onClick={() => addBlock('scored_question')}
                       title="Add a scored question — a full-screen gate students must pass"
                       className="px-2.5 py-1.5 bg-pink-500/15 border border-pink-500/40 rounded-md hover:bg-pink-500/25 text-xs text-pink-300 flex items-center gap-1.5 whitespace-nowrap transition"
                     >
                       <HelpCircle size={13} /> Quiz
+                    </button>
+                    <button
+                      onClick={() => addBlock('box_match')}
+                      title="Add a matching exercise — students drag names onto descriptions before they can continue"
+                      className="px-2.5 py-1.5 bg-pink-500/15 border border-pink-500/40 rounded-md hover:bg-pink-500/25 text-xs text-pink-300 flex items-center gap-1.5 whitespace-nowrap transition"
+                    >
+                      <ArrowLeftRight size={13} /> Matching
                     </button>
                   </div>
 
@@ -2831,6 +2886,7 @@ ${svgStyleGuide}`;
                     onMoveUp={moveBlockUp}
                     onMoveDown={moveBlockDown}
                     onRemove={removeBlock}
+                    onInsertAt={addBlockAt}
                     onUpdateContent={(blockId, content) =>
                       setContentBlocks(prev =>
                         prev.map(b => (b.id === blockId ? { ...b, content } : b))
@@ -2943,14 +2999,22 @@ ${svgStyleGuide}`;
                           >
                             + Quiz
                           </button>
+                          <button
+                            onClick={() => addBlockAt('box_match', index)}
+                            className="px-2 py-1 text-xs bg-pink-700 hover:bg-pink-600 text-white rounded transition"
+                            title="Insert Matching Exercise Above"
+                          >
+                            + Matching
+                          </button>
                         </div>
                       </div>
 
                       {/* Content Block */}
                       <div className="bg-white border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <span className={`text-sm font-medium capitalize ${block.type === 'scored_question' ? 'text-pink-600' : 'text-gray-700'}`}>
-                            {block.type === 'scored_question' ? 'Scored Question' : block.type}
+                          {/* Gates are pink so they read as interruptions in the list. */}
+                          <span className={`text-sm font-medium capitalize ${GATE_BLOCK_TYPES.includes(block.type) ? 'text-pink-600' : 'text-gray-700'}`}>
+                            {BLOCK_LABELS[block.type] || block.type}
                             {block.content?.persist && <span className="ml-2 text-xs text-purple-600 normal-case">(persistent)</span>}
                           </span>
                           <div className="flex gap-2">

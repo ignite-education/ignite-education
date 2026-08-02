@@ -3,6 +3,7 @@ import { MoveUp, MoveDown, Trash2, Settings2, Sparkles } from 'lucide-react';
 import ContentRenderer from '@shared/lesson/renderers/ContentRenderer';
 import { BLOCK_LABELS } from '@shared/lesson/blockTypes';
 import QuizCard from './QuizCard';
+import MatchCard from './MatchCard';
 import EditableText from './editable/EditableText';
 import EditableBulletList from './editable/EditableBulletList';
 import UserQuestionEditor from './editable/UserQuestionEditor';
@@ -52,6 +53,10 @@ const CanvasBlock = ({
   let body;
   if (block.type === 'scored_question') {
     body = <QuizCard block={block} />;
+  } else if (block.type === 'box_match') {
+    // The student view shuffles the two columns, so unlike the other text types
+    // this can't be the shared renderer — the author needs the pairs aligned.
+    body = <MatchCard block={block} onUpdateContent={onUpdateContent} />;
   } else if (block.type === 'heading') {
     const level = block.content?.level === 3 ? 'h3' : 'h2';
     // The suggested-question chip is NOT rendered here. It belongs to this H2

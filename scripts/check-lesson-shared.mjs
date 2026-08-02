@@ -8,6 +8,7 @@
  */
 import { applyMarker, applyLink, insertBullet, insertToken } from '../shared/lesson/markers.js';
 import { toRow, fromRow, toSections } from '../shared/lesson/blockAdapter.js';
+import { boxMatchPairs, defaultContentFor } from '../shared/lesson/blockTypes.js';
 import {
   groupSectionsByHeading,
   selectGroupMedia,
@@ -118,10 +119,31 @@ for (const [name, block] of [
   ['image', { type: 'image', content: { url: 'a.png', persist: true } }],
   ['svg', { type: 'svg', content: { markup: '<svg/>', width: '200' } }],
   ['quiz', { type: 'scored_question', content: { questions: ['q'], difficulties: ['easy'] } }],
+  ['box match', { type: 'box_match', content: { pairs: [{ name: 'n', description: 'd' }] } }],
   ['with section questions', { type: 'heading', content: { text: 'H', level: 2 }, sectionQuestion: ['a', '', ''] }],
 ]) {
   eq(`toRow matches the previous save mapping — ${name}`, toRow(block, 2), legacyRow(block, 2));
 }
+
+// ── Box matching ────────────────────────────────────────────────────────────
+// A half-written pair has nothing to match against, so it must not reach the
+// student. The player decides whether the block gates at all from this count.
+eq('box match drops half-written pairs', boxMatchPairs({
+  pairs: [
+    { name: 'a', description: 'A' },
+    { name: 'b', description: '' },
+    { name: '', description: 'C' },
+    { name: '  ', description: '  ' },
+  ],
+}).length, 1);
+eq('box match caps at four pairs', boxMatchPairs({
+  pairs: Array.from({ length: 6 }, (_, i) => ({ name: `n${i}`, description: `d${i}` })),
+}).length, 4);
+eq('box match tolerates a missing content payload', boxMatchPairs(undefined), []);
+eq('a new box match block starts with two blank pairs',
+  defaultContentFor('box_match').pairs, [{ name: '', description: '' }, { name: '', description: '' }]);
+eq('a new box match block renders nothing until authored',
+  boxMatchPairs(defaultContentFor('box_match')).length, 0);
 
 eq('section_number and order_index are array position',
   [toRow({ id: 'x', type: 'paragraph', content: '' }, 3).section_number,
@@ -155,6 +177,17 @@ const g3 = groupSectionsByHeading(toSections([
   { id: '4', type: 'paragraph', content: 'x' },
 ]));
 eq('only the first media on a screen is shown', selectGroupMedia(g3, 0).section?.id, '2');
+
+// A matching exercise sits UNDER the paragraph it follows rather than taking a
+// screen of its own — that placement is the whole design, and it comes from
+// `groupSectionsByHeading` treating it like a list rather than like a paragraph.
+// Adding it to the paragraph/scored_question branch would silently split them.
+const gMatch = groupSectionsByHeading(toSections([
+  { id: '1', type: 'paragraph', content: 'read this' },
+  { id: '2', type: 'box_match', content: { pairs: [{ name: 'n', description: 'd' }] } },
+  { id: '3', type: 'paragraph', content: 'then this' },
+]));
+eq('a box match shares its paragraph screen', gMatch.map((g) => g.map((s) => s.id)), [['1', '2'], ['3']]);
 eq('the rest are reported so the canvas can warn', selectGroupMedia(g3, 0).dropped.map((d) => d.id), ['3']);
 
 // The suggested-question chip carries onto following screens until the next H2.
