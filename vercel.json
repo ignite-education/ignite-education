@@ -47,16 +47,16 @@
     { "source": "/_next/:path*", "destination": "https://next.ignite.education/_next/:path*" },
     { "source": "/images/:path*", "destination": "https://next.ignite.education/images/:path*" },
 
-    { "source": "/progress", "destination": "/index.html" },
-    { "source": "/office-hours/:path*", "destination": "/index.html" },
-    { "source": "/learning", "destination": "/index.html" },
-    { "source": "/learning-v1", "destination": "/index.html" },
-    { "source": "/dev/lobby", "destination": "/index.html" },
+    { "source": "/progress", "destination": "/" },
+    { "source": "/office-hours/:path*", "destination": "/" },
+    { "source": "/learning", "destination": "/" },
+    { "source": "/learning-v1", "destination": "/" },
+    { "source": "/dev/lobby", "destination": "/" },
     { "source": "/admin/:path*", "destination": "https://admin.ignite.education/:path*" },
-    { "source": "/auth/:path*", "destination": "/index.html" },
+    { "source": "/auth/:path*", "destination": "/" },
     { "source": "/:username/opengraph-image", "destination": "https://next.ignite.education/:username/opengraph-image" },
     { "source": "/:username", "destination": "https://next.ignite.education/:username" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/" }
   ],
   "trailingSlash": false,
   "cleanUrls": true,

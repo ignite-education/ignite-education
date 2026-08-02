@@ -313,6 +313,22 @@ Three non-obvious failure modes, all of which shipped to production undetected:
    silently shadowed the `/sitemap.xml` rewrite for months. The sitemap now
    lives only in `next-app/src/app/sitemap.ts`; do not reintroduce a static one.
 
+4. **`cleanUrls: true` forbids `.html` in a rewrite destination.** Both
+   `vercel.json` files set `cleanUrls`, which strips the extension from every
+   HTML file — so `/index.html` stops being a servable path and becomes a 308
+   to `/`. An SPA fallback rewriting to `/index.html` therefore matches, misses,
+   and returns a raw `x-vercel-error: NOT_FOUND`. **The destination must be `/`.**
+
+   This silently broke every deep link on `admin.ignite.education` (only `/`
+   worked — client-side navigation hid it) and, on the apex, `/office-hours/*`,
+   `/auth/*`, `/learning-v1`, `/dev/lobby` and the catch-all. `/progress` and
+   `/learning` appeared healthy only because `scripts/inject-seo.js` prerenders
+   real files at those paths, and filesystem beats rewrites (see 3).
+
+   Symptom to recognise: a `text/plain` 404 carrying `x-vercel-error: NOT_FOUND`
+   **plus** your own `headers` block — that combination means the config is
+   loaded and the rewrite destination is what's wrong.
+
 Also note: Next.js **replaces** rather than merges the `openGraph` object across
 the layout/page boundary. Defaults declared in `app/layout.tsx` do NOT reach any
 page that declares its own `openGraph` — spread `OG_DEFAULTS` and call
