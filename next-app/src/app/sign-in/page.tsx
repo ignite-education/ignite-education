@@ -57,7 +57,7 @@ export default async function SignInPage({
 
     const { data } = await supabase
       .from('users')
-      .select('enrolled_course, role')
+      .select('role')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -68,7 +68,8 @@ export default async function SignInPage({
       redirect('/welcome')
     }
 
-    redirect(data?.enrolled_course ? '/progress' : '/courses')
+    // Unconditional: /progress serves users with and without an enrolled course.
+    redirect('/progress')
   }
 
   return <SignInForm />

@@ -8,7 +8,9 @@ import { getCourseBySlug } from '@/lib/courseData'
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/courses'
+  // Everyone lands in the hub. A user with no enrolled course gets the course
+  // selector in place of the course section rather than the public catalog.
+  const next = searchParams.get('next') ?? '/progress'
 
   // Determine redirect origin: prefer explicit site URL (production),
   // then forwarded host (set by Vite proxy in local dev), then request origin as fallback
@@ -102,10 +104,10 @@ export async function GET(request: Request) {
           }
         }
 
-        // Check enrollment status and role to decide redirect destination
+        // Role decides whether an ?redirect=admin request is honoured
         const { data } = await supabase
           .from('users')
-          .select('enrolled_course, role')
+          .select('role')
           .eq('id', user.id)
           .maybeSingle()
 
@@ -118,8 +120,7 @@ export async function GET(request: Request) {
           return NextResponse.redirect(`${origin}/welcome`)
         }
 
-        const destination = next !== '/courses' ? next : (data?.enrolled_course ? '/progress' : '/courses')
-        return NextResponse.redirect(`${origin}${destination}`)
+        return NextResponse.redirect(`${origin}${next}`)
       }
 
       return NextResponse.redirect(`${origin}${next}`)

@@ -376,9 +376,33 @@ All three apps use **Supabase Auth** with `@supabase/ssr` for cookie-based sessi
 - **Session refresh:** Next.js middleware refreshes tokens on every request; Vite apps refresh via `onAuthStateChange`
 
 After OAuth, the callback handler routes users by role:
-- Admin/Teacher → `admin.ignite.education`
-- Enrolled student → `/progress`
-- New user → `/courses`
+- Admin/Teacher (with `?redirect=admin`) → `admin.ignite.education`
+- Everyone else → `/progress`
+
+### Users with no enrolled course
+
+`/progress` serves both enrolled and unenrolled users — **`/courses` is no longer an
+onboarding destination**, only the public marketing catalog. `users.enrolled_course` being
+null is a first-class state, not an error:
+
+- [`useProgressData`](src/components/ProgressHubV2/hooks/useProgressData.js) returns a
+  `hasCourse` flag and skips every course-scoped fetch when it is false. A failed or missing
+  `users` row lands here too, so a transient DB error degrades the page rather than ejecting
+  the user.
+- Section 2 swaps `CourseDetailsSection` for
+  [`CourseSelectorSection`](src/components/ProgressHubV2/sections/CourseSelectorSection.jsx) —
+  the course catalog in the hub's dark theme. Both own `id="course-details"` so the intro
+  copy's anchor lands either way. Sections 1, 3, 4 and the footer are unchanged; the intro
+  gets a no-course copy variant.
+- Cards link to `/courses/{slug}` in a **new tab** (a plain `<a>`, never a react-router
+  `Link` — `/courses/*` is a Vercel rewrite to Next.js, so client-side routing would hit the
+  SPA's catch-all). Enrolment stays on the existing `EnrollmentCTA`.
+- [`useEnrollmentWatch`](src/components/ProgressHubV2/hooks/useEnrollmentWatch.js) re-checks
+  `enrolled_course` when the tab regains focus, clears `enrollment_status_cache` and reloads —
+  otherwise the hub would sit stale behind the tab where the user just enrolled.
+- `ProtectedRoute` takes `requireCourse`. Only the course-content routes (`/learning`,
+  `/learning-v1`, `/office-hours/:sessionId`) set it, and they redirect to `/progress`.
+  Without it, `useLessonData` silently falls back to the `product-manager` course.
 
 ---
 

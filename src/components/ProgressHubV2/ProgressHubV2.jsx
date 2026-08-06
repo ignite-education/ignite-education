@@ -4,10 +4,12 @@ import { supabase } from '../../lib/supabase';
 import useProgressData from './hooks/useProgressData';
 import useCourseProgress from './hooks/useCourseProgress';
 import useIsMobile from './hooks/useIsMobile';
+import useEnrollmentWatch from './hooks/useEnrollmentWatch';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import Footer from '../Footer';
 import IntroSection from './sections/IntroSection';
 import CourseDetailsSection from './sections/CourseDetailsSection';
+import CourseSelectorSection from './sections/CourseSelectorSection';
 import SeamSticker from './SeamSticker';
 import ProgressGraph from './sections/ProgressGraph';
 import LessonSlider from './sections/LessonSlider';
@@ -32,6 +34,7 @@ const ProgressHubV2 = () => {
 
   const {
     loading,
+    hasCourse,
     firstName,
     authUser,
     isInsider,
@@ -114,16 +117,22 @@ const ProgressHubV2 = () => {
     }
   }, [profilePicture]);
 
-  const courseTitle = courseData?.title || courseData?.name || 'Product Manager';
+  // While the tab is open with no course, watch for the user enrolling in the
+  // new tab the selector opened, and reload into the real hub when they return.
+  useEnrollmentWatch(!loading && !hasCourse, authUser?.id);
+
+  // The 'Product Manager' fallback covers an enrolled course whose row failed to
+  // load — it must not stand in for having no course at all.
+  const courseTitle = hasCourse ? (courseData?.title || courseData?.name || 'Product Manager') : null;
 
   // Lesson slider — rendered in the white IntroSection on mobile, in the black CourseDetailsSection on desktop
-  const lessonSlider = (
+  const lessonSlider = hasCourse ? (
     <LessonSlider
       upcomingLessons={upcomingLessons}
       completedLessons={completedLessons}
       isLessonCompleted={isLessonCompleted}
     />
-  );
+  ) : null;
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif', ...(isMobile && { overflowX: 'hidden' }) }}>
@@ -153,13 +162,17 @@ const ProgressHubV2 = () => {
         behaviourStat={behaviourStat}
         achievementStat={achievementStat}
         lessonSlider={lessonSlider}
+        hasCourse={hasCourse}
       />
 
       {/* Sticker straddling the seam between sections 1 and 2. Self-positioning
           and zero-height, so neither section's layout changes. */}
       <SeamSticker />
 
-      {/* Section 2: Course Details */}
+      {/* Section 2: Course Details — or, with no course yet, the course selector
+          in its place. Both own id="course-details", so the intro copy's anchor
+          lands correctly either way. */}
+      {!hasCourse ? <CourseSelectorSection /> : (
       <CourseDetailsSection
         courseTitle={courseTitle}
         graph={<ProgressGraph userName={firstName} courseData={courseData} userLessonScores={userLessonScores} globalLessonScores={globalLessonScores} completedLessons={completedLessons} />}
@@ -172,6 +185,7 @@ const ProgressHubV2 = () => {
         }
         right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} postsError={communityPostsError} onCreatePost={() => setShowPostModal(true)} onMyPosts={localStorage.getItem('hasPostedToReddit') ? () => setShowMyPostsModal(true) : undefined} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
       />
+      )}
 
       {/* Section 3: Merchandise */}
       <MerchandiseSection />

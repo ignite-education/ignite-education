@@ -52,18 +52,21 @@ function App() {
                 <ProgressHubV2 />
               </ProtectedRoute>
             } />
+            {/* requireCourse: these render course content, so an unenrolled user
+                is sent to /progress to pick a course first. Without it they'd
+                silently get the 'product-manager' default in useLessonData. */}
             <Route path="/office-hours/:sessionId" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireCourse>
                 <VideoChat />
               </ProtectedRoute>
             } />
             <Route path="/learning" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireCourse>
                 <LearningHubV2 />
               </ProtectedRoute>
             } />
             <Route path="/learning-v1" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireCourse>
                 <LearningHub />
               </ProtectedRoute>
             } />

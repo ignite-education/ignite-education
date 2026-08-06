@@ -73,7 +73,14 @@ const readCachedEnrollment = () => {
   }
 };
 
-const ProtectedRoute = ({ children }) => {
+/**
+ * @param requireCourse  Routes that render course content (lessons, office hours)
+ *   are meaningless without an enrolled course, so an unenrolled user is sent to
+ *   /progress — which now shows the course selector in place of the course
+ *   section. /progress and / deliberately do NOT set this: landing there with no
+ *   course is a supported state, not a redirect.
+ */
+const ProtectedRoute = ({ children, requireCourse = false }) => {
   const { user, isInitialized } = useAuth();
   const [enrollment, setEnrollment] = useState(readCachedEnrollment);
 
@@ -90,7 +97,7 @@ const ProtectedRoute = ({ children }) => {
     ? null
     : !user
       ? (isDevLocalhost ? null : '/welcome')
-      : (enrollment?.hasEnrolled === false && !isDevLocalhost ? '/courses' : null);
+      : (requireCourse && enrollment?.hasEnrolled === false && !isDevLocalhost ? '/progress' : null);
 
   // Keep the overlay up through the redirect so the user never sees a blank page
   // while the new document loads.
@@ -146,7 +153,8 @@ const ProtectedRoute = ({ children }) => {
           if (error) {
             console.error('[ProtectedRoute] Database error:', error);
             if (attempt < MAX_RETRIES) continue;
-            // On last attempt with error, redirect to /courses (safe fallback)
+            // On last attempt with error, assume unenrolled (safe fallback: at
+            // worst a course route falls back to /progress, which renders fine)
             applyResult(false);
           } else if (data) {
             applyResult(Boolean(data.enrolled_course));
@@ -179,7 +187,7 @@ const ProtectedRoute = ({ children }) => {
         } catch (err) {
           if (attempt < MAX_RETRIES) continue;
 
-          // On last attempt with exception, redirect to /courses (safe fallback)
+          // On last attempt with exception, assume unenrolled (safe fallback)
           console.error('[ProtectedRoute] All retry attempts failed:', err);
           applyResult(false);
         }
