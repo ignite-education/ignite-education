@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Loader2, Save, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Sparkles, Loader2, Save, Trash2, ChevronDown, ChevronRight, Bell } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
   generateCourseOutline,
@@ -9,6 +9,7 @@ import {
 import OutlineEditor from './OutlineEditor';
 import EditableField from './EditableField';
 import CourseCoaches from './CourseCoaches';
+import NotifyWaitlist from './NotifyWaitlist';
 
 const label = 'block text-xs font-medium text-gray-500 mb-1';
 
@@ -35,6 +36,7 @@ const CourseDetail = ({ course, onCollapse, onSaved, onDeleted }) => {
     reddit_post_url: course.reddit_post_url || '',
   });
   const [showExtras, setShowExtras] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
   const [modules, setModules] = useState(() => normaliseModules(course));
   // Snapshot of what's persisted, so the outline can warn before opening a
   // lesson whose name only exists in this unsaved draft.
@@ -160,6 +162,16 @@ const CourseDetail = ({ course, onCollapse, onSaved, onDeleted }) => {
         <button onClick={onCollapse} className="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1.5">
           Collapse
         </button>
+        {/* Gated on the persisted status, not `form.status` — you should not be
+            able to email a waitlist off a status you haven't saved yet. */}
+        {course.status === 'live' && (
+          <button
+            onClick={() => setNotifyOpen(true)}
+            className="px-2 py-1.5 border border-gray-200 bg-white rounded-md hover:bg-gray-100 text-xs text-gray-500 flex items-center gap-1.5"
+          >
+            <Bell size={13} /> Notify waitlist
+          </button>
+        )}
         <button onClick={remove} className="px-2 py-1.5 border border-gray-200 bg-white rounded-md hover:bg-red-50 hover:text-red-600 text-xs text-gray-500 flex items-center gap-1.5">
           <Trash2 size={13} /> Delete
         </button>
@@ -306,6 +318,8 @@ const CourseDetail = ({ course, onCollapse, onSaved, onDeleted }) => {
           lesson content that was written against the old numbers.
         </p>
       </div>
+
+      {notifyOpen && <NotifyWaitlist course={course} onClose={() => setNotifyOpen(false)} />}
     </div>
   );
 };
