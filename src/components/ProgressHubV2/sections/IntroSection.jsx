@@ -39,8 +39,23 @@ const seededRandom = (seed) => {
 
 const pickRandom = (arr, seed) => arr[Math.floor(seededRandom(seed) * arr.length)];
 
-const generateIntroText = ({ firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
+const generateIntroText = ({ firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, hasCourse }) => {
   const completedCount = completedLessons?.length || 0;
+
+  // --- Profile 0: No course yet ---
+  // Section 2 is the course selector rather than course details, so the link
+  // points at the same #course-details anchor and lands on it.
+  if (!hasCourse) {
+    return {
+      headline: `Welcome to Ignite, ${firstName}.`,
+      body: `Choose a topic you want to discover, and then take it a lesson at a time. Your Progress, Office Hours, Community Forum and more resources are all waiting here once you do. Select your course below.`,
+      linkText: 'Select your course',
+      linkUrl: '#course-details',
+      // All three sentences on mobile too. The default cap of 2 would cut the copy
+      // off before its last sentence, which is the only link to the selector.
+      mobileSentences: 3,
+    };
+  }
 
   // Helper: look up lesson name from metadata
   const getLessonName = (moduleNum, lessonNum) => {
@@ -405,7 +420,7 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, username, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, username, communityCount, behaviourStat, achievementStat, lessonSlider, hasCourse = true }) => {
   const isMobile = useIsMobile();
   const avatarSize = isMobile ? 42.35 : 150; // mobile: 42.35 (top-right)
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
@@ -428,8 +443,8 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const animatedCount = useCountUp(communityCount, 1200, 1000);
 
   const introText = useMemo(() => generateIntroText({
-    firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
-  }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons]);
+    firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, hasCourse,
+  }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, hasCourse]);
 
   const renderBodyWithLink = (text) => {
     if (!introText.linkText || !introText.linkUrl) return text;
@@ -805,8 +820,9 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         </div>
       </div>
 
-      {/* Mobile: the Current Lesson slider lives at the bottom of this white section */}
-      {isMobile && lessonSlider && (
+      {/* Mobile: the Current Lesson slider lives at the bottom of this white section.
+          Nothing to show before a course is chosen — the selector is section 2. */}
+      {isMobile && hasCourse && lessonSlider && (
         <div style={{ marginTop: '30px' }}>
           {lessonSlider}
         </div>

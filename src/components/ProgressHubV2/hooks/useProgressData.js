@@ -30,6 +30,9 @@ const extractSubredditFromUrl = (url) => {
 const useProgressData = () => {
   const { user: authUser, firstName, isInitialized, isInsider, profilePicture, hasHighQualityAvatar, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
+  // Drives the whole page shape: false swaps the black course section for the
+  // course selector and switches the intro copy to its no-course variant.
+  const [hasCourse, setHasCourse] = useState(false);
   const [courseData, setCourseData] = useState(null);
   const [groupedLessons, setGroupedLessons] = useState({});
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
@@ -132,146 +135,158 @@ const useProgressData = () => {
           .from('users')
           .select('enrolled_course, role, country, username, is_public')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
-        if (userError || !userData?.enrolled_course) {
-          window.location.href = '/courses';
-          return;
+        if (userError) {
+          console.warn('[ProgressHub] Failed to load user record:', userError);
         }
+
+        // Having no enrolled course is a first-class state, not an error: the hub
+        // renders the course selector in place of the course section rather than
+        // ejecting the user to the public catalog. A failed/missing user row lands
+        // here too — degrading to the selector beats bouncing someone out of the app.
+        const courseId = userData?.enrolled_course || null;
 
         if (isMounted) {
-          setUserRole(userData.role || 'student');
-          setUserCountry(userData.country || null);
+          setHasCourse(Boolean(courseId));
+          setUserRole(userData?.role || 'student');
+          setUserCountry(userData?.country || null);
           // Only surface the slug when the profile is actually public — the
           // /{username} page 404s for opted-out users.
-          setUsername(userData.is_public === false ? null : (userData.username || null));
+          setUsername(userData?.is_public === false ? null : (userData?.username || null));
         }
-        const courseId = userData.enrolled_course;
 
-        // Fetch course details
-        const { data: courseDataResult } = await supabase
-          .from('courses')
-          .select('*')
-          .eq('name', courseId)
-          .single();
+        // Read by the stat computations below, which run for everyone. Their
+        // zero-value branches are exactly what an unenrolled user should see.
+        let completedLessonsData = [];
+        let completedCount = 0;
+        let userScoresResult = {};
+
+        if (courseId) {
+          // Fetch course details
+          const { data: courseDataResult } = await supabase
+            .from('courses')
+            .select('*')
+            .eq('name', courseId)
+            .single();
+
+          if (!isMounted) return;
+
+          if (courseDataResult) {
+            setCourseData(courseDataResult);
+            courseDataResultRef.current = courseDataResult;
+
+            // Set reddit info for community forum
+            const readUrl = courseDataResult.reddit_read_url || courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
+            const postUrl = courseDataResult.reddit_post_url || courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
+            const readChannel = extractSubredditFromUrl(readUrl) || courseDataResult.reddit_channel || 'r/ProductManagement';
+            const postChannel = extractSubredditFromUrl(postUrl) || courseDataResult.reddit_channel || 'r/ProductManagement';
+
+            setCourseReddit({
+              channel: courseDataResult.reddit_channel || 'r/ProductManagement',
+              url: courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/',
+              readUrl,
+              postUrl,
+              readChannel,
+              postChannel,
+            });
+          }
+
+          // Fetch Reddit posts for community forum
+          await fetchRedditPosts(courseDataResult, isMounted);
+
+          // Fetch course resources
+          try {
+            const { data: resourcesData, error: resourcesError } = await supabase
+              .from('course_resources')
+              .select('id, title, description, url, display_order')
+              .eq('course_id', courseId)
+              .order('display_order', { ascending: true });
+            if (!resourcesError && isMounted) setResources(resourcesData || []);
+          } catch {
+            if (isMounted) setResources([]);
+          }
+
+          // Fetch coaches
+          try {
+            const coachesData = await getCoachesForCourse(courseId);
+            if (isMounted) setCoaches(coachesData || []);
+          } catch {
+            if (isMounted) setCoaches([]);
+          }
+
+          // Fetch lessons grouped by module
+          try {
+            const lessonsData = await getLessonsByModule(courseId);
+            if (isMounted) setGroupedLessons(lessonsData);
+          } catch {
+            if (isMounted) setGroupedLessons({});
+          }
+
+          // Fetch lessons metadata
+          try {
+            const metadataData = await getLessonsMetadata(courseId);
+            if (isMounted) setLessonsMetadata(metadataData);
+          } catch {
+            if (isMounted) setLessonsMetadata([]);
+          }
+
+          // Fetch completed lessons
+          try {
+            completedLessonsData = await getCompletedLessons(userId, courseId);
+            if (isMounted) setCompletedLessons(completedLessonsData);
+          } catch {
+            if (isMounted) setCompletedLessons([]);
+          }
+
+          // Fetch total completed lessons for enrolled course
+          try {
+            const { count, error: countError } = await supabase
+              .from('lesson_completions')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', userId)
+              .eq('course_id', courseId);
+
+            if (!countError) {
+              completedCount = count || 0;
+              if (isMounted) setTotalCompletedLessons(completedCount);
+            }
+          } catch {
+            // Not critical
+          }
+
+          // Check for certificate
+          try {
+            const certificates = await getUserCertificates(userId);
+            const courseCertificate = certificates.find(cert => cert.course_id === courseId);
+            if (isMounted && courseCertificate) {
+              setUserCertificate(courseCertificate);
+            }
+          } catch {
+            // Certificate not critical
+          }
+
+          // Fetch lesson scores (user + global)
+          try {
+            const [userScores, globalScores] = await Promise.all([
+              getLessonScores(userId, courseId),
+              getGlobalLessonScores(courseId),
+            ]);
+            userScoresResult = userScores || {};
+            if (isMounted) {
+              setUserLessonScores(userScores);
+              setGlobalLessonScores(globalScores);
+            }
+          } catch {
+            // Scores not critical — graph will render without data
+          }
+        }
 
         if (!isMounted) return;
 
-        if (courseDataResult) {
-          setCourseData(courseDataResult);
-          courseDataResultRef.current = courseDataResult;
-
-          // Set reddit info for community forum
-          const readUrl = courseDataResult.reddit_read_url || courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
-          const postUrl = courseDataResult.reddit_post_url || courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
-          const readChannel = extractSubredditFromUrl(readUrl) || courseDataResult.reddit_channel || 'r/ProductManagement';
-          const postChannel = extractSubredditFromUrl(postUrl) || courseDataResult.reddit_channel || 'r/ProductManagement';
-
-          setCourseReddit({
-            channel: courseDataResult.reddit_channel || 'r/ProductManagement',
-            url: courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/',
-            readUrl,
-            postUrl,
-            readChannel,
-            postChannel,
-          });
-        }
-
-        // Fetch Reddit posts for community forum
-        await fetchRedditPosts(courseDataResult, isMounted);
-
-        // Fetch course resources
-        try {
-          const { data: resourcesData, error: resourcesError } = await supabase
-            .from('course_resources')
-            .select('id, title, description, url, display_order')
-            .eq('course_id', courseId)
-            .order('display_order', { ascending: true });
-          if (!resourcesError && isMounted) setResources(resourcesData || []);
-        } catch {
-          if (isMounted) setResources([]);
-        }
-
-        // Fetch coaches
-        try {
-          const coachesData = await getCoachesForCourse(courseId);
-          if (isMounted) setCoaches(coachesData || []);
-        } catch {
-          if (isMounted) setCoaches([]);
-        }
-
-        // Fetch lessons grouped by module
-        try {
-          const lessonsData = await getLessonsByModule(courseId);
-          if (isMounted) setGroupedLessons(lessonsData);
-        } catch {
-          if (isMounted) setGroupedLessons({});
-        }
-
-        // Fetch lessons metadata
-        try {
-          const metadataData = await getLessonsMetadata(courseId);
-          if (isMounted) setLessonsMetadata(metadataData);
-        } catch {
-          if (isMounted) setLessonsMetadata([]);
-        }
-
-        // Fetch completed lessons
-        let completedLessonsData = [];
-        try {
-          completedLessonsData = await getCompletedLessons(userId, courseId);
-          if (isMounted) setCompletedLessons(completedLessonsData);
-        } catch {
-          if (isMounted) setCompletedLessons([]);
-        }
-
-        // Fetch total completed lessons for enrolled course
-        let completedCount = 0;
-        try {
-          const { count, error: countError } = await supabase
-            .from('lesson_completions')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', userId)
-            .eq('course_id', courseId);
-
-          if (!countError) {
-            completedCount = count || 0;
-            if (isMounted) setTotalCompletedLessons(completedCount);
-          }
-        } catch {
-          // Not critical
-        }
-
-        // Check for certificate
-        try {
-          const certificates = await getUserCertificates(userId);
-          const courseCertificate = certificates.find(cert => cert.course_id === courseId);
-          if (isMounted && courseCertificate) {
-            setUserCertificate(courseCertificate);
-          }
-        } catch {
-          // Certificate not critical
-        }
-
-        // Fetch lesson scores (user + global)
-        let userScoresResult = {};
-        try {
-          const [userScores, globalScores] = await Promise.all([
-            getLessonScores(userId, courseId),
-            getGlobalLessonScores(courseId),
-          ]);
-          userScoresResult = userScores || {};
-          if (isMounted) {
-            setUserLessonScores(userScores);
-            setGlobalLessonScores(globalScores);
-          }
-        } catch {
-          // Scores not critical — graph will render without data
-        }
-
         // Fetch community learner count (pre-computed daily in community_stats table)
         try {
-          const count = await getCommunityLearnerCount(userData.country || null);
+          const count = await getCommunityLearnerCount(userData?.country || null);
           if (isMounted) setCommunityCount(count);
         } catch {
           // Community count not critical
@@ -424,7 +439,7 @@ const useProgressData = () => {
         }
 
         // Preload stat images so they're visible immediately when loading finishes
-        const communityImage = (COUNTRY_CONFIG[userData.country] || DEFAULT_COMMUNITY).image;
+        const communityImage = (COUNTRY_CONFIG[userData?.country] || DEFAULT_COMMUNITY).image;
         const statImages = [
           behaviourStatValue?.image,
           achievementStatValue?.image,
@@ -452,6 +467,7 @@ const useProgressData = () => {
 
   return {
     loading,
+    hasCourse,
     firstName,
     authUser,
     isInsider,
