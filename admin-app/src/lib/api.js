@@ -1281,37 +1281,39 @@ export async function getSectionFeedbackStats(courseId, moduleNumber, lessonNumb
  * Note: This requires RLS policies to allow admins to read all users
  */
 export async function getAllUsers() {
-  // First check if we're authenticated
-  const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
+  const { data: { session }, error: authError } = await supabase.auth.getSession();
 
-  if (authError || !currentUser) {
+  if (authError || !session?.user) {
     console.error('Not authenticated:', authError);
     return [];
   }
 
-  // Try to get all users from public.users table
-  const { data, error, count } = await supabase
+  // Preferred path: the API joins public.users with auth.users so rows carry a
+  // real email. Emails need the service role, so this cannot be done here.
+  try {
+    const response = await fetch(`${API_URL}/api/admin/users`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (!response.ok) throw new Error(`API returned ${response.status}`);
+    const { users } = await response.json();
+    return users || [];
+  } catch (error) {
+    // Render cold-starts and 502s must not blank the user list — fall back to
+    // the table the browser client can reach. Everything but email survives.
+    console.warn('Falling back to direct user query (no emails):', error.message);
+  }
+
+  const { data, error } = await supabase
     .from('users')
-    .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public', { count: 'exact' })
+    .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public')
     .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching users:', error);
-    console.error('Error details:', JSON.stringify(error, null, 2));
-    // Return empty array instead of throwing to prevent UI breaks
     return [];
   }
 
-  // Note: Cannot fetch emails from auth.users due to permissions
-  // Emails require Service Role key which cannot be used client-side
-  // Users will show with "Email not accessible" instead
-  const usersWithPlaceholder = (data || []).map(user => ({
-    ...user,
-    email: 'Email not accessible (requires service role)'
-  }));
-
-  console.log(`Fetched ${usersWithPlaceholder?.length || 0} users (total count: ${count})`);
-  return usersWithPlaceholder;
+  return (data || []).map(user => ({ ...user, email: null }));
 }
 
 /**

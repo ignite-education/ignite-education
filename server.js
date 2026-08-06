@@ -6817,6 +6817,48 @@ app.get('/api/admin/referrals', verifyAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/users — the user list for the admin portal (admin only)
+//
+// Exists because email lives only in auth.users, which needs the service role.
+// The admin app's browser client can read public.users but not auth.users, so
+// it used to render the literal string "Email not accessible" for every row.
+app.get('/api/admin/users', verifyAdmin, async (req, res) => {
+  try {
+    const { data: profiles, error } = await supabase
+      .from('users')
+      .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // listUsers() pages at 50 by default, so a single call silently truncates
+    // the email map and the tail of the list renders blank. Walk every page.
+    //
+    // The stop condition is an empty page, not a short one: GoTrue caps
+    // per_page server-side, so a page shorter than requested is normal and
+    // testing for it would break the loop after the first batch — the same
+    // truncation, just harder to spot. MAX_PAGES is a runaway guard in case a
+    // server ignores `page` and keeps returning the first batch forever.
+    const emailById = {};
+    const PER_PAGE = 1000;
+    const MAX_PAGES = 200;
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const { data, error: listError } = await supabase.auth.admin.listUsers({ page, perPage: PER_PAGE });
+      if (listError) throw listError;
+      const batch = data?.users || [];
+      if (batch.length === 0) break;
+      for (const u of batch) emailById[u.id] = u.email;
+    }
+
+    res.json({
+      users: (profiles || []).map((u) => ({ ...u, email: emailById[u.id] || null })),
+    });
+  } catch (error) {
+    console.error('Error listing users:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============================================================================
 // NOTIFICATIONS
 // ============================================================================

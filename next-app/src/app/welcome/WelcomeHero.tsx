@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
@@ -248,11 +249,56 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
       <div
         className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
         style={{
-          background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.96) 50%, rgba(255,255,255,1) 100%)',
           opacity: !isExpanded && (isMobile ? totalCards >= 7 : maxRows >= 3) ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}
       />
+
+      {/* Trustpilot brandmark + 4.5-star rating, pinned to the section's bottom
+          edge so it paints over the white fade above. Composed from the two
+          official assets rather than one combined file — both already live in
+          the Supabase bucket and the star SVG stays crisp at any size. Served
+          from Supabase like every other image on the public pages:
+          next-app/public is not reachable from ignite.education, which serves
+          these pages through a Vercel rewrite. z-20 to clear the fade (z-10);
+          pointer-events-none because it is decorative and must not eat clicks
+          meant for the cards behind it. Absolutely positioned, so it does not
+          participate in the computed section height. Unlike the fade and the
+          button it has no opacity binding — it stays visible whether or not the
+          catalog is clipped, and rides to the new bottom edge when expanded. */}
+      {/* -ml-6 on mobile: nudges the centre 24px left so the badge clears the
+          85px Expand button at bottom-right on a 375px viewport, where a true
+          centre would leave them touching. Below 360px even that is not enough
+          — 24px of nudge still puts the last star under the button — so the
+          smallest phones get a deeper nudge. Margin utilities rather than an
+          arbitrary-value left-[calc(...)]: if one were ever missing from a
+          stale bundle the centring still holds and the badge only loses its
+          nudge, whereas a dropped `left` silently falls back to 0 and dumps it
+          off the left edge — see the same note in
+          courses/[courseSlug]/CourseHero.tsx. */}
+      {/* Vertical position is bounded by the fade, which only runs
+          transparent -> 0.96 over its top 25px: lift the badge much further and
+          card text starts showing through the wordmark. */}
+      <div className="absolute bottom-[17px] left-1/2 -translate-x-1/2 -ml-6 max-[359px]:-ml-8 md:ml-0 flex items-center gap-[7px] md:gap-2 z-20 pointer-events-none">
+        <Image
+          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
+          alt="Trustpilot"
+          width={576}
+          height={144}
+          className="w-[58px] md:w-[84px] h-auto"
+        />
+        {/* unoptimized: the Next image optimizer rejects SVG unless
+            dangerouslyAllowSVG is on. */}
+        <Image
+          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/trustpilot-rating-4halfstar.svg"
+          alt="4.5 out of 5 stars"
+          width={512}
+          height={96}
+          unoptimized
+          className="w-[76px] md:w-[108px] h-auto"
+        />
+      </div>
 
       {/* Expand/Collapse Button - fades in/out based on row count */}
       <button
