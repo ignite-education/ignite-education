@@ -31,6 +31,16 @@ interface CourseTypeColumnProps {
   searchQuery?: string
   /** Forwarded to every CourseCard — see its prop docs. */
   openInNewTab?: boolean
+  /**
+   * Milliseconds for a card to collapse in or out as the query filters it.
+   * Opacity runs at 5/6 of this, so a card finishes fading before it finishes
+   * flattening and no squashed sliver of text shows at the end.
+   *
+   * Opt-in rather than a blanket change: this component also backs /courses and
+   * the public profile pages via CourseCatalogClient, and only /welcome is meant
+   * to run slower.
+   */
+  filterMs?: number
 }
 
 export default function CourseTypeColumn({
@@ -43,7 +53,10 @@ export default function CourseTypeColumn({
   maxCourses,
   searchQuery = '',
   openInNewTab = false,
+  filterMs = 300,
 }: CourseTypeColumnProps) {
+  const filterOpacityMs = Math.round((filterMs * 5) / 6)
+  const filterEase = 'cubic-bezier(0.33, 1, 0.68, 1)'
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
   const displayCourses = maxCourses ? courses.slice(0, maxCourses) : courses
 
@@ -95,7 +108,7 @@ export default function CourseTypeColumn({
                 opacity: useStagger ? undefined : (isVisible ? 1 : 0),
                 marginBottom: (useStagger || isVisible) ? '12px' : '0px',
                 transition: transitionsEnabled
-                  ? 'grid-template-rows 300ms cubic-bezier(0.33, 1, 0.68, 1), opacity 250ms ease, margin-bottom 300ms cubic-bezier(0.33, 1, 0.68, 1)'
+                  ? `grid-template-rows ${filterMs}ms ${filterEase}, opacity ${filterOpacityMs}ms ease, margin-bottom ${filterMs}ms ${filterEase}`
                   : 'none',
               }}
             >

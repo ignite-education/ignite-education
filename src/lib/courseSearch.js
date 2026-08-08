@@ -21,3 +21,24 @@ export function courseMatchesQuery(course, query) {
   }
   return false;
 }
+
+/** Characters typed before the "Request" offer appears, results or not. */
+export const REQUEST_MIN_CHARS = 3;
+
+/**
+ * Whether to offer "Request" for a query. Appears once the query is long enough
+ * to be a real request, and — below that length — as soon as the catalog has
+ * nothing to show for it.
+ *
+ * `noResults` is left to the caller: what counts as "nothing" differs by
+ * surface. Mirrors next-app/src/lib/courseUtils.ts — the two apps share no
+ * code, so this has to be kept in step by hand.
+ *
+ * @param {string} query
+ * @param {boolean} noResults
+ * @returns {boolean}
+ */
+export function shouldOfferRequest(query, noResults) {
+  const len = (query || '').trim().length;
+  return len > 0 && (len >= REQUEST_MIN_CHARS || noResults);
+}

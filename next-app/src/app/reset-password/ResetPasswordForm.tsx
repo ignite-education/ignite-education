@@ -66,7 +66,7 @@ export default function ResetPasswordForm() {
       if (error) throw error
 
       setSuccess(true)
-      setTimeout(() => router.push('/courses'), 2000)
+      setTimeout(() => router.push('/progress'), 2000)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update password'
       setError(message)

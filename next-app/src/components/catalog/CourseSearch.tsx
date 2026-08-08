@@ -6,6 +6,14 @@ interface CourseSearchProps {
   placeholder?: string
   autoFocus?: boolean
   showRequestButton?: boolean
+  /**
+   * Whether Enter fires the request. Deliberately separate from
+   * `showRequestButton`: the button is offered as soon as the query is long
+   * enough to be worth requesting, but Enter must not be hijacked from someone
+   * looking at courses they just found. Defaults to off, so a caller that
+   * forgets it loses the shortcut rather than gaining a surprise modal.
+   */
+  requestOnEnter?: boolean
   onRequestClick?: () => void
 }
 
@@ -15,6 +23,7 @@ export default function CourseSearch({
   placeholder = '',
   autoFocus = true,
   showRequestButton = false,
+  requestOnEnter = false,
   onRequestClick,
 }: CourseSearchProps) {
   return (
@@ -34,7 +43,7 @@ export default function CourseSearch({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && showRequestButton && onRequestClick) {
+          if (e.key === 'Enter' && requestOnEnter && onRequestClick) {
             e.preventDefault()
             onRequestClick()
           }
