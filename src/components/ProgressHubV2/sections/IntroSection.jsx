@@ -47,13 +47,13 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
   // points at the same #course-details anchor and lands on it.
   if (!hasCourse) {
     return {
-      headline: `Welcome to Ignite, ${firstName}.`,
-      body: `Choose a topic you want to discover, and then take it a lesson at a time. Your Progress, Office Hours, Community Forum and more resources are all waiting here once you do. Select your course below.`,
-      linkText: 'Select your course',
+      headline: 'Welcome to Ignite',
+      body: `${firstName}, you're in. To get started, select a topic you want to learn below. Your Progress, Office Hours, Community Forum and everything else will be waiting here once you do. Let's get going.`,
+      linkText: 'select a topic',
       linkUrl: '#course-details',
-      // All three sentences on mobile too. The default cap of 2 would cut the copy
-      // off before its last sentence, which is the only link to the selector.
-      mobileSentences: 3,
+      // Show the lot on mobile. The default cap of 2 would cut the copy off
+      // before the sentence carrying the link down to the selector.
+      mobileSentences: 4,
     };
   }
 

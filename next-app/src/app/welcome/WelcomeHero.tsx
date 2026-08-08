@@ -7,7 +7,7 @@ import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
 import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
-import { courseMatchesQuery } from '@/lib/courseUtils'
+import { courseMatchesQuery, shouldOfferRequest } from '@/lib/courseUtils'
 import type { Module } from '@/types/course'
 import CourseRequestModal from './CourseRequestModal'
 import lottieData from '../../../public/icon-animation.json'
@@ -106,7 +106,11 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
 
   const hasSearchQuery = searchQuery.trim().length > 0
   const totalFilteredResults = filteredSpecialism.length + filteredSkill.length + filteredSubject.length
+  // `<= 1` rather than `=== 0`: one stray fuzzy match still means the thing you
+  // searched for is not here. Gates the Enter shortcut only — the button itself
+  // is offered on query length, whatever the results.
   const noResults = hasSearchQuery && totalFilteredResults <= 1
+  const showRequest = shouldOfferRequest(searchQuery, noResults)
 
   const [isMobile, setIsMobile] = useState<boolean | null>(null) // null = pre-hydration
   useEffect(() => {
@@ -215,7 +219,8 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
           <CourseSearch
             value={searchQuery}
             onChange={setSearchQuery}
-            showRequestButton={noResults}
+            showRequestButton={showRequest}
+            requestOnEnter={noResults}
             onRequestClick={handleRequestCourse}
           />
         </div>
@@ -235,7 +240,10 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
                 : 0.15
               const el = (
                 <div key={type} className={filteredCount === 0 && hasSearchQuery ? 'hidden md:block' : ''}>
-                  <CourseTypeColumn type={type} courses={allCourses} searchQuery={searchQuery} hideHeader cardStaggerBase={baseDelay} />
+                  {/* 420ms rather than the 300ms default, matching the course
+                      selector on the Progress Hub. /courses and the public
+                      profiles keep the default. */}
+                  <CourseTypeColumn type={type} courses={allCourses} searchQuery={searchQuery} hideHeader cardStaggerBase={baseDelay} filterMs={420} />
                 </div>
               )
               cardOffset += allCourses.length

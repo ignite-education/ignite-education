@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useIsMobile from '../hooks/useIsMobile';
 import { getCoursesByType } from '../../../lib/api';
-import { courseMatchesQuery } from '../../../lib/courseSearch';
+import { courseMatchesQuery, shouldOfferRequest } from '../../../lib/courseSearch';
 import { getCachedCourses, setCachedCourses } from '../../../lib/courseCatalogCache';
 import CourseRequestModal from './CourseRequestModal';
 
@@ -24,8 +24,18 @@ const COURSE_TYPE_CONFIG = {
 
 const EMPTY_BY_TYPE = { specialism: [], skill: [], subject: [] };
 
-// Characters typed before the "Request" offer is allowed to appear.
-const REQUEST_MIN_CHARS = 4;
+// How fast cards collapse in and out as the query changes. Slower than the
+// catalog default of 300/250ms — this is a landing surface rather than a search
+// page, so the movement should read as settling, not snapping.
+//
+// /welcome is kept in step at 420ms via CourseTypeColumn's `filterMs` prop, but
+// the two apps share no code, so these values have to be maintained in both
+// places. /courses and the public profiles stay on the 300ms default.
+const FILTER_MS = 420;          // height + margin
+const FILTER_OPACITY_MS = 350;  // deliberately shorter, in the catalog's 5:6 ratio:
+                                // a card finishes fading before it finishes flattening,
+                                // so no squashed sliver of text shows at the end
+const FILTER_EASE = 'cubic-bezier(0.33, 1, 0.68, 1)';
 
 /**
  * A course card.
@@ -125,7 +135,7 @@ const CourseTypeColumn = ({ type, courses, searchQuery = '', cardStaggerBase = 0
                 opacity: useStagger ? undefined : (isVisible ? 1 : 0),
                 marginBottom: (useStagger || isVisible) ? '12px' : '0px',
                 transition: transitionsEnabled
-                  ? 'grid-template-rows 300ms cubic-bezier(0.33, 1, 0.68, 1), opacity 250ms ease, margin-bottom 300ms cubic-bezier(0.33, 1, 0.68, 1)'
+                  ? `grid-template-rows ${FILTER_MS}ms ${FILTER_EASE}, opacity ${FILTER_OPACITY_MS}ms ease, margin-bottom ${FILTER_MS}ms ${FILTER_EASE}`
                   : 'none',
               }}
             >
@@ -229,15 +239,14 @@ const CourseSelectorSection = () => {
   }, []);
 
   const hasSearchQuery = searchQuery.trim().length > 0;
-  // `<= 1` rather than `=== 0`, matching /welcome: one stray fuzzy match still
-  // means the thing you searched for is not here, so the offer stays up.
   const totalFilteredResults = Object.values(coursesByType)
     .flat()
     .filter((c) => courseMatchesQuery(c, searchQuery)).length;
-  // Hold the offer back until there is a real query to request. A word being
-  // typed passes through lengths that match nothing — "u", "un" — and without
-  // this the button flashes in and out on the way to a genuine search.
-  const noResults = searchQuery.trim().length >= REQUEST_MIN_CHARS && totalFilteredResults <= 1;
+  // `<= 1` rather than `=== 0`, matching /welcome: one stray fuzzy match still
+  // means the thing you searched for is not here. Gates the Enter shortcut
+  // only — the button itself is offered on query length, whatever the results.
+  const noResults = hasSearchQuery && totalFilteredResults <= 1;
+  const showRequest = shouldOfferRequest(searchQuery, noResults);
 
   const handleRequestCourse = () => {
     setRequestedQuery(searchQuery.trim());
@@ -305,11 +314,21 @@ const CourseSelectorSection = () => {
       ref={sectionRef}
       id="course-details"
       className="bg-black px-5 lg:px-12 antialiased"
-      // The Expand button already sits 16px in from the band's bottom edge, so
-      // the section's usual 45px underneath it reads as a dead gap. Tighten it
-      // while the control is on screen; with no control the 45px is what keeps
-      // this section in rhythm with the ones around it.
-      style={{ paddingTop: isMobile ? '32px' : '45px', paddingBottom: isClipped ? '16px' : '45px' }}
+      // Bottom padding is three cases, not two:
+      //  expanded        8px  — the Collapse button already floats 16px up inside
+      //                  the band, so this is only the margin under the button
+      //                  itself: 24px to the white below. Card clearance is not
+      //                  its job — the content wrapper's reserved strip does that.
+      //  clipped         0    — the fade is anchored to the band's bottom edge,
+      //                  so padding under it is black the gradient never reaches:
+      //                  the flat gap. At 0 the ramp finishes exactly where the
+      //                  white section starts.
+      //  neither         45px — no fade to worry about, and 45 is what keeps this
+      //                  section in rhythm with the ones around it.
+      style={{
+        paddingTop: isMobile ? '32px' : '45px',
+        paddingBottom: isExpanded ? '8px' : (isClipped ? '0px' : '45px'),
+      }}
     >
      <div className="relative">
       <div
@@ -323,9 +342,16 @@ const CourseSelectorSection = () => {
           transition: 'max-height 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
         }}
       >
-      {/* Unstyled wrapper whose only job is to give the ResizeObserver a box that
-          tracks the content's true height — the band's own is pinned at the cap. */}
-      <div ref={contentRef}>
+      {/* Wrapper whose main job is to give the ResizeObserver a box that tracks
+          the content's true height — the band's own is pinned at the cap.
+          Expanded, it also reserves a strip for the Collapse button. The button is
+          36px tall sitting 16px up, so its top reaches 52px above this box's
+          bottom edge, while the last card's own margin puts it only 12px up: it
+          would land on that card every time the right-hand column runs full
+          height. 56px clears the button's reach with 16px to spare. The padding
+          has to be here rather than on the band, because this is the box the
+          expanded max-height is measured from. */}
+      <div ref={contentRef} style={{ paddingBottom: isExpanded ? '56px' : 0 }}>
       {/* Heading and search share a row from 768 up — the same width the columns
           below go three-across — and stack under it on narrow screens. */}
       <div
@@ -344,7 +370,11 @@ const CourseSelectorSection = () => {
             mobile (see next-app/src/components/catalog/CourseSearch.tsx). The glow
             is driven by local state rather than that component's global
             document.querySelector, which is the same result without the DOM hunt.
-            Keeps /welcome's 660px cap but shrinks to share the row. */}
+            Keeps /welcome's 660px cap but shrinks to share the row.
+
+            Enter fires the request only when the search genuinely returns
+            nothing: the button is up for any 3-char query, but Enter must not
+            be hijacked from someone looking at courses they found. */}
         <div
           className="w-full md:flex-1 md:max-w-[660px] relative"
           onMouseEnter={() => setSearchHovered(true)}
@@ -355,17 +385,17 @@ const CourseSelectorSection = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && noResults) { e.preventDefault(); handleRequestCourse(); } }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && showRequest && noResults) { e.preventDefault(); handleRequestCourse(); } }}
             placeholder=""
             aria-label="Search courses"
-            className={`w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all ${!noResults ? 'pr-11 md:pr-6' : ''}`}
+            className={`w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all ${!showRequest ? 'pr-11 md:pr-6' : ''}`}
             style={{
               boxShadow: `0 0 10px rgba(103,103,103,${searchHovered ? 0.75 : 0.6})`,
-              paddingRight: noResults ? '160px' : undefined,
+              paddingRight: showRequest ? '160px' : undefined,
             }}
           />
           {/* Decorative magnifier (mobile only) — stands down for the Request button */}
-          {!noResults && (
+          {!showRequest && (
             <svg
               className="absolute right-4 top-0 bottom-0 my-auto text-[#C5C5C5] pointer-events-none md:hidden"
               width="18"
@@ -386,16 +416,16 @@ const CourseSelectorSection = () => {
           <button
             type="button"
             onClick={handleRequestCourse}
-            tabIndex={noResults ? 0 : -1}
-            aria-hidden={!noResults}
+            tabIndex={showRequest ? 0 : -1}
+            aria-hidden={!showRequest}
             className="group absolute right-1 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#EBEBEB]/80 rounded-lg pl-3 pr-1.5 cursor-pointer"
             style={{
               height: 'fit-content',
               paddingTop: '6px',
               paddingBottom: '6px',
-              opacity: noResults ? 1 : 0,
-              transform: noResults ? 'scale(1)' : 'scale(0.9)',
-              pointerEvents: noResults ? 'auto' : 'none',
+              opacity: showRequest ? 1 : 0,
+              transform: showRequest ? 'scale(1)' : 'scale(0.9)',
+              pointerEvents: showRequest ? 'auto' : 'none',
               transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
@@ -447,9 +477,18 @@ const CourseSelectorSection = () => {
       {/* Bottom fade — /welcome's, recoloured for the black section. Signals the
           band is clipped. */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
+        className="absolute bottom-0 left-0 right-0 pointer-events-none z-10"
         style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.96) 50%, rgba(0,0,0,1) 100%)',
+          // Runs to the section's own bottom edge, because when clipped the
+          // section has no bottom padding — so the ramp ends where the black ends
+          // and there is no flat strip between the last faded card and the white
+          // section below.
+          height: '110px',
+          // Reaches full black exactly at 100% — the section's own edge — so no
+          // flat black strip is left between the fading cards and the white
+          // section below. Stopping short of 100% (even at 92%) leaves that strip
+          // visible, which is the gap this is meant to remove.
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 28%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.85) 75%, rgba(0,0,0,0.97) 90%, rgba(0,0,0,1) 100%)',
           opacity: !isExpanded && isClipped ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}

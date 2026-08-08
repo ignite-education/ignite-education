@@ -37,6 +37,23 @@ export function courseMatchesQuery(course: SearchableCourse, query: string): boo
   return false
 }
 
+/** Characters typed before the "Request" offer appears, results or not. */
+export const REQUEST_MIN_CHARS = 3
+
+/**
+ * Whether to offer "Request" for a query. Appears once the query is long enough
+ * to be a real request, and — below that length — as soon as the catalog has
+ * nothing to show for it.
+ *
+ * `noResults` is left to the caller: what counts as "nothing" differs by
+ * surface (/welcome treats a single stray fuzzy match as nothing, /courses
+ * insists on a true zero).
+ */
+export function shouldOfferRequest(query: string, noResults: boolean): boolean {
+  const len = query.trim().length
+  return len > 0 && (len >= REQUEST_MIN_CHARS || noResults)
+}
+
 /**
  * Get the display label for course type tag
  */

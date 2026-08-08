@@ -44,7 +44,7 @@ export default function SignInForm() {
       // Optional post-sign-in destination (e.g. a specific lesson) and the course
       // to enroll in, passed through to the OAuth callback. URLSearchParams encodes
       // `next` (which itself contains a query string) as a single value.
-      const nextParam = searchParams.get('next') || '/courses'
+      const nextParam = searchParams.get('next') || '/progress'
       const courseParam = searchParams.get('course')
       // Referral attribution. An explicit ?ref= beats the stored crumb, so a
       // freshly-clicked link wins over a profile visited days ago.

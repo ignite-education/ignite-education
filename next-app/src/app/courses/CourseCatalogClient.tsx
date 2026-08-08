@@ -6,7 +6,7 @@ import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
 import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
-import { courseMatchesQuery } from '@/lib/courseUtils'
+import { courseMatchesQuery, shouldOfferRequest } from '@/lib/courseUtils'
 import CourseRequestModal from '@/app/welcome/CourseRequestModal'
 import type { CoursesByType } from '@/lib/courseData'
 
@@ -104,10 +104,13 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false, o
   const filteredSubject = filterCourses(coursesByType.subject)
 
   const hasSearchQuery = searchQuery.trim().length > 0
+  // Gates the Enter shortcut only — the button itself is offered on query
+  // length, whatever the results.
   const noResults = hasSearchQuery
     && filteredSpecialism.length === 0
     && filteredSkill.length === 0
     && filteredSubject.length === 0
+  const showRequest = shouldOfferRequest(searchQuery, noResults)
 
   // ---- Collapsible band (mirrors WelcomeHero) --------------------------------
   // Desktop height is driven by the longest column; mobile is a computed pixel
@@ -227,7 +230,8 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false, o
           <CourseSearch
             value={searchQuery}
             onChange={setSearchQuery}
-            showRequestButton={noResults}
+            showRequestButton={showRequest}
+            requestOnEnter={noResults}
             onRequestClick={handleRequestCourse}
           />
         </div>

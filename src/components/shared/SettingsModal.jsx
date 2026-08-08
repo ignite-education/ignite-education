@@ -442,6 +442,53 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
     }
   };
 
+  // Leaving the current course clears the enrollment only — lesson progress,
+  // scores and certificates stay keyed to the course, so re-enrolling restores
+  // them. The course drops back into the Saved column with a Start button.
+  const handleLeaveCourse = async () => {
+    // The card renders off courseData, which arrives before this modal's own
+    // fetch resolves enrolledCourse — fall back so a fast click can't write an
+    // empty slug.
+    const slug = enrolledCourse || courseData?.name;
+    if (!slug) return;
+
+    if (!confirm("Leave this course? Your progress is saved, so you can pick it back up any time.")) return;
+
+    try {
+      // Several enroll paths never write saved_courses (legacy signup, Start,
+      // admin assignment) — Settings only papers over that by synthesising the
+      // enrolled slug into the list. Without a real row the course would vanish
+      // from Settings the moment the enrollment is cleared.
+      const { data: existingSave } = await supabase
+        .from('saved_courses')
+        .select('id')
+        .eq('user_id', authUser.id)
+        .eq('course_id', slug)
+        .maybeSingle();
+
+      if (!existingSave) {
+        await supabase
+          .from('saved_courses')
+          .insert({ user_id: authUser.id, course_id: slug });
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({ enrolled_course: null })
+        .eq('id', authUser.id);
+      if (error) throw error;
+
+      // Mandatory: ProtectedRoute caches hasEnrolled for 5 minutes, and a stale
+      // true would let them into /learning with no course, where useLessonData
+      // silently falls back to 'product-manager'.
+      try { sessionStorage.removeItem('enrollment_status_cache'); } catch {}
+      window.location.reload();
+    } catch (error) {
+      console.error('Error leaving course:', error);
+      alert('Failed to leave course. Please try again.');
+    }
+  };
+
   const handleRemoveCourse = async (courseSlug) => {
     try {
       await removeSavedCourse(authUser.id, courseSlug);
@@ -814,10 +861,23 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 <div className="shrink-0" style={{ minWidth: '35%' }}>
                   <h4 className="font-medium mb-2" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Current</h4>
                   <div className="p-4" style={{ borderRadius: '0.3rem', backgroundColor: '#F6F6F6' }}>
-                    <p className="mb-1" style={{ fontSize: '1.1rem', fontWeight: 500 }}>{enrolledCourseData.title || enrolledCourseData.name}</p>
-                    <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300 }}>
-                      You're <span className="font-semibold text-black">{progressPercentage}%</span> through the course
-                    </p>
+                    <div className="flex justify-between" style={{ gap: '2rem' }}>
+                      <div className="flex-1">
+                        <p className="mb-1" style={{ fontSize: '1.1rem', fontWeight: 500 }}>{enrolledCourseData.title || enrolledCourseData.name}</p>
+                        <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300 }}>
+                          You're <span className="font-semibold text-black">{progressPercentage}%</span> through the course
+                        </p>
+                      </div>
+                      <div className="flex flex-col shrink-0" style={{ justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={handleLeaveCourse}
+                          className="text-white px-3 py-1 hover:opacity-90 transition cursor-pointer"
+                          style={{ borderRadius: '0.3rem', backgroundColor: '#FFAF00', fontSize: '0.85rem', fontWeight: 400 }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

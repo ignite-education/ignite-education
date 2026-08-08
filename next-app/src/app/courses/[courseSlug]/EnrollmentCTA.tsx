@@ -210,7 +210,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
           .maybeSingle()
 
         if (userData?.enrolled_course === courseSlug) {
-          alert('This is your current course. Switch to a different course in Settings first.')
+          alert('This is your current course. Remove it in Settings first, or switch to a different course there.')
           setIsSaving(false)
           setSavingAction(null)
           return
