@@ -7,11 +7,15 @@
  *
  *   node scripts/discover-job-boards.mjs --gaps
  *   node scripts/discover-job-boards.mjs --company "Marks & Spencer" --domain marksandspencer.com
+ *   node scripts/discover-job-boards.mjs --company "BT" --careers-url https://www.bt.com/careers
  *   node scripts/discover-job-boards.mjs --gaps --sql
  *
- * --gaps    every allowed company with no enabled board and no company query
- * --sql     print only the INSERT, for piping into a file
- * --all     include allowed companies that already have a board (re-check)
+ * --gaps          every allowed company with no enabled board and no company query
+ * --sql           print only the INSERT, for piping into a file
+ * --all           include allowed companies that already have a board (re-check)
+ * --careers-url   the careers page to fingerprint, when it is not at a
+ *                 conventional address. Overrides job_companies.careers_url for
+ *                 this run; the stored value is used automatically otherwise.
  *
  * READ-ONLY against the database. It prints a paste-ready INSERT for the
  * Supabase SQL editor rather than writing, which matches how every other
@@ -41,6 +45,7 @@ const ALL = flag('all');
 const SQL_ONLY = flag('sql');
 const ONE_COMPANY = value('company');
 const ONE_DOMAIN = value('domain');
+const ONE_CAREERS_URL = value('careers-url');
 const MARKET = value('market', 'gb');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -59,23 +64,28 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 const log = (...parts) => { if (!SQL_ONLY) console.log(...parts); };
 
 async function targets() {
+  // select('*') rather than naming columns, for the same reason the board query
+  // below does: careers_url only exists after add_job_company_careers_url.sql,
+  // and naming it would break the script on a database where that has not been
+  // applied yet.
   if (ONE_COMPANY) {
     const { data } = await supabase
       .from('job_companies')
-      .select('name_norm, display_name, domain, aliases')
+      .select('*')
       .eq('name_norm', normaliseCompany(ONE_COMPANY))
       .maybeSingle();
     return [{
       name_norm: data?.name_norm || normaliseCompany(ONE_COMPANY),
       display_name: data?.display_name || ONE_COMPANY,
       domain: ONE_DOMAIN || data?.domain || null,
+      careers_url: ONE_CAREERS_URL || data?.careers_url || null,
       aliases: data?.aliases || [],
     }];
   }
 
   const { data, error } = await supabase
     .from('job_companies')
-    .select('name_norm, display_name, domain, aliases')
+    .select('*')
     .eq('allowed', true)
     .order('display_name');
   if (error) throw new Error(`could not read the allowlist: ${error.message}`);
@@ -116,6 +126,7 @@ async function main() {
     const result = await discoverBoards({
       company: company.display_name,
       domain: company.domain,
+      careersUrl: company.careers_url || null,
       aliases: company.aliases || [],
       market,
     });

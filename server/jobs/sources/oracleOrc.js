@@ -20,8 +20,10 @@
  * detail record.
  *
  * The one genuinely convenient thing here: `sortBy=POSTING_DATES_DESC` means
- * page one is the newest jobs. Combined with the board-wide 21-day cut, one or
- * two pages is usually the whole of what we can use out of a 700-job board.
+ * page one is the newest jobs. Combined with the board-wide age cut
+ * (MAX_POSTED_AGE_DAYS in ../lib/expire.js), only the first pages of a 700-job
+ * board are ever usable — but `max_pages` still has to cover them, so raising
+ * that cut means re-checking the account's page count.
  *
  * ⚠️ The `finder` parameter is a semicolon/comma DSL, not ordinary query
  * syntax, and the detail finder needs its values DOUBLE-QUOTED where the list

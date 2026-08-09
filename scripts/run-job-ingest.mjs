@@ -93,6 +93,13 @@ async function main() {
     if (dropped.length) {
       console.log(`    dropped  ${dropped.map(([k, n]) => `${k}=${n}`).join('  ')}`);
     }
+    for (const job of run.samples || []) {
+      console.log(
+        `    + ${job.company} — ${job.title}` +
+        `\n        ${job.location || 'no location'} · ${job.profession} · ${job.seniority}` +
+        ` · posted ${job.postedAt?.slice(0, 10) || '?'}`
+      );
+    }
     if (run.note) console.log(`    note     ${run.note}`);
     if (run.error) console.log(`    error    ${run.error}`);
   }

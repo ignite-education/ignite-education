@@ -683,6 +683,18 @@ Three things exist to stop that recurring:
 attached to a company that is not in the registry — the old display-name string match let that
 happen silently.
 
+**`job_companies.careers_url` is the manual input into discovery.** Given only a domain, discovery
+guesses four conventional addresses (`careers.x`, `x/careers`, `jobs.x`, `x/jobs`). That is right
+for most companies and wrong for most of the ones still uncovered, whose boards sit on separate
+brand domains or behind redirects — so the fingerprint lands on a marketing page, finds no vendor,
+and reports "no board found" for a company that plainly has one. An admin types the real URL on the
+Coverage tab (**save & find** runs discovery against it immediately); `discoverBoards()` fetches it
+before the guesses and uses its origin first in the JSON-LD sitemap fallback. A typed URL is also a
+domain hint, so a company added by name alone is still discoverable. It does **not** bypass
+`DENYLIST` — that check walks up the host labels, so `jobs.apple.com` is refused exactly as
+`apple.com` is — and robots.txt is still checked, now per-origin, because a careers subdomain
+frequently has different rules from the company domain.
+
 **Boards we deliberately do not build.** Apple, Google, Microsoft, Meta, TikTok, Uber, LinkedIn
 and JD.com all block automated access to their job data (401/403/private GraphQL; LinkedIn's
 Greenhouse board holds only ATS test fixtures). Working around that would breach their terms, so
@@ -770,12 +782,18 @@ config change has no history at the new scope, so it re-baselines immediately.
 - **ATS `posted_at` is unreliable, and the board now filters on it anyway.** Lever reports when
   the *requisition record* was created, which for evergreen roles can be a decade ago. `too_old`
   used to be skipped for `kind = 'ats'` for exactly that reason, with delisting as the only
-  lifecycle rule. It no longer is: `MAX_POSTED_AGE_DAYS` (21, `expire.js`, overridable via
+  lifecycle rule. It no longer is: `MAX_POSTED_AGE_DAYS` (45, `expire.js`, overridable via
   `JOBS_MAX_POSTED_AGE_DAYS`) drops older postings at ingest **and** expires ones already held.
-  This is a deliberate product trade, not a bug fix — measured on the live board it removed 27
-  of 36 vacancies, all 27 of which the employer's own feed had confirmed open within 24 hours,
-  and it took three of six professions below the "has jobs" threshold that governs `noindex` and
-  sitemap inclusion. Widen the constant before concluding the ingest is broken. If the intent
+  This is a deliberate product trade, not a bug fix, and **it is the dial that governs board size
+  far more than sourcing does**. Measured across all 18 enabled boards — 3,008 jobs fetched, of
+  which 2,786 map to no specialism and 155 are out of market — the surviving count by window is
+  21d → 20, 30d → 37, 45d → 45, 60d → 48, 90d → 49, uncapped → 67. It sat at 21 and was widened to
+  45, where the curve flattens; at 21 the largest single group it was discarding was 25 Product
+  Manager roles at LSEG, Deliveroo and Monzo that were all still live in the employer's own feed.
+  Widen it before concluding the ingest is broken, and note that widening alone restores nothing
+  already expired — `persistBatch` never rewrites `status`, so reviving needs an explicit UPDATE
+  (`migrations/revive_jobs_for_45_day_window.sql` is the worked example, including the
+  `last_seen_at` guard that separates "we hid it" from "the employer took it down"). If the intent
   ever becomes "drop what has gone cold on *our* board", the right column is `first_seen_at`,
   which is already what `computeExpiry()` anchors on.
 - **The freshness cut is duplicated, on purpose.** `MAX_POSTED_AGE_DAYS` in `expire.js` (server)

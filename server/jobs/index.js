@@ -99,9 +99,25 @@ export async function runJobIngest({
   warnAboutUnmappedProfessions(allowedProfessions)
 
   const activeMarkets = (markets || []).filter(m => !marketFilter || marketFilter.includes(m.code))
-  const activeSources = (allSources || []).filter(
-    s => s.enabled && s.trust_level !== 'blocked' && (!sourceFilter || sourceFilter.includes(s.key))
-  )
+  const activeSources = (allSources || []).filter(source => {
+    if (source.trust_level === 'blocked') return false
+    if (sourceFilter && !sourceFilter.includes(source.key)) return false
+    if (source.enabled) return true
+
+    // A DRY RUN may exercise a disabled source, but only one named explicitly.
+    //
+    // Every new source ships `enabled = false`, because company trust is 'auto'
+    // for the whole allowlist and so a live run publishes straight to the public
+    // board. The instruction that goes with that is "dry-run first, then enable"
+    // — which was impossible, since a disabled source was skipped before the
+    // dry-run flag was ever consulted. Naming a source explicitly in a dry run
+    // is an unambiguous request to test exactly it, and nothing is written.
+    if (dryRun && sourceFilter?.includes(source.key)) {
+      console.log(`🧪 [jobs] ${source.key} is disabled — included because this is a dry run`)
+      return true
+    }
+    return false
+  })
 
   const summary = []
 
@@ -157,6 +173,7 @@ async function ingestSourceMarket({
   const label = `${source.key}/${market.code}`
   const runId = dryRun ? null : await runLog.start({ source: source.key, market: market.code, trigger })
   const drops = createDropCounter()
+  let samples = []
   const stats = {
     fetched: 0, inserted: 0, updated: 0, autoApproved: 0, queued: 0, expired: 0,
     apiCalls: 0, detailCalls: 0,
@@ -445,6 +462,20 @@ async function ingestSourceMarket({
     } else if (dryRun) {
       stats.inserted = rows.filter(r => !existing.has(r.source_job_id)).length
       stats.updated = rows.length - stats.inserted
+      // What a dry run is actually for. The counts say how many jobs would
+      // appear; only the titles say whether they are jobs anyone wants, and
+      // that is the question you are asking when bringing up a new board.
+      samples = rows
+        .filter(r => !existing.has(r.source_job_id))
+        .slice(0, 20)
+        .map(r => ({
+          company: r.company,
+          title: r.title,
+          location: r.location_raw,
+          profession: r.profession_inferred,
+          seniority: r.seniority_inferred,
+          postedAt: r.posted_at,
+        }))
     }
 
     // --- 7. Company logos ----------------------------------------------------
@@ -495,7 +526,7 @@ async function ingestSourceMarket({
       `${stats.expired} expired, dropped ${JSON.stringify(drops.all)}`
     )
 
-    return { label, status, stats, dropped: drops.all }
+    return { label, status, stats, dropped: drops.all, ...(samples.length ? { samples } : {}) }
   } catch (error) {
     console.error(`❌ [jobs] ${label} failed:`, error.message)
     if (!dryRun) await runLog.finish(runId, { status: 'failed', stats, dropped: drops.all, error: error.message })
@@ -566,11 +597,7 @@ async function hydrate({
 
     const held = existing.get(raw.sourceJobId)
     if (held?.description_text) {
-      raw.descriptionHtml = held.description_html
-      raw.descriptionText = held.description_text
-      raw.descriptionSnippet = held.description_snippet || buildSnippet(held.description_text)
-      raw.postedAt = held.posted_at || raw.postedAt
-      raw.needsDetail = false
+      restoreFromStored(raw, held)
       kept.push(entry)
       continue
     }
@@ -599,6 +626,51 @@ async function hydrate({
   }
 
   return { raws: kept, existing }
+}
+
+/**
+ * Put a stored listing's detail-derived fields back onto a RawJob we chose not
+ * to re-hydrate.
+ *
+ * This covers EVERY volatile field, not just the description, and that
+ * completeness is the point. persist.js rewrites all of VOLATILE_FIELDS on a
+ * re-seen row, while a two-phase source's list response is by definition an
+ * incomplete record — so any volatile field the list does not carry gets
+ * overwritten with a blank or a placeholder unless it is restored here. Two
+ * separate bugs came from restoring only part of the set:
+ *
+ *   - location: Workday reports "2 Locations" for a multi-site requisition and
+ *     a sitemap reports none, so the job failed wrong_market on its SECOND run,
+ *     never refreshed last_seen_at, and was delisted three days later. A
+ *     listing that appears on Monday and silently vanishes on Thursday.
+ *   - title: the JSON-LD adapter's pre-hydration title is derived from the URL
+ *     slug purely so the cheap title gates can run, so "Principal Data
+ *     Scientist" was overwritten with "principal data scientist" on run two.
+ *
+ * The trade-off, stated plainly: a re-seen job keeps the detail values from
+ * when we first fetched it. An employer editing the advert in place will not be
+ * picked up until it reappears under a new source id. That is the same
+ * assumption expire.js already makes about ATS feeds — presence means open —
+ * and it is worth one stale field to avoid re-fetching every description nightly.
+ */
+function restoreFromStored(raw, held) {
+  raw.title = held.title || raw.title
+  raw.descriptionHtml = held.description_html
+  raw.descriptionText = held.description_text
+  raw.descriptionSnippet = held.description_snippet || buildSnippet(held.description_text)
+  raw.postedAt = held.posted_at || raw.postedAt
+  raw.locationRaw = held.location_raw ?? raw.locationRaw
+  raw.locationCity = held.location_city ?? raw.locationCity
+  raw.locationRegion = held.location_region ?? raw.locationRegion
+  raw.isRemote = held.is_remote ?? raw.isRemote
+  raw.salaryMin = held.salary_min ?? raw.salaryMin
+  raw.salaryMax = held.salary_max ?? raw.salaryMax
+  raw.salaryCurrency = held.salary_currency ?? raw.salaryCurrency
+  raw.salaryPeriod = held.salary_period ?? raw.salaryPeriod
+  raw.salaryIsEstimate = held.salary_is_estimate ?? raw.salaryIsEstimate
+  raw.contractType = held.contract_type ?? raw.contractType
+  raw.contractTime = held.contract_time ?? raw.contractTime
+  raw.needsDetail = false
 }
 
 /**

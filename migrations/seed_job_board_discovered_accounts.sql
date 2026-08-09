@@ -24,7 +24,8 @@ INSERT INTO public.job_source_accounts
 VALUES
   -- locationCountry: United Kingdom (176)
   ('workday', 'lseg', 'London Stock Exchange', 'london stock exchange', ARRAY['gb'], true, 9, 'lseg.com', '{"tenant":"lseg","wd":3,"site":"Careers","facets":{"gb":{"locationCountry":["29247e57dbaf46fb855b224e03170bc7"]}}}'::jsonb),
-  ('oracle_orc', 'marks-spencer', 'Marks & Spencer', 'marks and spencer', ARRAY['gb'], true, 1, 'marksandspencer.com', '{"host":"fa-eqid-saasfaprod1.fa.ocs.oraclecloud.com","siteNumber":"CX_1"}'::jsonb),
+  -- 716 jobs, 656 of them posted within the board's 21-day window, 25/page
+  ('oracle_orc', 'marks-spencer', 'Marks & Spencer', 'marks and spencer', ARRAY['gb'], true, 27, 'marksandspencer.com', '{"host":"fa-eqid-saasfaprod1.fa.ocs.oraclecloud.com","siteNumber":"CX_1"}'::jsonb),
   ('eightfold', 'netflix', 'Netflix', 'netflix', ARRAY['gb'], true, 1, 'netflix.com', '{"host":"explore.jobs.netflix.net","domain":"netflix.com","location":"United Kingdom"}'::jsonb),
   -- locations: GBR-London-London (4), GBR-Scotland-Edinburgh (1), GBR-Scotland-Glasgow (1), GBR-South Yorkshire-Sheffield (1), GBR-Tyne and Wear-Newcastle (1)
   ('workday', 'mars', 'Mars', 'mars', ARRAY['gb'], true, 1, 'mars.com', '{"tenant":"mars","wd":3,"site":"External","facets":{"gb":{"locations":["f7694590cd5001d7d5375e48b00d8d9a","5f938dbcd9691000b0238b882fd40000","015abb4020e91000fc92f1611dc50000","1b66998de2de1000abd9039671ce0000","efa70fd7b4951001d03f5f829a6c0000"]}}}'::jsonb),

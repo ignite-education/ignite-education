@@ -71,7 +71,7 @@ const MAX_BOARD_ROWS = 300
  * cut applies at read time, so a listing crosses the threshold on the next ISR
  * revalidation rather than at the next ingest.
  */
-const MAX_POSTED_AGE_DAYS = 21
+const MAX_POSTED_AGE_DAYS = 45
 
 /**
  * PostgREST `or` clause for "posted recently, or undated".

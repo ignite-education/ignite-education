@@ -38,12 +38,16 @@ const VOLATILE_FIELDS = [
  * Look up which of these (source, source_job_id) pairs we already hold.
  * One query for the whole batch rather than one per job.
  *
- * The description columns are selected for the hydrate step in ../index.js: a
- * two-phase source (Workday, Oracle, JSON-LD) has no description in its list
- * response, and re-fetching one per job per night for jobs we already hold
+ * The description AND location columns are selected for the hydrate step in
+ * ../index.js: a two-phase source (Workday, Oracle, JSON-LD) has neither in its
+ * list response, and re-fetching one per job per night for jobs we already hold
  * would be the most expensive thing the pipeline does. They come from here
- * instead — and they MUST, because description_* are VOLATILE_FIELDS, so a
- * re-seen job persisted without them would blank the text it already had.
+ * instead — and they MUST, because all of them are VOLATILE_FIELDS:
+ *
+ *   - without the description, a re-seen job would blank the text it had;
+ *   - without the location, it would fail the wrong_market filter on its second
+ *     run (Workday says "2 Locations", a sitemap says nothing), never refresh
+ *     last_seen_at, and be delisted three days later.
  */
 export async function loadExisting(supabase, source, sourceJobIds) {
   if (sourceJobIds.length === 0) return new Map()
@@ -55,9 +59,15 @@ export async function loadExisting(supabase, source, sourceJobIds) {
     const chunk = sourceJobIds.slice(i, i + CHUNK)
     const { data, error } = await supabase
       .from('job_listings')
+      // Every VOLATILE_FIELD, plus posted_at. restoreFromStored() in ../index.js
+      // needs the complete set — a partial one is how two separate fields ended
+      // up being overwritten with blanks on a job's second run.
       .select(
-        'id, source_job_id, status, expires_at, canonical_url_hash, ' +
-        'description_html, description_text, description_snippet, posted_at'
+        'id, source_job_id, status, expires_at, canonical_url_hash, posted_at, ' +
+        'title, description_html, description_text, description_snippet, ' +
+        'location_raw, location_city, location_region, is_remote, ' +
+        'salary_min, salary_max, salary_currency, salary_period, salary_is_estimate, ' +
+        'contract_type, contract_time'
       )
       .eq('source', source)
       .in('source_job_id', chunk)

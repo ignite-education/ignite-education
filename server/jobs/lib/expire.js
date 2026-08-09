@@ -31,22 +31,29 @@ export const STALE_PENDING_DAYS = 14
  * READ THIS BEFORE TUNING IT — the number is not as simple as it looks. The
  * rule reads `posted_at`, and on ATS feeds `posted_at` is when the requisition
  * record was created, not when the advert went up. Evergreen roles therefore
- * carry dates years old while staying genuinely open. Measured against the live
- * board at 21 days: of the 27 listings this removes, all 27 were confirmed
- * present in the employer's own feed within the previous 24 hours, and the
- * board goes from 36 vacancies to 9.
+ * carry dates years old while staying genuinely open.
  *
  * That trade is deliberate rather than accidental — a visitor cannot tell an
  * evergreen requisition from an abandoned one, and an advert dated six months
  * back reads as cold whether or not it is. But it is a product judgement, and
- * this constant is the dial. Measured alternatives, same board: 30d keeps 11,
- * 45d keeps 17, 60d keeps 20, 90d keeps 22.
+ * this constant is the dial.
+ *
+ * Measured across all 18 enabled boards (3,008 jobs fetched), counting only
+ * jobs that already pass the profession and market filters:
+ *
+ *     21d → 20    30d → 37    45d → 45    60d → 48    90d → 49    no cut → 67
+ *
+ * Set to 45 because that is where the curve flattens: 21→45 more than doubles
+ * the board, 45→90 adds four. What 21 was discarding was not stale — 25 of the
+ * 47 it removed were Product Manager roles at LSEG, Deliveroo and Monzo, all
+ * still live in the employer's own feed on the day they were dropped. Beyond
+ * 60 days the remainder genuinely are evergreen requisitions.
  *
  * If the goal is ever "drop what has gone cold on OUR board" rather than "drop
  * what the employer dated long ago", the column to switch to is `first_seen_at`
  * — the same anchor computeExpiry() already uses, and for the same reason.
  */
-export const MAX_POSTED_AGE_DAYS = Number(process.env.JOBS_MAX_POSTED_AGE_DAYS) || 21
+export const MAX_POSTED_AGE_DAYS = Number(process.env.JOBS_MAX_POSTED_AGE_DAYS) || 45
 
 /** The oldest posted_at still allowed on the board, as an ISO timestamp. */
 export function postedAgeCutoffIso() {

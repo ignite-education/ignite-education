@@ -5076,7 +5076,7 @@ app.post('/api/admin/jobs/summaries', verifyAdmin, async (req, res) => {
 // Vendor detection implemented twice would drift apart within a month.
 app.post('/api/admin/jobs/discover', verifyAdmin, async (req, res) => {
   try {
-    const { company, domain, aliases, market: marketCode } = req.body || {};
+    const { company, domain, careersUrl, aliases, market: marketCode } = req.body || {};
     if (!company) {
       return res.status(400).json({ success: false, error: 'company is required' });
     }
@@ -5087,6 +5087,9 @@ app.post('/api/admin/jobs/discover', verifyAdmin, async (req, res) => {
     const result = await discoverBoards({
       company,
       domain: domain || null,
+      // An admin-typed careers page. Tried before the guessed URLs, and the
+      // only way to reach a board at an unconventional address.
+      careersUrl: careersUrl || null,
       aliases: Array.isArray(aliases) ? aliases : [],
       market,
     });

@@ -141,10 +141,13 @@ export default {
     )
 
     const items = data?.jobPostings || []
-    const total = Number(data?.total ?? 0)
+    // `total` is ONLY populated on the first page — every offset > 0 response
+    // reports total: 0. Deriving hasMore from it therefore stops paging dead
+    // after page two, which silently capped LSEG at 40 of its 176 UK jobs.
+    // A full page is the only signal Workday actually gives us.
     return {
       items,
-      hasMore: (page - 1) * PAGE_SIZE + items.length < total,
+      hasMore: items.length === PAGE_SIZE,
       apiCalls: 1,
     }
   },

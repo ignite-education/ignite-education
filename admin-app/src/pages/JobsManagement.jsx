@@ -857,7 +857,15 @@ function CoverageTab({ showToast }) {
 
                 <span className="truncate text-xs" style={{ width: '32%' }}>
                   {companyBoards.length === 0 && row.query_count === 0 ? (
-                    <span className="text-amber-700 font-medium">no source</span>
+                    <>
+                      <span className="text-amber-700 font-medium">no source</span>
+                      {/* The actionable half of "no source": discovery has
+                          nothing but the logo domain to guess from, so this is
+                          the row worth typing a careers URL into. */}
+                      {!row.careers_url && (
+                        <span className="text-amber-600/70"> · no careers URL</span>
+                      )}
+                    </>
                   ) : (
                     <span className="text-gray-600">
                       {companyBoards.map(b => (
@@ -992,7 +1000,21 @@ function BoardEditor({ company, boards, onChanged, showToast }) {
     setBusy(false);
   };
 
-  const findBoards = async () => {
+  // Passed to discovery, not just stored: the whole point is that the next
+  // "Find boards" fingerprints the page the admin actually knows about instead
+  // of guessing four conventional URLs off the logo domain.
+  const saveCareersUrl = async (url) => {
+    const { error } = await withSessionRefresh(() =>
+      supabase.from('job_companies')
+        .update({ careers_url: url || null })
+        .eq('name_norm', company.name_norm)
+    );
+    if (error) { showToast(error.message, 'error'); return false; }
+    onChanged();
+    return true;
+  };
+
+  const findBoards = async (careersUrl) => {
     setBusy(true);
     setFound(null);
     try {
@@ -1002,6 +1024,7 @@ function BoardEditor({ company, boards, onChanged, showToast }) {
         body: JSON.stringify({
           company: company.display_name,
           domain: company.domain,
+          careersUrl: careersUrl ?? company.careers_url ?? null,
           aliases: company.aliases || [],
           market: 'gb',
         }),
@@ -1017,6 +1040,9 @@ function BoardEditor({ company, boards, onChanged, showToast }) {
 
   return (
     <div className="bg-gray-50 border-t border-gray-200 px-4 py-3">
+      <CareersUrlField company={company} busy={busy}
+        onSave={saveCareersUrl} onFind={findBoards} />
+
       {boards.map(board => (
         <BoardRow key={board.id} board={board} busy={busy}
           onSave={save} onRemove={remove} onTest={testBoard} />
@@ -1031,7 +1057,7 @@ function BoardEditor({ company, boards, onChanged, showToast }) {
           className="text-xs flex items-center gap-1 text-[#8200EA] hover:underline disabled:opacity-50">
           <Plus size={12} /> Add board
         </button>
-        <button disabled={busy} onClick={findBoards}
+        <button disabled={busy} onClick={() => findBoards()}
           className="text-xs flex items-center gap-1 text-[#8200EA] hover:underline disabled:opacity-50">
           <Radar size={12} /> Find boards
         </button>
@@ -1099,6 +1125,80 @@ function BoardEditor({ company, boards, onChanged, showToast }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Where this company's vacancies are listed, typed by an admin.
+ *
+ * Discovery otherwise has only the logo domain to work from and guesses four
+ * conventional addresses off it (careers.x, x/careers, jobs.x, x/jobs). That is
+ * right for most companies and wrong for most of the ones still uncovered —
+ * their boards sit on separate brand domains or behind redirects. Typing the URL
+ * removes the guess, which is usually the whole difference between "no board
+ * found" and a seedable candidate.
+ *
+ * Saves and discovers in one action, because saving alone changes nothing an
+ * admin can see and the next thing they would do is press Find boards anyway.
+ */
+function CareersUrlField({ company, busy, onSave, onFind }) {
+  const [value, setValue] = useState(company.careers_url || '');
+  const [error, setError] = useState(null);
+
+  useEffect(() => { setValue(company.careers_url || ''); }, [company.careers_url]);
+
+  const dirty = value.trim() !== (company.careers_url || '');
+
+  // Same rule as the CHECK constraint in add_job_company_careers_url.sql. A
+  // pasted "careers.bbc.co.uk" with no scheme cannot be fetched, and finding
+  // that out from a Postgres error is a worse experience than being told here.
+  const normalise = (raw) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return '';
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  };
+
+  const submit = async (alsoFind) => {
+    const url = normalise(value);
+    if (url) {
+      try { new URL(url); } catch { setError('not a valid URL'); return; }
+    }
+    setError(null);
+    setValue(url);
+    const saved = await onSave(url);
+    if (saved && alsoFind) onFind(url || null);
+  };
+
+  return (
+    <div className="mb-3">
+      <div className="flex items-center gap-2">
+        <label className="text-xs text-gray-500 shrink-0" style={{ width: 78 }}>Careers URL</label>
+        <input
+          value={value}
+          onChange={e => { setValue(e.target.value); setError(null); }}
+          onKeyDown={e => { if (e.key === 'Enter') submit(true); }}
+          placeholder={company.domain ? `https://careers.${company.domain}` : 'https://…'}
+          spellCheck={false}
+          className={`flex-1 text-xs border rounded px-2 py-1 ${error ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+        />
+        {value && !dirty && (
+          <a href={value} target="_blank" rel="noreferrer"
+            className="text-xs text-gray-400 hover:text-gray-700 shrink-0">open</a>
+        )}
+        <button disabled={busy || !dirty} onClick={() => submit(false)}
+          className="text-xs text-gray-600 hover:text-gray-900 disabled:opacity-40 shrink-0">save</button>
+        <button disabled={busy} onClick={() => submit(true)}
+          className="text-xs bg-[#8200EA] text-white rounded px-2 py-1 hover:bg-[#6b00c2] disabled:opacity-50 shrink-0">
+          save &amp; find
+        </button>
+      </div>
+      {error
+        ? <p className="text-[11px] text-red-600 mt-1" style={{ marginLeft: 86 }}>{error}</p>
+        : <p className="text-[11px] text-gray-400 mt-1" style={{ marginLeft: 86 }}>
+            Point at the page that lists vacancies, not the &ldquo;life at us&rdquo; page — the
+            ATS marker is in the listing markup. Leave blank to guess from {company.domain || 'the domain'}.
+          </p>}
     </div>
   );
 }

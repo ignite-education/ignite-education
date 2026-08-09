@@ -67,6 +67,30 @@ export const DENYLIST = new Map([
   ['jd.com', 'no public job API and effectively no UK hiring'],
 ])
 
+/**
+ * Is this host (or URL) on the denylist, at any depth?
+ *
+ * Walks up the labels rather than matching the host outright, because the input
+ * is now sometimes an admin-typed URL. A plain lookup would let
+ * `https://jobs.apple.com/en-gb/search` through: its host is not `apple.com`,
+ * and the whole point of the list is that it cannot be sidestepped by pointing
+ * at a subdomain.
+ *
+ * @param {string|null} input a hostname, a bare domain, or a full URL
+ * @returns {string|null} the reason it is denied, or null
+ */
+export function denialFor(input) {
+  const host = registrableDomain(input)
+  if (!host) return null
+
+  const labels = host.split('.')
+  for (let i = 0; i < labels.length - 1; i++) {
+    const reason = DENYLIST.get(labels.slice(i).join('.'))
+    if (reason) return reason
+  }
+  return null
+}
+
 /** Vendor fingerprints. `adapter` null means "we can detect it, we cannot ingest it yet". */
 const VENDORS = [
   { key: 'greenhouse', adapter: 'greenhouse', pattern: /(?:boards|job-boards)\.greenhouse\.io\/([a-z0-9_-]+)/i },
@@ -101,29 +125,46 @@ const VENDORS = [
 
 /**
  * @param {object}  input
- * @param {string}  input.company    display name, e.g. "Marks & Spencer"
- * @param {string} [input.domain]    e.g. "marksandspencer.com"
- * @param {string[]} [input.aliases] extra spellings to try as tokens
- * @param {object}  [input.market]   a job_markets row; used to score in-market hits
+ * @param {string}  input.company     display name, e.g. "Marks & Spencer"
+ * @param {string} [input.domain]     e.g. "marksandspencer.com"
+ * @param {string} [input.careersUrl] the careers page, typed by an admin. Tried
+ *                                    before the guessed URLs, and the reason a
+ *                                    company whose board is not at a
+ *                                    conventional address can still be found.
+ * @param {string[]} [input.aliases]  extra spellings to try as tokens
+ * @param {object}  [input.market]    a job_markets row; used to score in-market hits
  * @returns {Promise<{company, domain, denied, vendors, candidates, notes}>}
  */
-export async function discoverBoards({ company, domain = null, aliases = [], market = null } = {}) {
+export async function discoverBoards({
+  company,
+  domain = null,
+  careersUrl = null,
+  aliases = [],
+  market = null,
+} = {}) {
+  // A typed careers URL is also a domain hint. Companies added by name alone
+  // often have no `domain` yet, and every stage below needs one.
+  const effectiveDomain = domain || (careersUrl ? registrableDomain(careersUrl) : null)
+
   const result = {
     company,
-    domain,
+    domain: effectiveDomain,
+    careersUrl,
     denied: null,
     vendors: [],       // every vendor fingerprinted, adapter or not
     candidates: [],    // verified, ready to seed
     notes: [],
   }
 
-  const denial = domain && DENYLIST.get(registrableDomain(domain))
+  // Both, because a careers URL can point somewhere the company domain does not
+  // — jobs.apple.com is denied even if `domain` is blank or something else.
+  const denial = denialFor(effectiveDomain) || denialFor(careersUrl)
   if (denial) {
     result.denied = denial
     return result
   }
 
-  const pages = domain ? await fetchCareersPages(domain, result.notes) : []
+  const pages = await fetchCareersPages(effectiveDomain, result.notes, careersUrl)
   const html = pages.join('\n')
 
   // --- stage 0: fingerprint -------------------------------------------------
@@ -137,7 +178,7 @@ export async function discoverBoards({ company, domain = null, aliases = [], mar
   for (const vendor of result.vendors) {
     if (!vendor.adapter) continue
     try {
-      const candidate = await buildCandidate(vendor, { company, domain, market })
+      const candidate = await buildCandidate(vendor, { company, domain: effectiveDomain, market })
       if (candidate) result.candidates.push(candidate)
     } catch (error) {
       result.notes.push(`${vendor.vendor}: ${error.message}`)
@@ -151,7 +192,7 @@ export async function discoverBoards({ company, domain = null, aliases = [], mar
   // tenant" from "wrong site" (see workdayTenantProbe).
   if (!result.candidates.some(c => c.source === 'workday')) {
     try {
-      const candidate = await workdayTenantProbe({ company, domain, aliases, market, notes: result.notes })
+      const candidate = await workdayTenantProbe({ company, domain: effectiveDomain, aliases, market, notes: result.notes })
       if (candidate) result.candidates.push(candidate)
     } catch (error) {
       result.notes.push(`workday probe: ${error.message}`)
@@ -163,9 +204,9 @@ export async function discoverBoards({ company, domain = null, aliases = [], mar
   // fingerprint never runs and the board would otherwise be invisible. These
   // are documented JSON API calls, not crawling, so the robots rule that stops
   // the fingerprint does not apply to them.
-  if (!result.candidates.length && domain) {
+  if (!result.candidates.length && effectiveDomain) {
     try {
-      const candidate = await eightfoldHostProbe({ company, domain, market })
+      const candidate = await eightfoldHostProbe({ company, domain: effectiveDomain, market })
       if (candidate) result.candidates.push(candidate)
     } catch (error) {
       result.notes.push(`eightfold probe: ${error.message}`)
@@ -179,9 +220,11 @@ export async function discoverBoards({ company, domain = null, aliases = [], mar
   // despite Radancy having no adapter of its own. It runs even when a vendor
   // WAS fingerprinted, as long as that vendor had no adapter, because a
   // recognised-but-unsupported vendor is exactly the case it exists for.
-  if (result.candidates.length === 0 && domain) {
+  if (result.candidates.length === 0 && effectiveDomain) {
     try {
-      const candidate = await jsonldCandidate({ company, domain, market, notes: result.notes })
+      const candidate = await jsonldCandidate({
+        company, domain: effectiveDomain, careersUrl, market, notes: result.notes,
+      })
       if (candidate) result.candidates.push(candidate)
     } catch (error) {
       result.notes.push(`jsonld: ${error.message}`)
@@ -191,7 +234,7 @@ export async function discoverBoards({ company, domain = null, aliases = [], mar
   // Token guessing is the last resort, because a fingerprint is both cheaper
   // and correct where a guess is neither.
   if (result.candidates.length === 0) {
-    const guesses = await guessTokens({ company, domain, aliases, market, notes: result.notes })
+    const guesses = await guessTokens({ company, domain: effectiveDomain, aliases, market, notes: result.notes })
     result.candidates.push(...guesses)
   }
 
@@ -203,23 +246,55 @@ export async function discoverBoards({ company, domain = null, aliases = [], mar
 // stage 0
 // ---------------------------------------------------------------------------
 
-async function fetchCareersPages(domain, notes) {
-  const host = registrableDomain(domain)
-  const urls = [
-    `https://careers.${host}/`,
-    `https://www.${host}/careers`,
-    `https://jobs.${host}/`,
-    `https://www.${host}/jobs`,
-  ]
+/**
+ * Fetch whatever pages might carry a vendor marker.
+ *
+ * `careersUrl` is an admin-typed URL and goes first — it is the only input that
+ * can reach a board at an unconventional address, which is most of the ones
+ * still uncovered. The four guesses stay as a fallback because they are right
+ * for the majority of companies and cost nothing to try.
+ *
+ * Robots is checked per-origin rather than once. A typed URL is frequently on a
+ * different host from the company domain (careers.bbc.co.uk vs bbc.co.uk), and
+ * the two can have completely different rules.
+ */
+async function fetchCareersPages(domain, notes, careersUrl = null) {
+  const host = domain ? registrableDomain(domain) : null
+  const urls = []
 
-  const allowed = await robotsAllows(`https://www.${host}`)
-  if (!allowed) {
-    notes.push(`robots.txt on ${host} disallows crawling — skipped the careers-page fingerprint`)
-    return []
+  if (careersUrl) urls.push(careersUrl)
+  if (host) {
+    urls.push(
+      `https://careers.${host}/`,
+      `https://www.${host}/careers`,
+      `https://jobs.${host}/`,
+      `https://www.${host}/jobs`,
+    )
   }
+  if (!urls.length) return []
 
   const pages = []
+  const robotsCache = new Map()
+
   for (const url of urls) {
+    let origin
+    try {
+      origin = new URL(url).origin
+    } catch {
+      notes.push(`skipped "${url}" — not a valid URL`)
+      continue
+    }
+
+    if (!robotsCache.has(origin)) robotsCache.set(origin, await robotsAllows(origin))
+    if (!robotsCache.get(origin)) {
+      // Only worth saying out loud for the typed URL. For a guessed one it is
+      // noise — the admin never asked for that address to be tried.
+      if (url === careersUrl) {
+        notes.push(`robots.txt on ${origin} disallows crawling — skipped the careers URL you gave`)
+      }
+      continue
+    }
+
     try {
       const res = await http.get(url, { responseType: 'text' })
       if (res.status >= 200 && res.status < 300 && typeof res.data === 'string') {
@@ -229,9 +304,14 @@ async function fetchCareersPages(domain, notes) {
         if (/greenhouse|lever|ashby|workable|myworkdayjobs|eightfold|oraclecloud|successfactors|avature/i.test(res.data)) {
           break
         }
+      } else if (url === careersUrl) {
+        notes.push(`careers URL returned HTTP ${res.status}`)
       }
-    } catch {
-      // A careers subdomain that does not exist is the common case, not an error.
+    } catch (error) {
+      // A careers subdomain that does not exist is the common case, not an
+      // error. A typed URL that does not load is worth reporting, though —
+      // otherwise a typo reads as "this company has no board".
+      if (url === careersUrl) notes.push(`careers URL could not be fetched: ${error.message}`)
     }
   }
   return pages
@@ -612,36 +692,60 @@ async function tokenCandidate(sourceKey, token, { company, market }) {
  * a sampled page really does contain a JobPosting with a description. Offering
  * an unverified sitemap would seed a board that silently ingests nothing.
  */
-async function jsonldCandidate({ company, domain, market, notes }) {
+async function jsonldCandidate({ company, domain, careersUrl = null, market, notes }) {
   const host = registrableDomain(domain)
   const jobPath = /\/(job|jobs|vacancy|vacancies|position|positions|opportunity|opportunities)\//i
 
+  // The typed careers URL's own origin goes first. This is the fallback most
+  // improved by knowing where the listings actually live: a sitemap only exists
+  // at the origin serving the adverts, and for the companies that reach this
+  // branch that is rarely careers.{domain}.
+  const origins = []
+  if (careersUrl) {
+    try { origins.push(new URL(careersUrl).origin) } catch { /* validated upstream */ }
+  }
   for (const origin of [`https://careers.${host}`, `https://jobs.${host}`, `https://www.${host}`]) {
-    // Sitemaps are big — EY's is 1.6MB — and 45s was still not enough for
-    // British Airways on a cold cache. A slow sitemap is not a missing board,
-    // and this runs once per company, not per job.
-    const res = await http.get(`${origin}/sitemap.xml`, { responseType: 'text', timeout: 90_000 })
-    if (res.status !== 200 || typeof res.data !== 'string' || !res.data.includes('<loc>')) continue
+    if (!origins.includes(origin)) origins.push(origin)
+  }
 
-    const urls = [...res.data.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map(m => m[1])
-    const jobUrls = urls.filter(url => jobPath.test(url))
-    if (!jobUrls.length) continue
+  for (const origin of origins) {
+    // Per-origin, because `http` only swallows HTTP status codes — a DNS
+    // failure still throws, and most companies have no jobs.{domain}. Letting
+    // that propagate abandoned every remaining origin, so a board at
+    // www.{domain} was unreachable whenever the jobs. subdomain did not exist.
+    try {
+      // Sitemaps are big — EY's is 1.6MB — and 45s was still not enough for
+      // British Airways on a cold cache. A slow sitemap is not a missing board,
+      // and this runs once per company, not per job.
+      const res = await http.get(`${origin}/sitemap.xml`, { responseType: 'text', timeout: 90_000 })
+      if (res.status !== 200 || typeof res.data !== 'string' || !res.data.includes('<loc>')) continue
 
-    const page = await http.get(jobUrls[0], { responseType: 'text', timeout: 30_000 })
-    const posting = typeof page.data === 'string' ? findJobPosting(page.data) : null
-    if (!posting?.description) {
-      notes.push(`${origin}: sitemap has ${jobUrls.length} job URLs but no JobPosting JSON-LD on them`)
-      continue
+      const urls = [...res.data.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map(m => m[1])
+      const jobUrls = urls.filter(url => jobPath.test(url))
+      if (!jobUrls.length) continue
+
+      const page = await http.get(jobUrls[0], { responseType: 'text', timeout: 30_000 })
+      const posting = typeof page.data === 'string' ? findJobPosting(page.data) : null
+      if (!posting?.description) {
+        notes.push(`${origin}: sitemap has ${jobUrls.length} job URLs but no JobPosting JSON-LD on them`)
+        continue
+      }
+
+      return candidateRow('jsonld', slugify(company), company,
+        { sitemapUrl: `${origin}/sitemap.xml`, jobUrlPattern: jobPath.source },
+        jobUrls.length,
+        // Location is only known per advert here, so the sample of one is the
+        // honest answer rather than a guess extrapolated over the board.
+        matchesMarket(sampleLocation(posting), market?.location_matchers || [], market?.location_excluders || []) ? 1 : 0,
+        [`sampled "${posting.title}" — ${String(posting.description).length} chars of description`],
+        Math.ceil(jobUrls.length / 100))
+    } catch (error) {
+      // Only worth a note for the origin the admin chose. The three guessed
+      // ones failing to resolve is the normal case, not a finding.
+      if (careersUrl && origin === origins[0]) {
+        notes.push(`no sitemap under ${origin}: ${error.message}`)
+      }
     }
-
-    return candidateRow('jsonld', slugify(company), company,
-      { sitemapUrl: `${origin}/sitemap.xml`, jobUrlPattern: jobPath.source },
-      jobUrls.length,
-      // Location is only known per advert here, so the sample of one is the
-      // honest answer rather than a guess extrapolated over the board.
-      matchesMarket(sampleLocation(posting), market?.location_matchers || [], market?.location_excluders || []) ? 1 : 0,
-      [`sampled "${posting.title}" — ${String(posting.description).length} chars of description`],
-      Math.ceil(jobUrls.length / 100))
   }
   return null
 }
