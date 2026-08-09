@@ -97,13 +97,23 @@ async function targets() {
   // rather than naming company_norm, so the script still runs BEFORE
   // add_job_board_multi_ats.sql is applied — which is exactly when it is most
   // needed.
-  const [{ data: boards }, { data: queries }] = await Promise.all([
+  const [{ data: boards }, { data: queries }, { data: sources }] = await Promise.all([
     supabase.from('job_source_accounts').select('*').eq('enabled', true),
     supabase.from('job_queries').select('*').eq('enabled', true),
+    supabase.from('job_sources').select('key, enabled'),
   ]);
+
+  // An enabled query on a DISABLED source fetches nothing, so counting it as
+  // coverage hides the company from the one command that exists to find it.
+  // Every company sweep today is Adzuna and Adzuna is disabled pending API
+  // keys, so without this filter --gaps reports one gap where there are twenty.
+  const liveSources = new Set((sources || []).filter(s => s.enabled).map(s => s.key));
+
   const covered = new Set([
-    ...(boards || []).map(b => b.company_norm || normaliseCompany(b.company)),
-    ...(queries || []).map(q => q.company_norm).filter(Boolean),
+    ...(boards || []).filter(b => liveSources.has(b.source))
+      .map(b => b.company_norm || normaliseCompany(b.company)),
+    ...(queries || []).filter(q => liveSources.has(q.source))
+      .map(q => q.company_norm).filter(Boolean),
   ]);
   return data.filter(company => !covered.has(company.name_norm));
 }
@@ -173,8 +183,12 @@ async function main() {
   console.log(toSql(rows));
 
   if (!SQL_ONLY && rows.length) {
-    console.log('\n-- Then dry-run before enabling the source:');
+    // The rows above insert with enabled = false, so applying the SQL fetches
+    // nothing until both steps below are done. That is the intended order:
+    // a probe result is evidence a board exists, not evidence it is right.
+    console.log('\n-- These insert DISABLED. Dry-run first:');
     console.log(`--   node scripts/run-job-ingest.mjs --dry-run --sources ${[...new Set(rows.map(r => r.source))].join(',')} --markets ${MARKET}`);
+    console.log('-- then enable the board in the admin Coverage tab.');
   }
 }
 

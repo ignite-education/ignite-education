@@ -911,9 +911,14 @@ export function toSql(rows) {
     const comment = row.notes?.length
       ? `  -- ${row.notes.join(' | ').replace(/\n/g, ' ')}\n`
       : ''
+    // enabled = false, deliberately. A board is trusted 'auto' and so is every
+    // allowlisted company, so buildRow() auto-approves — pasting this with
+    // `true` publishes an unverified probe result straight to the public page
+    // overnight. Every seed migration in this repo ships disabled for the same
+    // reason; the generated SQL must not be the one exception.
     return `${comment}  ('${row.source}', '${sqlEscape(row.account)}', '${sqlEscape(row.company)}', ` +
       `'${sqlEscape(row.companyNorm || normaliseCompany(row.company))}', ARRAY['${row.market || 'gb'}'], ` +
-      `true, ${row.maxPages || 1}, ${row.domain ? `'${sqlEscape(row.domain)}'` : 'null'}, ` +
+      `false, ${row.maxPages || 1}, ${row.domain ? `'${sqlEscape(row.domain)}'` : 'null'}, ` +
       `'${sqlEscape(JSON.stringify(row.params || {}))}'::jsonb)`
   })
 
