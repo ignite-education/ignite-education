@@ -65,10 +65,13 @@ services:
         sync: false
       - key: REED_API_KEY
         sync: false
-      # Board freshness cut. next-app has its own copy of this number in
-      # src/data/jobsData.ts and is deployed separately — change both together.
+      # Board freshness cut, and the dial that governs board size more than
+      # sourcing does. next-app has its own copy of this number in
+      # src/data/jobsData.ts and is deployed separately — change both together,
+      # and remember this value OVERRIDES the default in expire.js, so leaving
+      # it behind silently reverts a change made in code.
       - key: JOBS_MAX_POSTED_AGE_DAYS
-        value: "21"
+        value: "45"
       - key: JOBS_INGEST_ENABLED
         value: "true"
       - key: JOBS_INGEST_MAX_SECONDS
