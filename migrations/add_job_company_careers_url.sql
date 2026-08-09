@@ -66,6 +66,7 @@ RETURNS TABLE (
   enabled_board_count  BIGINT,
   failing_board_count  BIGINT,
   query_count          BIGINT,
+  dormant_query_count  BIGINT,
   live_count           BIGINT,
   pending_count        BIGINT,
   last_seen_at         TIMESTAMPTZ
@@ -87,6 +88,7 @@ AS $$
     COALESCE(b.enabled_board_count, 0),
     COALESCE(b.failing_board_count, 0),
     COALESCE(q.query_count, 0),
+    COALESCE(q.dormant_query_count, 0),
     COALESCE(l.live_count, 0),
     COALESCE(l.pending_count, 0),
     l.last_seen_at
@@ -100,10 +102,23 @@ AS $$
     GROUP BY company_norm
   ) b ON b.company_norm = c.name_norm
   LEFT JOIN (
-    SELECT company_norm, COUNT(*) AS query_count
-    FROM public.job_queries
-    WHERE enabled
-    GROUP BY company_norm
+    -- An enabled query on a DISABLED source fetches nothing, and counting it as
+    -- coverage is worse than not counting it at all: every company whose only
+    -- source was an Adzuna sweep rendered as covered while Adzuna sat disabled
+    -- waiting for API keys. That is 20 of 39 allowlisted companies reading as
+    -- fine on the one screen built to show that they are not.
+    --
+    -- So query_count means "a query that can actually run", and the dormant
+    -- ones are reported separately — they are a real, different state
+    -- ("waiting on credentials", not "nobody has set this up") and the Coverage
+    -- tab labels them as such.
+    SELECT qq.company_norm,
+           COUNT(*) FILTER (WHERE s.enabled)     AS query_count,
+           COUNT(*) FILTER (WHERE NOT s.enabled) AS dormant_query_count
+    FROM public.job_queries qq
+    JOIN public.job_sources s ON s.key = qq.source
+    WHERE qq.enabled
+    GROUP BY qq.company_norm
   ) q ON q.company_norm = c.name_norm
   LEFT JOIN (
     -- Matched on company_norm plus aliases: an aggregator listing carries

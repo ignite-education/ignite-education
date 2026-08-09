@@ -859,6 +859,13 @@ function CoverageTab({ showToast }) {
                   {companyBoards.length === 0 && row.query_count === 0 ? (
                     <>
                       <span className="text-amber-700 font-medium">no source</span>
+                      {/* A query on a disabled source is a genuinely different
+                          state from nobody having set this company up, and
+                          saying so is the difference between "go find a board"
+                          and "go get the API key". */}
+                      {row.dormant_query_count > 0 && (
+                        <span className="text-amber-700"> · {row.dormant_query_count} query waiting on API keys</span>
+                      )}
                       {/* The actionable half of "no source": discovery has
                           nothing but the logo domain to guess from, so this is
                           the row worth typing a careers URL into. */}
