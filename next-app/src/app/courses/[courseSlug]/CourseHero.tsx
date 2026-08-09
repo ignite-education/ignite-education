@@ -116,10 +116,14 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
         <div className="hidden lg:block absolute left-1/2 ml-6 bottom-0 -translate-x-1/2 translate-y-1/2 z-10 pointer-events-none">
           {/* Which of the four is drawn, and its tilt, are decided client-side
               per visit — see HeroSticker for why they cannot be decided here.
-              The tilt lives there too, on the image rather than this wrapper,
-              because a rotate-* utility here would share Tailwind's transform
-              stack with the centring translates above. The cards vary in width
-              (161–215px), so the centring is on the wrapper, not a fixed width. */}
+              That is also why the tilt lives there, on an element of its own
+              between this wrapper and the image, rather than as a rotate-*
+              utility here: the angle is not known until after hydration.
+              (Tailwind v4 emits the centring translates as a standalone
+              `translate:` property rather than folding them into `transform:`,
+              so a rotate here would not in fact clobber them — it is the timing
+              that rules it out, not the cascade.) The cards vary in width
+              (137–183px), so the centring is on the wrapper, not a fixed width. */}
           <HeroSticker />
         </div>
       </div>

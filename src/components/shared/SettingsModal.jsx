@@ -6,47 +6,24 @@ import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { removeSavedCourse } from '../../lib/api';
 import UserMemorySection from './UserMemorySection';
-
-const resizeProfileImage = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('Failed to load image'));
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 400;
-        const srcSize = Math.min(img.width, img.height);
-        const srcX = (img.width - srcSize) / 2;
-        const srcY = (img.height - srcSize) / 2;
-        const outSize = Math.min(srcSize, maxDim);
-        canvas.width = outSize;
-        canvas.height = outSize;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, outSize, outSize);
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) { reject(new Error('Compression failed')); return; }
-            resolve(new File([blob], 'profile.jpg', { type: 'image/jpeg' }));
-          },
-          'image/jpeg',
-          0.85
-        );
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-};
+import { getInitials } from '../../utils/initials';
+import useAvatarPicker from '../../hooks/useAvatarPicker';
+import AvatarCropModal from './AvatarCropModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
 const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) => {
-  const { user: authUser, updateProfile, signOut, isInsider, insiderSource, insiderUntil, profilePicture, firstName, refreshSession, userRole } = useAuth();
+  const { user: authUser, updateProfile, signOut, isInsider, insiderSource, insiderUntil, profilePicture, firstName, lastName, refreshSession, userRole } = useAuth();
   const navigate = useNavigate();
-  const imageInputRef = useRef(null);
   const scrollRef = useRef(null);
+  const {
+    inputRef: imageInputRef,
+    openPicker: openAvatarPicker,
+    handleFileChange: handleAvatarFileChange,
+    pendingFile: pendingAvatarFile,
+    clearPending: clearPendingAvatar,
+    error: pictureError,
+  } = useAvatarPicker();
 
   // Insider access earned rather than paid for — a referral week or a comp.
   // These users have no Stripe customer, so the billing portal is not an option.
@@ -62,8 +39,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const [snappedSavedIndex, setSnappedSavedIndex] = useState(0);
   const [isClosing, setIsClosing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
-  const [pictureError, setPictureError] = useState(null);
   const [settingsForm, setSettingsForm] = useState({
     firstName: '',
     lastName: '',
@@ -212,49 +187,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       }
     })();
   }, [isOpen]);
-
-
-  const handleProfilePictureUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPictureError(null);
-
-    if (!file.type.startsWith('image/')) {
-      setPictureError('Please select an image file.');
-      return;
-    }
-    if (file.size < 50 * 1024) {
-      setPictureError('Image is too small. Please use a higher quality image (min 50KB).');
-      return;
-    }
-    if (file.size > 3.5 * 1024 * 1024) {
-      setPictureError('Image is too large. Please use an image under 3.5MB.');
-      return;
-    }
-
-    try {
-      setIsUploadingPicture(true);
-      const resizedFile = await resizeProfileImage(file);
-      const filePath = `profile_pictures/${authUser.id}.jpg`;
-      const arrayBuffer = await resizedFile.arrayBuffer();
-
-      const { error: uploadError } = await supabase.storage
-        .from('assets')
-        .upload(filePath, arrayBuffer, { contentType: 'image/jpeg', upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from('assets').getPublicUrl(filePath);
-      const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
-      await updateProfile({ custom_avatar_url: publicUrl });
-    } catch (error) {
-      console.error('Error uploading profile picture:', error);
-      setPictureError('Failed to upload image. Please try again.');
-    } finally {
-      setIsUploadingPicture(false);
-      if (imageInputRef.current) imageInputRef.current.value = '';
-    }
-  };
 
   const handleClose = async () => {
     // Save any changed profile fields on close
@@ -606,29 +538,28 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   />
                 ) : (
                   <div
-                    className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
+                    className="bg-[#8A8A8A] flex items-center justify-center text-white font-medium"
                     style={{ width: '100px', height: '100px', fontSize: '24px', borderRadius: '0.25rem' }}
                   >
-                    {(firstName || 'U')[0].toUpperCase()}
+                    {getInitials(firstName, lastName)}
                   </div>
                 )}
                 <input
                   type="file"
                   ref={imageInputRef}
-                  onChange={handleProfilePictureUpload}
+                  onChange={handleAvatarFileChange}
                   accept="image/*"
                   className="hidden"
                 />
                 <button
                   type="button"
-                  onClick={() => imageInputRef.current?.click()}
-                  disabled={isUploadingPicture}
-                  className="text-black transition disabled:opacity-50 py-1 cursor-pointer"
+                  onClick={openAvatarPicker}
+                  className="text-black transition py-1 cursor-pointer"
                   style={{ borderRadius: '0.3rem', backgroundColor: 'white', width: '100px', height: '35px', fontSize: '0.9rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
                   onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
                   onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
                 >
-                  {isUploadingPicture ? 'Uploading...' : 'Edit'}
+                  Edit
                 </button>
                 {pictureError && (
                   <p className="text-xs text-red-500 max-w-[120px] text-center">{pictureError}</p>
@@ -988,6 +919,14 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           </div>
         </div>
       </div>
+
+      {pendingAvatarFile && (
+        <AvatarCropModal
+          file={pendingAvatarFile}
+          onCancel={clearPendingAvatar}
+          onSaved={clearPendingAvatar}
+        />
+      )}
     </div>
   );
 };

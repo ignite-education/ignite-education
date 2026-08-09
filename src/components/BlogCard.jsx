@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
-const BlogCard = ({ post, className = '', onClick = null }) => {
+// `compact` matches the title/subtext type to the ProgressHubV2 lesson cards
+const BlogCard = ({ post, className = '', onClick = null, compact = false }) => {
   const {
     slug,
     title,
@@ -26,11 +27,14 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
 
         <div className="p-4 bg-white rounded-b-sm flex items-center justify-between">
           <div className="flex-1 pr-3">
-            <h3 className="font-medium text-gray-900 line-clamp-2" style={{ fontSize: '1.21rem', marginBottom: '0.1rem' }}>
+            <h3
+              className={`text-gray-900 line-clamp-2 ${compact ? 'text-[1rem] font-semibold lg:text-[1.1rem] lg:font-medium' : 'font-medium'}`}
+              style={{ ...(compact ? {} : { fontSize: '1.21rem' }), marginBottom: '0.1rem' }}
+            >
               {title}
             </h3>
 
-            <p className="text-black text-sm line-clamp-2">
+            <p className={`text-black line-clamp-2 ${compact ? 'text-[0.9rem] font-light leading-[1.375]' : 'text-sm'}`}>
               {excerpt}
             </p>
           </div>

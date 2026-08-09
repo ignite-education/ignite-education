@@ -11,7 +11,7 @@ const components = {
 const RedditMarkdown = ({ content, className = '' }) => (
   <div className={`reddit-md ${className}`}>
     <style>{`
-      .reddit-md p { margin-bottom: 0.5em; }
+      .reddit-md p { margin-bottom: 0.7em; }
       .reddit-md p:last-child { margin-bottom: 0; }
       .reddit-md ul { list-style-type: disc; padding-left: 1.25rem; margin: 0.5em 0; }
       .reddit-md ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0.5em 0; }

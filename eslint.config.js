@@ -26,4 +26,14 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Node server code. The block above assumes a browser, so `process` and
+    // friends read as undefined there — scoped narrowly to the job ingest
+    // pipeline rather than widened globally, which would also change how the
+    // long-standing errors in server.js are reported.
+    files: ['server/**/*.js', 'scripts/backfill-job-logos.js'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
 ])

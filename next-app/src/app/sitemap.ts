@@ -5,6 +5,8 @@ import { getAllPublishedPosts } from '@/lib/blogData'
 import { getAllProfessionSlugs } from '@/lib/professionUtils'
 import { getAllPublicProfiles } from '@/lib/profileData'
 import { getAllPromptSlugs } from '@/data/placeholderPrompts'
+import { getProfessionsWithJobs } from '@/data/jobsData'
+import { professionToSlug } from '@/lib/professionUtils'
 
 export const revalidate = 3600
 
@@ -27,12 +29,13 @@ export const revalidate = 3600
  *  - `/sign-in`, `/reset-password`, `/certificate/*` — noindexed.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [courseSlugs, posts, professionSlugs, promptSlugs, profiles] = await Promise.all([
+  const [courseSlugs, posts, professionSlugs, promptSlugs, profiles, jobProfessions] = await Promise.all([
     getAllCourseSlugs(),
     getAllPublishedPosts(),
     getAllProfessionSlugs(),
     getAllPromptSlugs(),
     getAllPublicProfiles(),
+    getProfessionsWithJobs('gb'),
   ])
 
   const now = new Date()
@@ -42,6 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/courses`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${SITE_URL}/prompts`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${SITE_URL}/jobs`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
     { url: `${SITE_URL}/release-notes`, lastModified: now, changeFrequency: 'weekly', priority: 0.4 },
     { url: `${SITE_URL}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${SITE_URL}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
@@ -75,6 +79,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }))
 
+  // Only professions that actually HAVE listings. An empty profession page is
+  // noindexed in its generateMetadata, and listing a noindexed URL here would
+  // put the sitemap and the page in direct contradiction.
+  const jobProfessionPages: MetadataRoute.Sitemap = jobProfessions.map((profession) => ({
+    url: `${SITE_URL}/jobs/${professionToSlug(profession)}`,
+    lastModified: now,
+    changeFrequency: 'daily',
+    priority: 0.7,
+  }))
+
   // Lowest priority of anything listed: these are the thinnest pages on the
   // site and there is eventually one per signup, so they should never outrank
   // the course/blog content in Google's crawl budget.
@@ -85,5 +99,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.3,
   }))
 
-  return [...staticPages, ...courses, ...blogPosts, ...professions, ...prompts, ...userProfiles]
+  return [
+    ...staticPages,
+    ...courses,
+    ...blogPosts,
+    ...professions,
+    ...prompts,
+    ...jobProfessionPages,
+    ...userProfiles,
+  ]
 }

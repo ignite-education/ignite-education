@@ -6,6 +6,9 @@ import { useAnimation } from '../../../contexts/AnimationContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
 import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
+import { getInitials } from '../../../utils/initials';
+import useAvatarPicker from '../../../hooks/useAvatarPicker';
+import AvatarCropModal from '../../shared/AvatarCropModal';
 
 const useCountUp = (target, duration = 1200, delay = 500) => {
   const [value, setValue] = useState(0);
@@ -48,7 +51,7 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
   if (!hasCourse) {
     return {
       headline: 'Welcome to Ignite',
-      body: `${firstName}, you're in. To get started, select a topic you want to learn below. Your Progress, Office Hours, Community Forum and everything else will be waiting here once you do. Let's get going.`,
+      body: `${firstName}, you're in! To get started, select a topic you want to learn below. Your Progress, Office Hours, Community Forum and everything else will be waiting here once you do. Let's get going.`,
       linkText: 'select a topic',
       linkUrl: '#course-details',
       // Show the lot on mobile. The default cap of 2 would cut the copy off
@@ -420,16 +423,65 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
+// The "add a profile picture" prompt overlaid on the hub avatar. Both icons inherit
+// currentColor from their wrapper chip, so colour and hover live in one place.
+const CameraIcon = ({ size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const PlusIcon = ({ size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+
 const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, username, communityCount, behaviourStat, achievementStat, lessonSlider, hasCourse = true }) => {
   const isMobile = useIsMobile();
   const avatarSize = isMobile ? 42.35 : 150; // mobile: 42.35 (top-right)
+  // Camera prompt on the avatar. Mobile drops the trailing "+" — the 42px tile can't carry
+  // both glyphs legibly.
+  const cameraIconSize = isMobile ? 14 : 18;
+  const plusIconSize = 16;
+  const promptInset = isMobile ? 3 : 6; // inset from the bottom-left of the avatar
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
 
   const [activeConfetti, setActiveConfetti] = useState({});
-  const { user: authUser, updateProfile } = useAuth();
+  // A 403/404 on the avatar URL (Google referrer block, stale Supabase storage URL) must
+  // read as "no picture" so the initials tile and the camera prompt still render.
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  useEffect(() => { setAvatarFailed(false); }, [profilePicture]);
+  const hasAvatarImage = !!profilePicture && !avatarFailed;
+
+  // TEMP DIAGNOSTICS — remove once the upload path is confirmed working.
+  useEffect(() => {
+    console.log('[Avatar] 6. render inputs', { profilePicture, avatarFailed, hasAvatarImage, hasHighQualityAvatar });
+  }, [profilePicture, avatarFailed, hasAvatarImage, hasHighQualityAvatar]);
+  // `firstName` arrives as a prop, but the initials tile needs the surname too —
+  // both come from the same normalised source on the context.
+  const { user: authUser, updateProfile, lastName } = useAuth();
+  const {
+    inputRef: avatarInputRef,
+    openPicker: openAvatarPicker,
+    handleFileChange: handleAvatarFileChange,
+    pendingFile: pendingAvatarFile,
+    clearPending: clearPendingAvatar,
+    error: avatarPickerError,
+    setError: setAvatarPickerError,
+  } = useAvatarPicker();
+
+  // Validation errors have no modal to live in — the pick is rejected before the
+  // editor opens — so they surface under the avatar and time out on their own.
+  useEffect(() => {
+    if (!avatarPickerError) return;
+    const timer = setTimeout(() => setAvatarPickerError(null), 5000);
+    return () => clearTimeout(timer);
+  }, [avatarPickerError, setAvatarPickerError]);
   const confettiShown = authUser?.user_metadata?.confetti_shown;
   const confettiShownRef = useRef(confettiShown);
   confettiShownRef.current = confettiShown;
@@ -658,50 +710,84 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             </div>
           </a>
 
-          {/* Profile Picture */}
+          {/* Profile Picture — the whole square opens the file picker, which hands
+              off to the crop editor. Settings lives on the cog instead. */}
           <div
-            onClick={isMobile ? onSettingsClick : undefined}
+            onClick={openAvatarPicker}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openAvatarPicker();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={hasAvatarImage ? 'Change your picture' : 'Add your picture'}
+            title={hasAvatarImage ? 'Change your picture' : 'Add your picture'}
+            className="group"
             style={isMobile
               ? { position: 'absolute', top: '15px', right: '24px', width: `${avatarSize}px`, height: `${avatarSize}px`, cursor: 'pointer' }
-              : { marginBottom: '30px', position: 'relative', width: `${avatarSize}px`, height: `${avatarSize}px` }}>
-            {profilePicture ? (
+              : { marginBottom: '30px', position: 'relative', width: `${avatarSize}px`, height: `${avatarSize}px`, cursor: 'pointer' }}>
+            {hasAvatarImage ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
                 alt={firstName}
                 className="object-cover"
                 style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
+                referrerPolicy="no-referrer"
+                onError={() => {
+                  // Silent fallback to the initials tile reads exactly like "the
+                  // upload did nothing", so say which URL failed.
+                  console.warn('[Avatar] image failed to load, falling back to initials:', profilePicture);
+                  setAvatarFailed(true);
+                }}
               />
             ) : (
               <div
-                className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
+                className="bg-[#8A8A8A] flex items-center justify-center text-white font-medium"
                 style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '30.25px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
               >
-                {(firstName || 'U')[0].toUpperCase()}
+                {getInitials(firstName, lastName)}
               </div>
             )}
-            {!isMobile && (!hasHighQualityAvatar || !profilePicture) && (
-              <button
-                onClick={onSettingsClick}
-                className="absolute flex items-center justify-center transition-colors group"
+            {(!hasHighQualityAvatar || !hasAvatarImage) && (
+              // Purely decorative: the enclosing square carries the click, so the prompt
+              // stays inert rather than competing for the hit area.
+              <span
+                aria-hidden="true"
+                className="absolute flex items-center text-white group-hover:text-[#EF0B72] transition-colors"
                 style={{
-                  bottom: '6px',
-                  left: '6px',
-                  width: '28px',
-                  height: '28px',
-                  cursor: 'pointer',
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
+                  bottom: `${promptInset}px`,
+                  left: `${promptInset}px`,
+                  gap: '1px',
+                  padding: isMobile ? '2px' : '4px 6px',
+                  pointerEvents: 'none',
                 }}
-                title="Upload profile picture"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-white group-hover:text-[#EF0B72] transition-colors" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+                <CameraIcon size={cameraIconSize} />
+                {!isMobile && <PlusIcon size={plusIconSize} />}
+              </span>
+            )}
+
+            {avatarPickerError && (
+              <p
+                className="absolute text-red-500"
+                style={{ top: '100%', left: 0, marginTop: '6px', width: 'max(100%, 150px)', fontSize: '0.7rem', lineHeight: '1.3' }}
+              >
+                {avatarPickerError}
+              </p>
             )}
           </div>
+
+          {/* Kept outside the avatar square: a programmatic .click() on the input
+              bubbles, and from inside it would re-enter the square's own onClick. */}
+          <input
+            type="file"
+            ref={avatarInputRef}
+            onChange={handleAvatarFileChange}
+            accept="image/*"
+            className="hidden"
+          />
 
           {/* Greeting */}
           <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '2.1rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
@@ -828,7 +914,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         </div>
       )}
 
-      {/* Bottom Icons — desktop only (on mobile, tapping the avatar opens settings).
+      {/* Bottom Icons — desktop only.
           zIndex lifts the notification popover above the tag chips (zIndex 2) above it. */}
       {!isMobile && (
         <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: '30px', left: '40px', zIndex: 3 }}>
@@ -836,6 +922,24 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           <NotificationBell userId={userId} courseId={courseId} />
           <ShareButton username={username} />
         </div>
+      )}
+
+      {/* Mobile settings cog. The avatar used to be the only way in; it opens the
+          file picker now, so Settings — and with it sign-out — needs its own control.
+          Sits just left of the 42.35px avatar (top 15px, right 24px) and is centred
+          against it: 15 + (42.35 - 29) / 2 ≈ 21.7. */}
+      {isMobile && (
+        <div style={{ position: 'absolute', top: '21.7px', right: `${24 + 42.35 + 10}px`, zIndex: 3 }}>
+          <SettingsCog onClick={onSettingsClick} />
+        </div>
+      )}
+
+      {pendingAvatarFile && (
+        <AvatarCropModal
+          file={pendingAvatarFile}
+          onCancel={clearPendingAvatar}
+          onSaved={clearPendingAvatar}
+        />
       )}
     </section>
   );

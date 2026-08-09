@@ -35,6 +35,13 @@ export default function Footer({ className = '' }: FooterProps) {
               >
                 AI Prompt Toolkit
               </Link>
+              <Link
+                href="/jobs"
+                className="text-white font-light hover:text-[#EF0B72] transition"
+                style={{ fontSize: '14px' }}
+              >
+                Job Board
+              </Link>
               <a
                 href="https://shop.ignite.education"
                 target="_blank"

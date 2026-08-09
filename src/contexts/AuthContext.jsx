@@ -334,6 +334,15 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (error) throw error;
+
+    // Adopt the returned user straight away instead of waiting for the
+    // USER_UPDATED event to reach onAuthStateChange. Callers re-render on the
+    // strength of this promise resolving — an avatar upload, for one, expects the
+    // new custom_avatar_url to be readable the moment it does — and the event is
+    // not guaranteed to have landed by then. Harmless if it arrives after: the
+    // listener sets the same user object.
+    if (data?.user) setUser(data.user);
+
     return data;
   };
 

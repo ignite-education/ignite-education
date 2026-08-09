@@ -10,6 +10,7 @@ const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'));
 const BlogManagement = lazy(() => import('./pages/BlogManagement'));
 const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'));
 const PromptsManagement = lazy(() => import('./pages/PromptsManagement'));
+const JobsManagement = lazy(() => import('./pages/JobsManagement'));
 const ResourcesManagement = lazy(() => import('./pages/ResourcesManagement'));
 const NotificationsManagement = lazy(() => import('./pages/NotificationsManagement'));
 const OfficeHours = lazy(() => import('./pages/office-hours/index'));
@@ -53,6 +54,11 @@ const App = () => {
             <Route path="/prompts" element={
               <AdminRoute requireAdmin>
                 <AdminLayout><PromptsManagement /></AdminLayout>
+              </AdminRoute>
+            } />
+            <Route path="/jobs" element={
+              <AdminRoute requireAdmin>
+                <AdminLayout><JobsManagement /></AdminLayout>
               </AdminRoute>
             } />
             <Route path="/release-notes" element={

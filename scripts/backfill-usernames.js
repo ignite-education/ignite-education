@@ -32,7 +32,7 @@ const RESERVED = new Set([
   'courses', 'blog', 'welcome', 'privacy', 'terms', 'release-notes',
   'sign-in', 'reset-password', 'auth', 'certificate', 'prompts', 'progress',
   'admin', 'office-hours', 'learning', 'api', 'sitemap', 'sitemap.xml',
-  'robots.txt', 'ai.txt', '_next', 'assets', 'index',
+  'robots.txt', 'ai.txt', '_next', 'assets', 'index', 'jobs',
 ]);
 
 // Mirrors public.slugify(): lowercase -> non-alphanumeric runs to one hyphen

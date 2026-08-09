@@ -58,9 +58,18 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     schema: 'public',
   },
   global: {
+    // No global Content-Type. It applies to EVERY request this client makes,
+    // storage uploads included, where it is actively wrong: a file upload sends a
+    // FormData body whose `multipart/form-data; boundary=...` header fetch
+    // generates itself, and a global Content-Type overrides it. The server then
+    // cannot find the boundary, so it stores the raw multipart envelope —
+    // boilerplate, headers and all — and tags it application/json. The result is
+    // an "upload" that succeeds and returns 200 but is not a decodable image.
+    //
+    // Nothing needs it: postgrest-js and gotrue-js each set their own
+    // Content-Type on requests that carry a JSON body.
     headers: {
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
     },
   },
   cookies: { getAll, setAll },

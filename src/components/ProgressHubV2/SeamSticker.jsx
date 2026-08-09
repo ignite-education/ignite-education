@@ -5,7 +5,14 @@ const ASSETS = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/publi
 /* Same four stickers as the course page's HeroSticker. Duplicated rather than
    imported: that component lives in next-app, a separate Vercel project and
    build, and this repo copies across app boundaries rather than symlinking (see
-   the shared libs in admin-app). Keep the two lists in step.
+   the shared libs in admin-app). Keep the two lists in step — and the load
+   handling too, which drifted once already: the decode gate below existed here
+   for months before it reached next-app, and the course page shipped a clipped
+   drop-shadow the whole time. The two gates are not identical and should not be
+   made identical. This app renders a plain <img>, so a throwaway Image() probe
+   decodes the same URL that paints. next-app goes through the image optimizer,
+   so it gates on next/image's onLoad, which Next fires only after awaiting the
+   real element's decode().
 
    width/height are the artwork's true pixel dimensions. */
 const STICKERS = [
@@ -18,8 +25,10 @@ const STICKERS = [
 /* One factor for all four rather than a per-sticker width. The cards differ in
    width because the wordmarks do, so a shared scale is what keeps type rendering
    at the same size whichever one is drawn, and keeps their heights in step —
-   they land within 85-89px of each other here. 163/762 is the course page's
-   scale; this hub runs ~19% under it. Retune by moving the 0.8075 alone. */
+   they land within 85-89px of each other here. 163/762 was the course page's
+   scale when this factor was chosen, putting the hub ~19% under it; that page
+   has since trimmed itself 15% and this one did not follow, so the hub now runs
+   ~5% under it. Retune by moving the 0.8075 alone. */
 const SCALE = (163 / 762) * 0.8075;
 
 /* Rounded to a whole pixel so the card's edges land on the device grid; the
@@ -85,13 +94,17 @@ export default function SeamSticker() {
     <div className="hidden lg:block relative h-0 z-10">
       {/* -top-3 lifts it 12px off the seam, so slightly more of the card sits in
           the white section than the black. Kept on top-* rather than folded into
-          the translate below, which Tailwind composes with the centring one. */}
+          the translate below, so the offset and the centring stay separately
+          readable. */}
       <div className="absolute left-[35%] -top-3 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-        {/* Tilt gets its own element: it must stay off the wrapper above, where
-            Tailwind composes rotate-* and the centring translate-* utilities
-            into a single transform, and off the image below, where a transform
-            alongside the filter makes Chrome rasterise the drop-shadow in
-            pre-transform space and render it clipped until a full re-raster. */}
+        {/* Tilt gets its own element. It stays off the wrapper above because the
+            angle is drawn at runtime, so it cannot be a utility class there —
+            and note that under Tailwind v4 a rotate-* utility would not have
+            clobbered the centring translate-* ones anyway, since v4 emits
+            standalone `rotate:` and `translate:` properties. It stays off the
+            image below because filters apply before transforms, so a transform
+            there makes Chrome rasterise the drop-shadow in pre-transform space
+            and render it clipped until a full re-raster. */}
         <div style={{ transform: `rotate(${pick.angle.toFixed(2)}deg)` }}>
           <img
             src={src}

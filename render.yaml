@@ -54,6 +54,31 @@ services:
         sync: false
       - key: REFERRAL_IP_DAILY_CAP
         sync: false
+      # Shared cron secret. Read by /api/cron/aggregate-memory and
+      # /api/cron/ingest-jobs; previously set only in the dashboard.
+      - key: CRON_SECRET
+        sync: false
+      # Job board — ATS feeds need no keys; the aggregators do.
+      - key: ADZUNA_APP_ID
+        sync: false
+      - key: ADZUNA_APP_KEY
+        sync: false
+      - key: REED_API_KEY
+        sync: false
+      # Board freshness cut. next-app has its own copy of this number in
+      # src/data/jobsData.ts and is deployed separately — change both together.
+      - key: JOBS_MAX_POSTED_AGE_DAYS
+        value: "21"
+      - key: JOBS_INGEST_ENABLED
+        value: "true"
+      - key: JOBS_INGEST_MAX_SECONDS
+        value: "240"
+      - key: JOBS_SUMMARIES_ENABLED
+        value: "true"
+      - key: JOBS_SUMMARY_MODEL
+        value: "claude-sonnet-5"
+      - key: JOBS_APPLY_DAILY_CAP
+        value: "200"
 
   # Cron job to refresh Reddit cache daily at 6 AM UTC
   - type: cron
@@ -61,3 +86,89 @@ services:
     schedule: "0 6 * * *"
     buildCommand: ""
     startCommand: curl -X POST https://ignite-education-api.onrender.com/api/reddit-cache/refresh
+
+  # Job board ingest — split into separate crons rather than one so each run
+  # stays bounded (Render's free plan can kill a long run), the sources' rate
+  # limits are staggered, and each is independently observable in
+  # job_ingest_runs. Summarisation is another for the same reason: see
+  # jobs-summaries below.
+  #
+  # Unlike reddit-cache-refresh above, these MUST send the cron secret: they
+  # spend metered third-party API quota.
+  - type: cron
+    name: jobs-ingest-ats
+    schedule: "0 5 * * *"
+    buildCommand: ""
+    startCommand: >-
+      curl -sS --fail --max-time 600 -X POST
+      -H "Authorization: Bearer $CRON_SECRET"
+      -H "Content-Type: application/json"
+      -d '{"sources":["greenhouse","lever","ashby","workable"]}'
+      https://ignite-education-api.onrender.com/api/cron/ingest-jobs
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # The enterprise ATS tier, ten minutes behind the fast one.
+  #
+  # Separate because it is a different shape of work, not just more of it: these
+  # four page through their boards AND fetch a description per new job, so a
+  # single slow Workday tenant could eat the whole budget. Isolating them means
+  # that costs this cron, not the four sources above which are one request each.
+  #
+  # maxSeconds overrides JOBS_INGEST_MAX_SECONDS (240) for this request only —
+  # that env var is shared by every cron, so it cannot be raised for one tier
+  # without raising it for all of them. Stays under curl's --max-time 600.
+  #
+  # It also lands 10 minutes after a run that has already woken the free-plan
+  # web service, so it skips the cold start.
+  - type: cron
+    name: jobs-ingest-ats-enterprise
+    schedule: "10 5 * * *"
+    buildCommand: ""
+    startCommand: >-
+      curl -sS --fail --max-time 600 -X POST
+      -H "Authorization: Bearer $CRON_SECRET"
+      -H "Content-Type: application/json"
+      -d '{"sources":["workday","eightfold","oracle_orc","jsonld"],"maxSeconds":420}'
+      https://ignite-education-api.onrender.com/api/cron/ingest-jobs
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  - type: cron
+    name: jobs-ingest-aggregators
+    schedule: "25 5 * * *"
+    buildCommand: ""
+    startCommand: >-
+      curl -sS --fail --max-time 600 -X POST
+      -H "Authorization: Bearer $CRON_SECRET"
+      -H "Content-Type: application/json"
+      -d '{"sources":["adzuna","reed"]}'
+      https://ignite-education-api.onrender.com/api/cron/ingest-jobs
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # AI summaries for the board's description text. Last, at 05:45, because it
+  # reads description_text that the three ingests above have just rewritten —
+  # and the enterprise tier can run to 420s, so 05:25 + 420s is the real
+  # constraint on how early this can start.
+  #
+  # Its own cron rather than a step inside the ingest: the ingest is capped at
+  # JOBS_INGEST_MAX_SECONDS (240) and 60 sequential Claude calls at 2-5s each
+  # would exhaust that budget by themselves. Capped per run, so a cold board
+  # works through its backlog over a few nights rather than in one long request.
+  - type: cron
+    name: jobs-summaries
+    schedule: "45 5 * * *"
+    buildCommand: ""
+    startCommand: >-
+      curl -sS --fail --max-time 600 -X POST
+      -H "Authorization: Bearer $CRON_SECRET"
+      -H "Content-Type: application/json"
+      -d '{}'
+      https://ignite-education-api.onrender.com/api/cron/jobs-summaries
+    envVars:
+      - key: CRON_SECRET
+        sync: false

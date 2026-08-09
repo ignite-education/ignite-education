@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import type { BlogPost } from '@/types/blog'
-import BlogCarousel from '@/components/BlogCarousel'
+import type { FAQ } from '@/lib/faqs'
+import FAQBlogGrid from '@/components/FAQBlogGrid'
 
-interface FAQ {
-  question: string
-  answer: string
-}
+/**
+ * Welcome's final panel: the FAQ/blog grid, plus the scroll-back-to-top CTA.
+ *
+ * The shell is what makes this welcome-specific — 100vh so WelcomeScrollManager
+ * can snap to it, and gutters measured off the hero rather than a content
+ * column. /jobs renders the same grid inside its own shell; see
+ * components/FAQBlogGrid.
+ */
 
 interface FAQSectionProps {
   faqs: FAQ[]
@@ -15,7 +20,6 @@ interface FAQSectionProps {
 }
 
 export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
-  const [expandedFAQ, setExpandedFAQ] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
   const [isTablet, setIsTablet] = useState(false)
 
@@ -48,80 +52,8 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
           paddingRight: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 85px)',
         }}
       >
-        <div className={`grid gap-8 mb-8 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          {/* FAQs Column */}
-          <div className={isMobile ? '' : 'order-2 pl-4'}>
-            <h3 className="font-bold text-white mb-4 text-left text-3xl">
-              FAQs
-            </h3>
-
-            <div className="space-y-3 w-full">
-              {faqs.map((faq, idx) => (
-                <div
-                  key={idx}
-                  className="rounded cursor-pointer"
-                  onClick={() => setExpandedFAQ(expandedFAQ === idx ? -1 : idx)}
-                  style={{
-                    backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
-                    padding: expandedFAQ === idx ? '1rem 1rem 1.2rem 1.2rem' : '1rem 1rem 1rem 1.2rem',
-                    transition: isMobile
-                      ? 'background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), padding 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
-                      : 'background-color 1s cubic-bezier(0.25, 1, 0.5, 1), padding 1s cubic-bezier(0.25, 1, 0.5, 1)',
-                  }}
-                  onMouseEnter={isMobile ? undefined : () => setExpandedFAQ(idx)}
-                >
-                  <h4
-                    className="font-semibold leading-tight"
-                    style={{
-                      fontSize: '20px',
-                      color: expandedFAQ === idx ? '#7714E0' : '#000000',
-                      transition: isMobile ? 'color 0.8s cubic-bezier(0.16, 1, 0.3, 1)' : 'color 1s cubic-bezier(0.25, 1, 0.5, 1)',
-                    }}
-                  >
-                    {faq.question}
-                  </h4>
-                  <div
-                    className="grid"
-                    style={{
-                      gridTemplateRows: expandedFAQ === idx ? '1fr' : '0fr',
-                      transition: isMobile
-                        ? 'grid-template-rows 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
-                        : 'grid-template-rows 1s cubic-bezier(0.25, 1, 0.5, 1)',
-                    }}
-                  >
-                    <div className="overflow-hidden">
-                      <p
-                        className="text-black text-sm mt-1 pb-1"
-                        style={{
-                          opacity: expandedFAQ === idx ? 1 : 0,
-                          transition: isMobile ? 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)' : 'opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1)',
-                          transitionDelay: expandedFAQ === idx ? (isMobile ? '200ms' : '200ms') : '0ms'
-                        }}
-                      >
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Blog Column */}
-          <div className={`flex flex-col justify-start ${isMobile ? '' : 'order-1'}`} style={isMobile ? { marginTop: '23px' } : undefined}>
-            <div className="w-full">
-              <h3 className="font-bold text-white text-left text-3xl mb-4">
-                Latest from Ignite
-              </h3>
-              {posts.length > 0 ? (
-                <BlogCarousel posts={posts} />
-              ) : (
-                <div className="h-48 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-400">
-                  Updates coming soon...
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="mb-8">
+          <FAQBlogGrid faqs={faqs} posts={posts} />
         </div>
 
         {/* Get Started Button */}

@@ -1,6 +1,7 @@
 import { getCoursesByType } from '@/lib/courseData'
 import { getAllPublishedPosts } from '@/lib/blogData'
 import { getAllPrompts } from '@/data/placeholderPrompts'
+import { getProfessionsWithJobs } from '@/data/jobsData'
 import { professionToSlug } from '@/lib/professionUtils'
 import { getFirstSentence } from '@/lib/courseUtils'
 import { SITE_URL, SITE_NAME, ORG_EMAIL } from '@/lib/siteConfig'
@@ -49,10 +50,11 @@ function courseLines(courses: Course[]): string {
 }
 
 export async function GET() {
-  const [coursesByType, posts, prompts] = await Promise.all([
+  const [coursesByType, posts, prompts, jobProfessions] = await Promise.all([
     getCoursesByType(),
     getAllPublishedPosts(),
     getAllPrompts(),
+    getProfessionsWithJobs('gb'),
   ])
 
   const totalCourses =
@@ -108,6 +110,17 @@ export async function GET() {
           `- [${profession} prompts](${SITE_URL}/prompts/${professionToSlug(profession)}): ${count} template${count === 1 ? '' : 's'}`
       )
       .join('\n'),
+    '',
+    '## Job board',
+    '',
+    `Current UK vacancies across the professions we teach, filtered by experience level (entry, mid, senior). Every listing is reviewed by hand before it appears and links to the original employer posting. Index: ${SITE_URL}/jobs`,
+    '',
+    jobProfessions.length
+      ? [...jobProfessions]
+          .sort((a, b) => a.localeCompare(b))
+          .map((profession) => `- [${profession} jobs](${SITE_URL}/jobs/${professionToSlug(profession)})`)
+          .join('\n')
+      : '- No live listings right now.',
     '',
     '## Blog',
     '',

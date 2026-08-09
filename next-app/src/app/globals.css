@@ -175,6 +175,21 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* The arrow in the job board's Apply glyph: lifts out of its tray and settles
+   back, repeating for as long as the cursor is on the card.
+
+   It repeats because the trigger is the whole card, not the icon — a single run
+   fires as the cursor crosses the card's edge and is finished before anyone's
+   eye reaches the button. The rest between 60% and 100% is what keeps a loop
+   from reading as frantic. Values are SVG user units (viewBox is 24 wide, the
+   icon renders at 16), so -4 here is 2.7 screen pixels. */
+@keyframes shareArrowBob {
+  0% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+  60% { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+
 /* Respect users' reduced motion preferences for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,

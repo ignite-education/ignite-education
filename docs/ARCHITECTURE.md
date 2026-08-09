@@ -1,6 +1,6 @@
 # Ignite Education - Architecture Overview
 
-> **Last updated:** 2026-03-24
+> **Last updated:** 2026-08-08
 >
 > This document is the single source of truth for how the Ignite Education platform is structured.
 > It should be updated whenever architectural changes are made (new apps, services, integrations, routes, or deployment changes).
@@ -159,6 +159,8 @@ Two non-obvious failure modes this configuration prevents:
 | `/blog/[slug]` | SSR | — | Blog posts with audio narration, BlogPosting schema |
 | `/certificate/[id]` | ISR | 3600s | Certificate sharing with dynamic OG image generation |
 | `/prompts` | SSR | — | AI prompt toolkit (3-level dynamic routing) |
+| `/jobs` | ISR | 300s | Job board — client-side filtering by profession + seniority |
+| `/jobs/[professionSlug]` | ISR | 300s | Same board pre-filtered; the SEO asset for the feature |
 | `/sign-in` | SSR | — | Auth entry with OAuth + email/password |
 | `/reset-password` | SSR | — | Password recovery |
 | `/privacy`, `/terms` | SSR | — | Static legal pages |
@@ -230,6 +232,7 @@ Two non-obvious failure modes this configuration prevents:
 | **User Management** | `/api/users/:userId` (DELETE), `/api/delete-account` | Admin / Auth |
 | **Notifications** | `/api/notifications/broadcast`, `/api/notifications/admin`, `/api/notifications/:id` (DELETE) | Admin |
 | **Referrals** | `/api/referrals/claim`, `/api/referrals/me`, `/api/admin/referrals` | Auth / Admin |
+| **Job board** | `/api/cron/ingest-jobs`, `/api/admin/jobs/ingest`, `/api/jobs/:id/apply` | `CRON_SECRET` / Admin / Auth |
 
 #### Auth middleware levels
 
@@ -267,6 +270,13 @@ plan to use via the API; the premade voices do not.
 | Weekly Sunday 4 AM UTC | User memory aggregation via Claude |
 | Daily 2 AM UTC | Notification pruning (`prune_notifications` RPC) |
 | Daily 6 AM UTC (Render cron) | Reddit cache refresh |
+| Daily 5:00 AM UTC (Render cron) | Job ingest — ATS feeds (Greenhouse, Lever, Ashby, Workable) |
+| Daily 5:10 AM UTC (Render cron) | Job ingest — enterprise ATS (Workday, Eightfold, Oracle, JSON-LD); `maxSeconds: 420` |
+| Daily 5:25 AM UTC (Render cron) | Job ingest — aggregators (Adzuna, Reed) |
+
+Both job crons POST to `/api/cron/ingest-jobs` with a `Bearer $CRON_SECRET` header. They are
+split so each run stays inside Render's free-plan limits, the sources' rate limits are
+staggered, and each is independently visible in `job_ingest_runs`.
 
 ---
 
@@ -421,6 +431,11 @@ null is a first-class state, not an error:
 | **Bright Data** | LinkedIn company post scraping | API |
 | **Reddit API** | Community content (ProductManagement, cybersecurity subreddits) | API |
 | **Google Identity Services** | One Tap sign-in | Vite SPA + Next.js |
+| **Greenhouse / Lever / Ashby / Workable** | Public ATS job-board feeds — no keys, full descriptions, direct employers. Startup ATSs; they cover almost none of the large brands | API (`server/jobs/sources/`) |
+| **Workday / Eightfold / Oracle Recruiting Cloud** | Enterprise ATSs — public, unauthenticated, undocumented. The only route to Roche, Nike, LSEG, Mars, Netflix, M&S. Two-phase: one request per job for the description | API (`server/jobs/sources/`) |
+| **schema.org JobPosting** | Vendor-agnostic — any careers site publishing `JobPosting` JSON-LD, read through its sitemap. British Airways today. The most durable adapter, because the format is a published standard | Sitemap + JSON-LD |
+| **Adzuna** | UK job aggregation (operates DWP Find a Job). Free key; hard ToS caps of 25/min, 250/day, 1,000/week, 2,500/month. **Mandatory per-advert attribution logo ≥116×23px** | API |
+| **Reed.co.uk** | UK job aggregation; its `graduate` flag is the best entry-level signal available. Key is not self-serve | API |
 
 ---
 
@@ -443,6 +458,9 @@ Key tables (non-exhaustive):
 - `release_notes` — product changelog
 - `notifications` — Progress Hub notification feed (see below)
 - `referrals`, `insider_grants` — profile-page referrals and the free weeks they earn (see below)
+- `job_listings` + `job_listing_apply`, `job_sources`, `job_markets`, `job_queries`,
+  `job_source_accounts`, `job_companies`, `job_ingest_runs`, `job_rejection_fingerprints`,
+  `job_apply_clicks` — the job board (see below)
 
 Database triggers on `public.users`:
 - `on_auth_user_created` (`AFTER INSERT ON auth.users` → `handle_new_user()`) — mirrors every
@@ -539,6 +557,261 @@ use `resolveInsider()` in `server.js` or `isInsider` from `AuthContext`:
 
 ---
 
+### Job board
+
+Public board at `/jobs`, backed by a nightly ingest pipeline in `server/jobs/` and an admin
+approval queue at `admin.ignite.education/jobs`. Modelled on `/prompts` — same profession
+taxonomy (`courses` rows where `course_type = 'specialism'`), same filter UX, same public
+Next.js + admin CRUD split.
+
+**There are no per-job pages.** Job detail expands in place on the board, and `?job=<id>` makes a
+listing linkable. That is a deliberate scope choice: it removes an entire route tree, the
+soft-404-on-expiry problem, and the `JobPosting` structured-data question. The profession pages
+(`/jobs/[professionSlug]`) are the SEO asset instead.
+
+**No `JobPosting` JSON-LD anywhere.** With no per-job pages there is nothing to attach it to, and
+emitting it would feed listings into the Google Jobs widget — which renders the vacancy inside
+Google's own result and sends the click somewhere other than here, defeating the account gate. It
+would also conflict with source terms that forbid redistribution to competing aggregators.
+
+#### The sign-in-to-apply gate
+
+Anyone can read the board; clicking through to a vacancy requires an account. The mechanism is
+structural, not cosmetic:
+
+| Layer | Guarantee |
+|-------|-----------|
+| Storage | `job_listing_apply` is a **separate table** with no anon or authenticated RLS policy |
+| Page render | `jobsData.ts` uses the cookie-less anon client (needed for ISR), which cannot see that table at all |
+| RSC payload | `<ApplyGate jobId={...} />` receives only an id — there is no URL to serialise |
+| API | `GET /api/jobs/:id/apply` behind `verifyAuth` is the only reader, via the service role |
+
+Do **not** move `apply_url` back onto `job_listings`. The separation is what makes the gate
+unbypassable rather than merely un-rendered.
+
+Resolution is entirely client-side after hydration, and must stay that way: the board is ISR, so
+its HTML is a **shared** cache entry — resolving the URL server-side "when the user is signed in"
+would bake one signed-in render into the cache and serve it to everyone. The endpoint returns
+JSON rather than a 302 because Supabase cookies are scoped to `.ignite.education` while the API
+is on `onrender.com`, so a plain `<a href>` would carry no session.
+
+#### Ingest pipeline (`server/jobs/`)
+
+Everything is driven by **database config** — adding a country or a company is an INSERT, not a
+deploy. Adapters read their country identifier from `job_markets.source_params`.
+
+| Concern | File |
+|---------|------|
+| Orchestrator + filter cascade + hydration | `server/jobs/index.js` |
+| Startup ATS adapters | `server/jobs/sources/{greenhouse,lever,ashby,workable}.js` |
+| Enterprise ATS adapters (two-phase) | `server/jobs/sources/{workday,eightfold,oracleOrc,jsonld}.js` |
+| Aggregator adapters | `server/jobs/sources/{adzuna,reed}.js` |
+| Board discovery | `server/jobs/lib/discover.js` + `scripts/discover-job-boards.mjs` |
+| Seniority inference (pure, testable) | `server/jobs/lib/seniority.js` + `config/seniorityRules.js` |
+| Profession mapping | `server/jobs/lib/profession.js` + `config/professionMap.js` |
+| Dedupe | `server/jobs/lib/dedupe.js` |
+| Rate limits + ToS budget | `server/jobs/lib/rateLimiter.js`, `lib/budget.js` |
+| Expiry + outage guard | `server/jobs/lib/expire.js` |
+| Employer logos | `server/jobs/lib/logos.js` |
+| Local runner | `scripts/run-job-ingest.mjs` |
+
+**Two-phase sources.** Workday, Oracle Recruiting Cloud and the JSON-LD careers-site adapter all
+return a list with no advert text, so the description costs one HTTP request per job. Those
+adapters set `needsDetail: true` and implement `hydrateOne()`; the orchestrator's hydrate step
+calls it only after three cheap gates (blocked title, age, `couldMapProfession()` on the title
+alone) and only for jobs not already in the database — a re-seen listing reads its description
+from `job_listings`. Roche's board is 1,191 requisitions worldwide; the UK facet plus those gates
+take a nightly run down to a handful of requests.
+
+Two invariants in that step are load-bearing and non-obvious:
+
+- **A job that cannot be hydrated is dropped (`not_hydrated`), never persisted.** `description_*`
+  are `VOLATILE_FIELDS` in `persist.js`, so writing a re-seen job without its text would blank
+  what it already had.
+- **Detail fetches are counted in `job_ingest_runs.detail_calls`, never in `api_calls`.**
+  `updateTypicalVolume()` matches history on `api_calls` as a proxy for configured scope; folding
+  in a number that moves with nightly new-job volume would leave `typical_volume` permanently null
+  and silently disarm the delisting outage guard.
+
+Jobs are dropped **before** they become rows, counted into `job_ingest_runs.dropped`:
+`too_old`, `title_blocked`, `company_not_allowed`, `no_profession`, `company_blocked`,
+`wrong_market`, `executive`, `rejected_repeat`, `duplicate`. In a live dry run this took 4,306
+fetched jobs down to 81 — that ratio is what makes a manual approval queue sustainable. The
+`dropped` breakdown is where all tuning starts.
+
+#### The company allowlist
+
+The board displays **only brands explicitly approved in `job_companies.allowed`**. Anything else
+is dropped at ingest into `company_not_allowed`, before profession mapping, so it never becomes a
+row and never reaches the approval queue.
+
+Matching is on `normaliseCompany()` output. The four ATS adapters take their company name from
+`job_source_accounts.company` — a column we control — so those match exactly; `job_companies.aliases`
+exists for aggregators, which report whatever the employer typed (`Marks and Spencer plc`, `M&S`).
+
+Two properties follow from this that are easy to miss:
+
+- **It is what makes aggregators safe to enable.** Adzuna's problem was always volume from
+  employers nobody vetted. An allowlist reduces that to a known set — and it is what lets a
+  company sweep work at all: Adzuna has no company filter, so the query is a free-text search for
+  the brand and the allowlist does the exact matching. An agency advertising "a role with Marks &
+  Spencer" carries the *agency* as its company and is dropped.
+- **It removes the logo domain-guessing risk entirely**, because every allowed company carries a
+  hand-checked `domain`.
+
+Allowlist mode is on unless `JOBS_COMPANY_ALLOWLIST=false`. If it is on and the allowlist is
+empty, the ingest **throws** — silently ingesting everything when an allowlist was requested is
+the more dangerous failure.
+
+#### Coverage: allowed is only half of it
+
+Being `allowed` means we are *willing* to show a company's roles. It does not fetch anything. A
+company also needs a **source**: a `job_source_accounts` board, or a `job_queries` row scoped to
+it via `company_norm`. A company with neither sits on the allowlist producing nothing, and every
+other admin screen looks entirely normal while it does — which is exactly how 27 of 38 allowlisted
+brands ended up contributing zero listings.
+
+Three things exist to stop that recurring:
+
+| Piece | What it does |
+|-------|--------------|
+| `job_company_coverage()` RPC | One row per company: board count, enabled boards, failing boards, query count, live and pending listings, last seen |
+| Admin **Coverage** tab | Zero-coverage companies sort to the top and stay amber. Boards are added, tested and removed in place |
+| `scripts/discover-job-boards.mjs --gaps` | Fingerprints each uncovered company's careers site, derives the board config, verifies it returns in-market jobs, prints paste-ready SQL |
+
+`job_source_accounts.company_norm` is a real foreign key to `job_companies`, so a board cannot be
+attached to a company that is not in the registry — the old display-name string match let that
+happen silently.
+
+**Boards we deliberately do not build.** Apple, Google, Microsoft, Meta, TikTok, Uber, LinkedIn
+and JD.com all block automated access to their job data (401/403/private GraphQL; LinkedIn's
+Greenhouse board holds only ATS test fixtures). Working around that would breach their terms, so
+`DENYLIST` in `lib/discover.js` refuses to probe them and says why. They stay allowlisted and are
+covered by the aggregator sweep only, where the employer has chosen to syndicate.
+
+#### Market matching
+
+`job_markets.location_matchers` has to be loose enough to catch "London", "Wales" and "UK"
+wherever a source puts them. On a single-country startup ATS board that is harmless. On a global
+Workday or Oracle board it is not: `\bwales\b` matches `AUS-New South Wales-Asquith` and
+`\blondon\b` matches `CAN-Ontario-London`. `job_markets.location_excluders` is checked **first**
+in `matchesMarket()`, so an explicit "this is somewhere else" always beats a loose city match.
+
+#### Employer logos
+
+Resolved once per **company** per 30 days (not per listing), re-hosted in the Supabase `assets`
+bucket under `job-logos/`, and denormalised onto `job_listings.company_logo_url`. That last copy
+is load-bearing, not redundant: `job_companies` has no anon SELECT policy, so the public board
+cannot join to it.
+
+Source is Google's `s2/favicons` endpoint, with DuckDuckGo `ip3` as fallback. Both were probed
+against all 36 employer domains — Google returned a brand-correct raster for 36/36. Rejected:
+**Clearbit** (the service is gone — `logo.clearbit.com` is NXDOMAIN) and **icon.horse**, which
+fails *open* by returning HTTP 200 and a generated grey letter-tile for domains that do not
+exist, so it would silently poison the table.
+
+Re-hosting rather than hot-linking means the Supabase host is already in `remotePatterns`, so no
+routing config changes; and if s2 disappears (it is undocumented and unversioned) logos stop
+*refreshing* rather than breaking.
+
+Three things here are counter-intuitive enough to be worth stating:
+
+- **Check the HTTP status, not just the bytes.** Google returns a valid 726-byte grey-globe PNG
+  *alongside* its 404 for unknown domains. Sniffing bytes without checking status stores globes.
+- **Sniff the content type from magic bytes, never the response header.** Providers routinely
+  mislabel (Trustpilot serves a real ICO as `application/octet-stream`). Supabase serves back
+  whatever you set, and some browsers then refuse to render it — where the failure hides behind
+  the perfectly normal-looking initial-tile fallback.
+- **Domain guessing is off by default** (`JOBS_LOGO_GUESS_DOMAINS`). Measured against the 25 live
+  employers with the curated mapping disabled, guessing picked the *wrong company* for 8 of them —
+  `harvey.co.uk` is a water-softener firm, not the legal-AI company. Every wrong guess passed the
+  homepage-title check, because a company genuinely called "Harvey" does have "Harvey" in its
+  `<title>`. No cheap heuristic separates same-name-different-company, and a wrong logo is a
+  trademark complaint rather than a rendering glitch.
+
+The trusted path is `job_source_accounts.domain` — hand-filled, and it covers every ATS employer.
+Companies with no domain keep the coloured initial tile. `logo_status = 'suppressed'` is the
+permanent takedown lever and is never retried by the ingest.
+
+**`company_logo_url` must never go back into `persist.js`'s `VOLATILE_FIELDS`.** Every adapter
+hardcodes `companyLogoUrl: null` because no ATS API returns a logo, so "refreshing" that column
+on a re-seen job overwrites a resolved logo with null — the whole board loses its logos on the
+second ingest run. The column is owned by `lib/logos.js`, which re-asserts it onto each company's
+listings every run so newly inserted rows pick it up without waiting out the 30-day refresh window.
+
+#### The expiry volume guard can deadlock
+
+`expire.js` skips the delist sweep when a run fetches less than half of `job_sources.typical_volume`,
+so a source outage cannot mass-expire the board. The trap: the guard cannot distinguish an outage
+from **us deliberately shrinking our own account list**, which produces an identical volume drop.
+
+Before this was fixed, that deadlocked permanently — guard trips → run marked `partial` → a
+`success`-only median never updates → the guard trips forever and withdrawn vacancies stay on the
+board indefinitely. Enabling the allowlist triggered exactly this, taking ashby from ~2,800 jobs
+to ~230.
+
+`updateTypicalVolume()` therefore computes its median only over runs with the **same `api_calls`**
+(the available proxy for configured scope), and runs for `partial` as well as `success`. A real
+outage leaves scope unchanged, so the low run is one sample among ten and the guard stays armed; a
+config change has no history at the new scope, so it re-baselines immediately.
+
+#### Things that will bite you
+
+- **`profession` and `seniority` are `GENERATED ALWAYS AS (COALESCE(override, inferred)) STORED`.**
+  They cannot be written directly — every admin write must target `profession_override` /
+  `seniority_override`. This is what stops a re-ingest clobbering an admin decision.
+- **Never `.upsert()` `job_listings`.** Upsert replaces the row, resetting `status`, `approved_at`
+  and the overrides — silently resurrecting rejected jobs every night. `persist.js` looks up by
+  `(source, source_job_id)` and updates only volatile content fields.
+- **The expiry outage guard is not optional.** The delisting rule ("we did not see it, so expire
+  it") would wipe the whole board if a source had a partial outage, so it only runs when a run
+  fetched ≥50% of `job_sources.typical_volume`. Otherwise only `expires_at` applies and the run
+  records as `partial`.
+- **ATS `posted_at` is unreliable, and the board now filters on it anyway.** Lever reports when
+  the *requisition record* was created, which for evergreen roles can be a decade ago. `too_old`
+  used to be skipped for `kind = 'ats'` for exactly that reason, with delisting as the only
+  lifecycle rule. It no longer is: `MAX_POSTED_AGE_DAYS` (21, `expire.js`, overridable via
+  `JOBS_MAX_POSTED_AGE_DAYS`) drops older postings at ingest **and** expires ones already held.
+  This is a deliberate product trade, not a bug fix — measured on the live board it removed 27
+  of 36 vacancies, all 27 of which the employer's own feed had confirmed open within 24 hours,
+  and it took three of six professions below the "has jobs" threshold that governs `noindex` and
+  sitemap inclusion. Widen the constant before concluding the ingest is broken. If the intent
+  ever becomes "drop what has gone cold on *our* board", the right column is `first_seen_at`,
+  which is already what `computeExpiry()` anchors on.
+- **The freshness cut is duplicated, on purpose.** `MAX_POSTED_AGE_DAYS` in `expire.js` (server)
+  and in `next-app/src/data/jobsData.ts` (read time) — separate deploys, no shared imports.
+  Change both together. Drift always resolves to the tighter of the two, so neither direction
+  can leak a stale listing onto the board. The read-time copy also gates `getProfessionsWithJobs`,
+  which decides indexing and sitemap membership.
+- **Adzuna's monthly cap is the real ceiling**, not the daily one: 2,500/month ≈ 83/day. One
+  market at ~32 calls/day fits; three would not. `budget.js` enforces it from the database
+  because Render's free plan spins down and an in-process counter cannot survive a restart.
+- **Attribution is contractual.** `SourceAttribution.tsx` renders from `job_sources.attribution`
+  keyed on the listing's **`display_source`** (not `source` — a cross-source dedupe can elect a
+  different canonical). Adzuna requires its logo at ≥116×23px on every advert and suspends
+  access for non-compliance.
+- **No aggregate statistics over Adzuna data** — no job counts, no average-salary widgets, no
+  "X new jobs this week". Their terms restrict derived stats without written consent, which is
+  why the board renders no result count.
+- **`jobs` is a reserved username.** `/jobs` would otherwise collide with the `/{username}`
+  rewrite. Kept in step in `scripts/backfill-usernames.js` and `public.is_reserved_username()`.
+
+#### Coverage gap
+
+ATS feeds are used almost exclusively by tech companies and digital agencies. A live probe of
+~60 UK healthcare and renewable-energy employers found **zero** usable boards. So the ATS tier
+serves UX Designer, Data Analyst, Cyber Security Analyst, Product Manager and Digital Marketing
+Specialist, while **Healthcare Assistant, Mental Health Worker and Green Energy Technician depend
+entirely on Adzuna**. Profession pages with no listings are hidden from the filter, noindexed,
+and excluded from the sitemap.
+
+**Excluded sources and why:** LinkedIn and Indeed have no readable API at any price (Indeed
+retired its publisher API in 2024; LinkedIn's is write-only and not accepting partners), and
+scraping either violates their terms — including indirectly via a scraping vendor. **Remotive**
+is excluded because its terms forbid using its listings to collect signups, a direct conflict
+with the account gate. **Jobicy** forbids redistribution to competing aggregators.
+
+
 ## Caching Strategy
 
 | Layer | What | TTL |
@@ -548,7 +821,8 @@ use `resolveInsider()` in `server.js` or `isInsider` from `AuthContext`:
 | **NodeCache** | Global lesson scores | 1 hour |
 | **Database** | Reddit posts/comments | 30 min (refresh via cron) |
 | **Database** | TTS audio + timestamps | Permanent (until deleted) |
-| **Vercel ISR** | Next.js public pages | 1 hour (courses, welcome) to 24 hours (release notes) |
+| **Database** | Job listings (`job_listings`) | Daily ingest; expiry evaluated at read time in RLS |
+| **Vercel ISR** | Next.js public pages | 5 min (jobs), 1 hour (courses, welcome) to 24 hours (release notes) |
 
 ---
 

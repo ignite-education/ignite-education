@@ -11,6 +11,11 @@ import axios from 'axios';
 import NodeCache from 'node-cache';
 import cron from 'node-cron';
 import crypto from 'crypto';
+import { runJobIngest } from './server/jobs/index.js';
+import { summariseListings } from './server/jobs/lib/summarise.js';
+import { discoverBoards } from './server/jobs/lib/discover.js';
+import { getAdapter } from './server/jobs/sources/index.js';
+import { matchesMarket } from './server/jobs/lib/normalise.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -4834,67 +4839,156 @@ app.get('/api/reddit-flairs', async (req, res) => {
   }
 });
 
-// Fetch real jobs endpoint using LinkedIn job search
-app.post('/api/fetch-jobs', async (req, res) => {
+// NOTE: a POST /api/fetch-jobs endpoint used to live here. It asked Claude to
+// *invent* five plausible-looking job listings with hand-written careers-page
+// search URLs, and had no consumers anywhere in the codebase. Real job data now
+// comes from the ingest pipeline in server/jobs/ — see /api/cron/ingest-jobs.
+
+// ============================================================================
+// Job board
+// ============================================================================
+
+// Ingest cron. Triggered by the jobs-ingest-* Render cron services (see
+// render.yaml), which is deliberate: node-cron in-process is unreliable because
+// Render's free plan spins the web service down.
+//
+// Body may narrow the run, e.g. {"sources":["greenhouse","lever"]} — the two
+// cron services split ATS from aggregators so each run stays bounded and their
+// rate limits are staggered.
+app.post('/api/cron/ingest-jobs', async (req, res) => {
   try {
-    const { course } = req.body;
-
-    // Use Claude to scrape and parse job listings from LinkedIn
-    const searchQuery = course === 'Product Management' ? 'product manager' : course.toLowerCase();
-
-    const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4096,
-      messages: [{
-        role: 'user',
-        content: `I need you to provide 5 realistic ${course} job listings from top tech companies. Each listing should include:
-- A specific, realistic job title
-- A well-known company name (Google, Meta, Microsoft, Amazon, Apple, Netflix, Stripe, Airbnb, etc.)
-- A compelling 1-2 sentence job description that sounds authentic
-- Experience level: Entry-Level, Mid-Level, Senior, or Executive
-- A working URL to the company's careers page with a search filter for "${searchQuery}" jobs
-
-For the URLs, use these formats:
-- Google: https://www.google.com/about/careers/applications/jobs/results/?q=${encodeURIComponent(searchQuery)}
-- Meta: https://www.metacareers.com/jobs/?q=${encodeURIComponent(searchQuery)}
-- Microsoft: https://careers.microsoft.com/professionals/us/en/search-results?keywords=${encodeURIComponent(searchQuery)}
-- Amazon: https://www.amazon.jobs/en/search?base_query=${encodeURIComponent(searchQuery)}
-- Apple: https://jobs.apple.com/en-us/search?search=${encodeURIComponent(searchQuery)}
-- Netflix: https://jobs.netflix.com/search?q=${encodeURIComponent(searchQuery)}
-- Stripe: https://stripe.com/jobs/search?q=${encodeURIComponent(searchQuery)}
-- Airbnb: https://careers.airbnb.com/positions/?search=${encodeURIComponent(searchQuery)}
-
-Return ONLY valid JSON in this exact format:
-{
-  "jobs": [
-    {
-      "title": "Senior Product Manager, Consumer",
-      "company": "Google",
-      "description": "Lead product strategy for Google Search features, working with cross-functional teams to deliver innovative solutions that impact billions of users.",
-      "level": "Senior",
-      "url": "https://www.google.com/about/careers/applications/jobs/results/?q=product%20manager"
+    const authHeader = req.headers.authorization;
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
-  ]
-}`
-      }]
+
+    if (process.env.JOBS_INGEST_ENABLED === 'false') {
+      return res.json({ success: true, skipped: true, reason: 'JOBS_INGEST_ENABLED=false' });
+    }
+
+    const result = await runJobIngest({
+      supabase,
+      sources: req.body?.sources,
+      markets: req.body?.markets,
+      trigger: 'cron',
+      // Per-request, not just per-process. The enterprise ATS tier pages and
+      // then fetches a description per job, so it needs a longer budget than
+      // the four one-request-per-board sources — and JOBS_INGEST_MAX_SECONDS is
+      // a single env var shared by every cron. Render's --max-time 600 is the
+      // real ceiling.
+      deadlineMs: Number(req.body?.maxSeconds || process.env.JOBS_INGEST_MAX_SECONDS || 240) * 1000,
     });
-
-    const responseText = message.content[0].text;
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error('No JSON found in response');
-    }
-
-    const jobsResponse = JSON.parse(jsonMatch[0]);
-    res.json({ jobs: jobsResponse.jobs || [] });
-
+    res.json({ success: true, ...result });
   } catch (error) {
-    console.error('Error fetching jobs:', error);
-    res.status(500).json({
-      error: 'Failed to fetch jobs',
-      message: error.message
+    console.error('Error in job ingest cron:', error);
+    res.status(500).json({ success: false, error: 'Ingest failed' });
+  }
+});
+
+// Write the AI summaries the board renders in place of the truncated snippet.
+//
+// A separate cron from the ingest above, 20 minutes behind it. The ingest is
+// deadline-bounded at 240s because Render's free plan kills long runs — that is
+// already why it is split in two — and 60 sequential Claude calls would exhaust
+// that on their own. Splitting them also means a summarisation outage shows up
+// as its own failed cron rather than as a mysteriously partial ingest.
+app.post('/api/cron/jobs-summaries', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    if (process.env.JOBS_SUMMARIES_ENABLED === 'false') {
+      return res.json({ success: true, skipped: true, reason: 'JOBS_SUMMARIES_ENABLED=false' });
+    }
+
+    const stats = await summariseListings(supabase, anthropic, {
+      limit: Number(req.body?.limit) || undefined,
+      log: msg => console.log(`📝 [jobs] ${msg}`),
     });
+    console.log('📝 [jobs] summaries:', JSON.stringify(stats));
+    res.json({ success: true, ...stats });
+  } catch (error) {
+    console.error('Error in job summaries cron:', error);
+    res.status(500).json({ success: false, error: 'Summarisation failed' });
+  }
+});
+
+// NOTE: the manual admin triggers (POST /api/admin/jobs/ingest and
+// /api/admin/jobs/summaries) are registered further down, immediately after
+// verifyAdmin is declared — `const` bindings are in the temporal dead zone until
+// then, so registering them here would throw at boot.
+
+// Resolve a listing's outbound apply URL. THIS IS THE SIGN-IN GATE.
+//
+// The URL lives in job_listing_apply, which has no anon RLS policy, and the
+// public board renders through the cookie-less anon client — so the URL is not
+// merely hidden from the page, it is unreachable by it. This endpoint is the
+// only reader.
+//
+// Returns JSON rather than a 302 because Supabase cookies are scoped to
+// .ignite.education while this API is on onrender.com: a plain <a href> would
+// carry no session, so the client must send a bearer token instead.
+app.get('/api/jobs/:id/apply', verifyAuth, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    // The gate is a conversion mechanism, not a secret — but an uncapped authed
+    // endpoint would be a free bulk export of every apply URL on the board.
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from('job_apply_clicks')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', req.user.id)
+      .gte('created_at', since);
+
+    const dailyCap = Number(process.env.JOBS_APPLY_DAILY_CAP || 200);
+    if ((count || 0) >= dailyCap) {
+      return res.status(429).json({ error: 'Daily apply limit reached. Try again tomorrow.' });
+    }
+
+    const { data: job, error: jobError } = await supabase
+      .from('job_listings')
+      .select('id, status, expires_at, title')
+      .eq('id', jobId)
+      .single();
+
+    if (jobError || !job) return res.status(404).json({ error: 'Job not found' });
+
+    const expired = job.status === 'expired' ||
+      (job.expires_at && new Date(job.expires_at) < new Date());
+    if (job.status !== 'approved' || expired) {
+      return res.status(410).json({ error: 'This role is no longer accepting applications' });
+    }
+
+    const { data: applyRow, error: applyError } = await supabase
+      .from('job_listing_apply')
+      .select('apply_url')
+      .eq('job_id', jobId)
+      .single();
+
+    if (applyError || !applyRow?.apply_url) {
+      return res.status(404).json({ error: 'Apply link unavailable' });
+    }
+
+    // Fire-and-forget: a analytics write must never block the redirect.
+    supabase
+      .from('job_apply_clicks')
+      .insert({ job_id: jobId, user_id: req.user.id, referrer: req.get('referer') || null })
+      .then(({ error }) => {
+        if (error) console.error('⚠️ apply click log failed:', error.message);
+      });
+    supabase.rpc('increment_job_apply_click', { p_id: jobId }).then(({ error }) => {
+      if (error) console.error('⚠️ apply click counter failed:', error.message);
+    });
+
+    res.json({ url: applyRow.apply_url });
+  } catch (error) {
+    console.error('Error resolving apply URL:', error);
+    res.status(500).json({ error: 'Failed to resolve apply link' });
   }
 });
 
@@ -4935,6 +5029,127 @@ const verifyAdmin = async (req, res, next) => {
     res.status(500).json({ error: 'Authentication failed' });
   }
 };
+
+// Manual job ingest trigger, from the admin app's Jobs → Runs tab.
+// Registered here rather than beside the other job endpoints above because
+// verifyAdmin is only defined at this point in the file.
+app.post('/api/admin/jobs/ingest', verifyAdmin, async (req, res) => {
+  try {
+    const result = await runJobIngest({
+      supabase,
+      sources: req.body?.sources,
+      markets: req.body?.markets,
+      trigger: 'manual',
+      dryRun: Boolean(req.body?.dryRun),
+      deadlineMs: Number(req.body?.maxSeconds || process.env.JOBS_INGEST_MAX_SECONDS || 240) * 1000,
+    });
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('Error in manual job ingest:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Manual summarisation. `dryRun` reports what it would spend without calling
+// Claude or writing anything — worth using before a large backlog.
+app.post('/api/admin/jobs/summaries', verifyAdmin, async (req, res) => {
+  try {
+    const stats = await summariseListings(supabase, anthropic, {
+      limit: Number(req.body?.limit) || undefined,
+      dryRun: Boolean(req.body?.dryRun),
+      log: msg => console.log(`📝 [jobs] ${msg}`),
+    });
+    res.json({ success: true, ...stats });
+  } catch (error) {
+    console.error('Error in manual job summarisation:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Find a company's job board — the admin Coverage tab's "Find boards" button.
+//
+// Server-side rather than in the browser for two reasons: these are cross-origin
+// requests to third-party ATS endpoints that would fail CORS from the admin app,
+// and the ToS denylist and robots.txt check belong in exactly one place.
+//
+// Shares server/jobs/lib/discover.js with scripts/discover-job-boards.mjs.
+// Vendor detection implemented twice would drift apart within a month.
+app.post('/api/admin/jobs/discover', verifyAdmin, async (req, res) => {
+  try {
+    const { company, domain, aliases, market: marketCode } = req.body || {};
+    if (!company) {
+      return res.status(400).json({ success: false, error: 'company is required' });
+    }
+
+    const { data: market } = await supabase
+      .from('job_markets').select('*').eq('code', marketCode || 'gb').single();
+
+    const result = await discoverBoards({
+      company,
+      domain: domain || null,
+      aliases: Array.isArray(aliases) ? aliases : [],
+      market,
+    });
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('Error discovering job boards:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Test one board without saving it. Runs a single fetchPage() through the real
+// adapter and reports what came back, so a config mistake surfaces immediately
+// rather than as an empty board tomorrow morning. Writes nothing.
+app.post('/api/admin/jobs/probe', verifyAdmin, async (req, res) => {
+  try {
+    const { source, account, params, company, market: marketCode } = req.body || {};
+    const adapter = getAdapter(source);
+    if (!adapter) {
+      return res.status(400).json({ success: false, error: `no adapter for source "${source}"` });
+    }
+
+    const { data: market } = await supabase
+      .from('job_markets').select('*').eq('code', marketCode || 'gb').single();
+
+    const unit = { account, company: company || account, params: params || {}, markets: [market.code] };
+    const { items, apiCalls } = await adapter.fetchPage({
+      market,
+      account: unit,
+      query: null,
+      page: 1,
+      http: axios,
+      // The probe is a single request, so there is nothing to pace.
+      limiter: { wait: async () => {} },
+      env: process.env,
+    });
+
+    const normalised = (items || [])
+      .map(item => adapter.normalise(item, { market, account: unit, query: null }))
+      .filter(Boolean);
+    const inMarket = normalised.filter(
+      job => matchesMarket(job.locationRaw, market.location_matchers, market.location_excluders)
+    );
+
+    res.json({
+      success: true,
+      apiCalls,
+      fetched: items?.length || 0,
+      normalised: normalised.length,
+      inMarket: inMarket.length,
+      // A sample beats a count: it shows immediately whether the board belongs
+      // to the company you think it does.
+      sample: normalised.slice(0, 5).map(job => ({
+        title: job.title,
+        location: job.locationRaw,
+        postedAt: job.postedAt,
+        needsDetail: Boolean(job.needsDetail),
+      })),
+    });
+  } catch (error) {
+    console.error('Error probing job board:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // Delete user endpoint (admin only)
 app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {

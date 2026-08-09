@@ -12,6 +12,7 @@ import MerchSection from './MerchSection'
 import FAQSection from './FAQSection'
 import WelcomeScrollManager from './WelcomeScrollManager'
 import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
+import { SITE_FAQS } from '@/lib/faqs'
 
 export const revalidate = 3600 // Revalidate at most once per hour
 
@@ -38,33 +39,10 @@ export const metadata: Metadata = {
   },
 }
 
-// FAQs data - server-rendered for SEO
-const faqs = [
-  {
-    question: 'What is Ignite?',
-    answer: 'Ignite gives you free, expert-built courses in high-demand careers so you can build the skills that actually get you hired in today\'s job market. Ignite courses are free with the ability to get additional career tips and support with Ignite Insider.'
-  },
-  {
-    question: 'Who is Ignite for?',
-    answer: 'Ignite is for anyone ready to level up their career. It is especially useful for young professionals looking to break into competitive fields, people looking to switch careers, re-enter the job market or those looking to gain new skills entirely.'
-  },
-  {
-    question: 'How much does Ignite cost?',
-    answer: 'All Ignite courses and resources are completely free. In addition, we offer Ignite Insider which offers 1:1 access to industry professionals and curated job opportunity notifications.'
-  },
-  {
-    question: 'What can I learn on Ignite?',
-    answer: 'We offer comprehensive courses across Product Management, Cyber Security and Marketing, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV. You can submit a request for a new course if we don\'t yet offer it.'
-  },
-  {
-    question: 'Can I learn at my own pace?',
-    answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
-  },
-  {
-    question: 'What makes Ignite different?',
-    answer: 'Unlike other platforms, Ignite courses are completely free with no hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.'
-  }
-]
+// The site-level FAQs, shared with /jobs — see lib/faqs.ts. Still
+// server-rendered for SEO, and this page is the only one that emits the
+// FAQPage block below for them.
+const faqs = SITE_FAQS
 
 // Structured data for SEO
 function generateStructuredData(coursesByType: { specialism: Array<{ name: string; title?: string; description?: string }>; skill: Array<{ name: string; title?: string; description?: string }>; subject: Array<{ name: string; title?: string; description?: string }> }) {

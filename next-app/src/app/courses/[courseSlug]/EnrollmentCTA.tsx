@@ -296,11 +296,34 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
     /* onDark sets currentColor for the share icon; the rail instead draws it as
        two clipped layers, so it needs no inherited colour. */
     <div className={`w-full${onDark ? ' text-white' : ''}`}>
-      {/* Reserves the tallest of the three states (signed-out: two 40px
-          buttons + 8px gap + 16px + 24px caption + 16px = 144px) so the share
-          row below never moves — not while auth resolves, not when the saved
-          status lands, and not between signed-in and signed-out. */}
-      <div data-cta-slot style={{ minHeight: '144px' }}>
+      {/* 144px is the signed-out layout's exact height: two 40px buttons + 8px
+          gap + 16px + 24px caption + 16px. Reserved only while signed out or
+          while auth is still resolving, so the share row below holds still
+          through both.
+
+          Signed in, the slot takes its natural height instead — that branch is
+          116px, and pinning it to 144 left 28px of dead space between the
+          caption and the share row. Nothing is reserved here for it because
+          nothing needs to be: the 40px button box and the caption's 3em below
+          are what keep the row still through the save toggle, which is the only
+          thing that changes size once signed in.
+
+          So a signed-in visitor sees the row settle up by 28px once, when the
+          auth check returns. Transitioned rather than snapped, and it lands
+          while the button is still fading in, so it reads as the card arriving.
+          Signed out — the common case on a public course page — nothing moves at
+          all, which is why the unknown state reserves the taller of the two.
+
+          The end value is 0 rather than 116px so this cannot drift out of step
+          with the layout above it; height is max(min-height, content), so the
+          content stops the collapse at its own height whatever that becomes. It
+          does mean the visible motion finishes early in the 300ms, once
+          min-height passes below the content — the duration is an upper bound on
+          the travel, not its length. */}
+      <div
+        data-cta-slot
+        style={{ minHeight: user ? '0px' : '144px', transition: 'min-height 300ms ease' }}
+      >
         {!authLoaded ? (
           <div className="w-[80%] mx-auto mb-4" />
         ) : !user ? (

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import BlogCard from './BlogCard';
 import { getRecentPosts } from '../lib/blogApi';
 
-const BlogCarousel = ({ limit = 5 }) => {
+const BlogCarousel = ({ limit = 5, compact = false }) => {
   const [posts, setPosts] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -93,6 +93,7 @@ const BlogCarousel = ({ limit = 5 }) => {
             post={posts[currentIndex]}
             onClick={handleCardClick}
             className="min-h-[20rem]"
+            compact={compact}
           />
         </div>
 
