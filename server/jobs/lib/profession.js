@@ -73,8 +73,13 @@ export function mapProfession({
       reasons.push('query')
     }
 
+    // `exactCategories` matched an aggregator's fixed taxonomy exactly, where
+    // sourceCategories are regexes against an ATS's free-text department. Only
+    // the regex path has a live source today — Adzuna's tag list went with the
+    // adapter — but the exact-match branch stays, because any future aggregator
+    // will have a closed vocabulary rather than free text.
     if (category) {
-      const byTag = (rules.adzunaCategories || []).some(t => category === t.toLowerCase())
+      const byTag = (rules.exactCategories || []).some(t => category === t.toLowerCase())
       const byPattern = countMatches(rules.sourceCategories || [], category) > 0
       if (byTag || byPattern) {
         score += SCORE.category

@@ -272,7 +272,7 @@ plan to use via the API; the premade voices do not.
 | Daily 6 AM UTC (Render cron) | Reddit cache refresh |
 | Daily 5:00 AM UTC (Render cron) | Job ingest — ATS feeds (Greenhouse, Lever, Ashby, Workable) |
 | Daily 5:10 AM UTC (Render cron) | Job ingest — enterprise ATS (Workday, Eightfold, Oracle, JSON-LD); `maxSeconds: 420` |
-| Daily 5:25 AM UTC (Render cron) | Job ingest — aggregators (Adzuna, Reed) |
+| Daily 5:25 AM UTC (Render cron) | Job ingest — aggregators (Reed; unkeyed, so a no-op today) |
 
 Both job crons POST to `/api/cron/ingest-jobs` with a `Bearer $CRON_SECRET` header. They are
 split so each run stays inside Render's free-plan limits, the sources' rate limits are
@@ -434,7 +434,6 @@ null is a first-class state, not an error:
 | **Greenhouse / Lever / Ashby / Workable** | Public ATS job-board feeds — no keys, full descriptions, direct employers. Startup ATSs; they cover almost none of the large brands | API (`server/jobs/sources/`) |
 | **Workday / Eightfold / Oracle Recruiting Cloud** | Enterprise ATSs — public, unauthenticated, undocumented. The only route to Roche, Nike, LSEG, Mars, Netflix, M&S. Two-phase: one request per job for the description | API (`server/jobs/sources/`) |
 | **schema.org JobPosting** | Vendor-agnostic — any careers site publishing `JobPosting` JSON-LD, read through its sitemap. British Airways today. The most durable adapter, because the format is a published standard | Sitemap + JSON-LD |
-| **Adzuna** | UK job aggregation (operates DWP Find a Job). Free key; hard ToS caps of 25/min, 250/day, 1,000/week, 2,500/month. **Mandatory per-advert attribution logo ≥116×23px** | API |
 | **Reed.co.uk** | UK job aggregation; its `graduate` flag is the best entry-level signal available. Key is not self-serve | API |
 
 ---
@@ -606,7 +605,7 @@ deploy. Adapters read their country identifier from `job_markets.source_params`.
 | Startup ATS adapters | `server/jobs/sources/{greenhouse,lever,ashby,workable}.js` |
 | Enterprise ATS adapters (two-phase) | `server/jobs/sources/{workday,eightfold,oracleOrc,jsonld}.js` |
 | In-house ATS adapters (one employer each) | `server/jobs/sources/amazon.js` |
-| Aggregator adapters | `server/jobs/sources/{adzuna,reed}.js` |
+| Aggregator adapters | `server/jobs/sources/reed.js` |
 | Board discovery | `server/jobs/lib/discover.js` + `scripts/discover-job-boards.mjs` |
 | Seniority inference (pure, testable) | `server/jobs/lib/seniority.js` + `config/seniorityRules.js` |
 | Profession mapping | `server/jobs/lib/profession.js` + `config/professionMap.js` |
@@ -652,11 +651,13 @@ exists for aggregators, which report whatever the employer typed (`Marks and Spe
 
 Two properties follow from this that are easy to miss:
 
-- **It is what makes aggregators safe to enable.** Adzuna's problem was always volume from
+- **It is what makes aggregators safe to enable.** An aggregator's problem is always volume from
   employers nobody vetted. An allowlist reduces that to a known set — and it is what lets a
-  company sweep work at all: Adzuna has no company filter, so the query is a free-text search for
-  the brand and the allowlist does the exact matching. An agency advertising "a role with Marks &
-  Spencer" carries the *agency* as its company and is dropped.
+  company sweep work at all: aggregators have no company filter, so the query is a free-text
+  search for the brand and the allowlist does the exact matching. An agency advertising "a role
+  with Marks & Spencer" carries the *agency* as its company and is dropped. Measured on a live
+  Adzuna dry run before that source was removed: 706 fetched, 642 dropped as
+  `company_not_allowed`, 7 kept.
 - **It removes the logo domain-guessing risk entirely**, because every allowed company carries a
   hand-checked `domain`.
 
@@ -811,14 +812,18 @@ config change has no history at the new scope, so it re-baselines immediately.
   Change both together. Drift always resolves to the tighter of the two, so neither direction
   can leak a stale listing onto the board. The read-time copy also gates `getProfessionsWithJobs`,
   which decides indexing and sitemap membership.
-- **Adzuna's monthly cap is the real ceiling**, not the daily one: 2,500/month ≈ 83/day. One
-  market at ~32 calls/day fits; three would not. `budget.js` enforces it from the database
-  because Render's free plan spins down and an in-process counter cannot survive a restart.
+- **An aggregator's monthly cap is the real ceiling**, not the daily one. `budget.js` enforces
+  every window from the database rather than in process, because Render's free plan spins the
+  service down and an in-memory counter cannot survive a restart — and the stated penalty for a
+  breach is losing the key.
 - **Attribution is contractual.** `SourceAttribution.tsx` renders from `job_sources.attribution`
   keyed on the listing's **`display_source`** (not `source` — a cross-source dedupe can elect a
-  different canonical). Adzuna requires its logo at ≥116×23px on every advert and suspends
-  access for non-compliance.
-- **No aggregate statistics over Adzuna data** — no job counts, no average-salary widgets, no
+  different canonical). Aggregators typically require their logo at a stated minimum pixel size
+  on every advert and suspend access for non-compliance. **No ATS source requires anything** —
+  a direct employer feed is ours to display, syndicated inventory is not. That distinction is
+  why Adzuna was removed: its badge was not something the board should carry, and the data is
+  not available without it. See `migrations/remove_adzuna_source.sql`.
+- **No aggregate statistics over aggregator data** — no job counts, no average-salary widgets, no
   "X new jobs this week". Their terms restrict derived stats without written consent, which is
   why the board renders no result count.
 - **`jobs` is a reserved username.** `/jobs` would otherwise collide with the `/{username}`
@@ -829,9 +834,12 @@ config change has no history at the new scope, so it re-baselines immediately.
 ATS feeds are used almost exclusively by tech companies and digital agencies. A live probe of
 ~60 UK healthcare and renewable-energy employers found **zero** usable boards. So the ATS tier
 serves UX Designer, Data Analyst, Cyber Security Analyst, Product Manager and Digital Marketing
-Specialist, while **Healthcare Assistant, Mental Health Worker and Green Energy Technician depend
-entirely on Adzuna**. Profession pages with no listings are hidden from the filter, noindexed,
-and excluded from the sitemap.
+Specialist, while **Healthcare Assistant, Mental Health Worker and Green Energy Technician have
+no source at all** since Adzuna was removed — it operated DWP Find a Job and was the only feed
+here reaching non-tech roles. Those three profession pages stay empty, and empty pages are hidden
+from the filter, noindexed, and excluded from the sitemap. Restoring them means either accepting
+an aggregator's attribution badge or finding direct employer boards in those sectors, where an
+earlier survey of ~60 UK healthcare and renewable-energy employers found zero usable feeds.
 
 **Excluded sources and why:** LinkedIn and Indeed have no readable API at any price (Indeed
 retired its publisher API in 2024; LinkedIn's is write-only and not accepting partners), and

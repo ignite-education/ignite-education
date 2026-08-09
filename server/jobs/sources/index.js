@@ -40,7 +40,6 @@ import eightfold from './eightfold.js'
 import oracleOrc from './oracleOrc.js'
 import amazon from './amazon.js'
 import jsonld from './jsonld.js'
-import adzuna from './adzuna.js'
 import reed from './reed.js'
 
 export const ADAPTERS = {
@@ -59,9 +58,15 @@ export const ADAPTERS = {
   [amazon.key]: amazon,
   // Vendor-agnostic: any careers site that publishes schema.org JobPosting.
   [jsonld.key]: jsonld,
-  // Aggregators — keyed, rate-limited, snippet descriptions, and the only
-  // source of non-tech roles (healthcare, mental health, green energy).
-  [adzuna.key]: adzuna,
+  // Aggregators — keyed, rate-limited, snippet descriptions, and the only route
+  // to non-tech roles (healthcare, mental health, green energy) and to employers
+  // who block automated access to their own careers API.
+  //
+  // Adzuna was removed: its free API is conditional on a "Jobs by Adzuna" badge
+  // on every advert, and we do not want that on the board. Reed carries the same
+  // kind of obligation ("Powered by reed.co.uk") and is unkeyed, so the board is
+  // ATS-only in practice. See migrations/remove_adzuna_source.sql for what that
+  // costs — three specialisms have no other source.
   [reed.key]: reed,
 }
 

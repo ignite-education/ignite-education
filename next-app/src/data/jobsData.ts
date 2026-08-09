@@ -185,8 +185,9 @@ export async function getJobs({
 /**
  * Attribution metadata per source, keyed by source key.
  *
- * Several sources REQUIRE a badge on every advert — Adzuna's is a logo at a
- * stated minimum pixel size, and they suspend API access for non-compliance.
+ * Aggregators REQUIRE a badge on every advert — typically a logo at a stated
+ * minimum pixel size, with API access suspended for non-compliance. No ATS
+ * source requires anything, which is why most cards render nothing here.
  * Cards read this via the listing's display_source (not source: a cross-source
  * dedupe can elect a different canonical).
  */

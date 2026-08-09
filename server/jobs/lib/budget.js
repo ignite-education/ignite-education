@@ -1,7 +1,8 @@
 /**
  * API call budgeting.
  *
- * Adzuna's terms cap us at 25/min, 250/day, 1,000/week and 2,500/month.
+ * Aggregator terms cap calls over several windows at once — typically a
+ * per-minute rate plus daily, weekly and monthly quotas.
  * The per-minute ceiling is enforced in process by rateLimiter.js, but the
  * longer windows CANNOT be: Render's free plan spins the web service down, so a
  * few restarts would reset an in-memory counter and quietly breach the terms —

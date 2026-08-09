@@ -59,10 +59,9 @@ services:
       - key: CRON_SECRET
         sync: false
       # Job board — ATS feeds need no keys; the aggregators do.
-      - key: ADZUNA_APP_ID
-        sync: false
-      - key: ADZUNA_APP_KEY
-        sync: false
+      # Adzuna was removed (its free API requires a badge on every advert that we
+      # do not want on the board), so delete ADZUNA_APP_ID / ADZUNA_APP_KEY from
+      # the dashboard too — they are not declared here and will not sync away.
       - key: REED_API_KEY
         sync: false
       # Board freshness cut, and the dial that governs board size more than
@@ -150,7 +149,7 @@ services:
       curl -sS --fail --max-time 600 -X POST
       -H "Authorization: Bearer $CRON_SECRET"
       -H "Content-Type: application/json"
-      -d '{"sources":["adzuna","reed"]}'
+      -d '{"sources":["reed"]}'
       https://ignite-education-api.onrender.com/api/cron/ingest-jobs
     envVars:
       - key: CRON_SECRET

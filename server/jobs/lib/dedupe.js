@@ -2,7 +2,7 @@
  * Deduplication.
  *
  * The same vacancy reaches us through several sources: a company's Greenhouse
- * board, Adzuna's index of it, Reed's, and often two agencies reposting it.
+ * board, an aggregator's index of it, and often two agencies reposting it.
  *
  * Cheapest checks first:
  *   1. UNIQUE(source, source_job_id)  — handled in persist.js, free
@@ -161,7 +161,6 @@ export const SOURCE_PRIORITY = {
   ashby: 100,
   workable: 100,
   reed: 60,
-  adzuna: 50,
   himalayas: 40,
 }
 

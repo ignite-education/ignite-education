@@ -5,10 +5,15 @@
  * 'specialism' — that is the board's taxonomy, shared with /prompts, and there
  * is no separate professions table to invent.
  *
- * None of the job sources agree on a category taxonomy (Adzuna has ~30 tags,
- * Himalayas has noisy long-tail categories, Reed has none at all, and ATS
- * "departments" are per-company and not comparable). So each source's native
- * category is mapped INTO our list here, with a title/keyword fallback.
+ * No two job sources agree on a category taxonomy — aggregators publish a fixed
+ * tag list, Reed has none at all, and ATS "departments" are per-company and not
+ * comparable. So each source's native category is mapped INTO our list here,
+ * with a title/keyword fallback.
+ *
+ * `exactCategories` (whole-string match against a closed vocabulary) is empty on
+ * every rule since the Adzuna adapter was removed; `sourceCategories` (regexes
+ * against free text) is what the ATS sources use. The Adzuna tag mappings are
+ * recoverable from git history if an aggregator is ever added back.
  *
  * A job that scores below THRESHOLD maps to nothing and is dropped at ingest —
  * it never reaches the approval queue. Keeping irrelevant jobs out of the queue
@@ -43,7 +48,6 @@ export const SCORE = {
 
 export const PROFESSION_RULES = {
   'UX Designer': {
-    adzunaCategories: ['creative-design-jobs'],
     sourceCategories: [/design/i, /user experience/i, /product design/i],
     titleInclude: [
       /\bux\b/i, /\bui\b/i, /\bux\/ui\b/i, /user experience/i, /user interface/i,
@@ -58,7 +62,6 @@ export const PROFESSION_RULES = {
   },
 
   'Data Analyst': {
-    adzunaCategories: ['it-jobs'],
     sourceCategories: [/data/i, /analytics/i, /business intelligence/i],
     titleInclude: [
       /\bdata analyst\b/i, /\bbusiness intelligence\b/i, /\bbi analyst\b/i,
@@ -73,7 +76,6 @@ export const PROFESSION_RULES = {
   },
 
   'Cyber Security Analyst': {
-    adzunaCategories: ['it-jobs'],
     sourceCategories: [/security/i, /cyber/i, /infosec/i],
     titleInclude: [
       /cyber ?security/i, /information security/i, /\binfosec\b/i,
@@ -87,7 +89,6 @@ export const PROFESSION_RULES = {
   },
 
   'Product Manager': {
-    adzunaCategories: ['it-jobs'],
     sourceCategories: [/product/i],
     titleInclude: [
       /\bproduct manager\b/i, /\bproduct owner\b/i, /\bproduct lead\b/i,
@@ -101,7 +102,6 @@ export const PROFESSION_RULES = {
   },
 
   'Digital Marketing Specialist': {
-    adzunaCategories: ['pr-advertising-marketing-jobs'],
     sourceCategories: [/marketing/i, /growth/i, /advertis/i],
     titleInclude: [
       /digital marketing/i, /\bseo\b/i, /\bppc\b/i, /\bsem\b/i,
@@ -116,7 +116,6 @@ export const PROFESSION_RULES = {
   },
 
   'Healthcare Assistant': {
-    adzunaCategories: ['healthcare-nursing-jobs', 'social-work-jobs'],
     sourceCategories: [/health/i, /care/i, /nursing/i],
     titleInclude: [
       /healthcare assistant/i, /health care assistant/i, /\bhca\b/i,
@@ -134,7 +133,6 @@ export const PROFESSION_RULES = {
   },
 
   'Mental Health Worker': {
-    adzunaCategories: ['healthcare-nursing-jobs', 'social-work-jobs'],
     sourceCategories: [/mental health/i, /wellbeing/i, /psycholog/i],
     titleInclude: [
       /mental health (worker|support|practitioner|nurse|assistant)/i,
@@ -148,7 +146,6 @@ export const PROFESSION_RULES = {
   },
 
   'Green Energy Technician': {
-    adzunaCategories: ['engineering-jobs', 'trade-construction-jobs', 'energy-oil-gas-jobs'],
     sourceCategories: [/energy/i, /renewable/i, /sustainab/i],
     titleInclude: [
       /solar (installer|engineer|technician|pv)/i, /\bsolar pv\b/i,

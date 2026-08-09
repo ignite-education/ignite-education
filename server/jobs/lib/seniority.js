@@ -5,7 +5,7 @@
  * admin's "re-run inference" action and any future unit test all share this one
  * function, and it can be exercised without a database.
  *
- * Almost none of the job APIs expose seniority (Adzuna, Reed, Careerjet, Jooble
+ * Almost none of the job APIs expose seniority (Reed, Careerjet, Jooble
  * and every ATS feed omit it entirely), so for most of the board this cascade IS
  * the seniority data. It records WHICH rule fired and on WHICH token so a
  * misclassification is one glance in the admin table rather than a debugging
@@ -54,7 +54,7 @@ function result(tier, source, token, confidence) {
  * @param {string} [input.profession]       the mapped Ignite specialism
  * @param {string|string[]} [input.nativeSeniority] a source-provided level, if any
  * @param {object} [input.flags]            e.g. { graduate: true } from Reed
- * @param {string} [input.sourceCategory]   e.g. Adzuna's 'graduate-jobs'
+ * @param {string} [input.sourceCategory]   e.g. an aggregator's 'graduate-jobs'
  * @returns {{tier: string, source: string, token: string|null, confidence: number}}
  */
 export function inferSeniority({
@@ -86,7 +86,7 @@ export function inferSeniority({
     return result('entry', 'graduate_flag', 'graduate', 0.95)
   }
 
-  // 3. Adzuna's graduate-jobs category tag.
+  // 3. A source category that names graduate hiring outright.
   if (sourceCategory && /graduate/i.test(sourceCategory)) {
     return result('entry', 'category', sourceCategory, 0.9)
   }

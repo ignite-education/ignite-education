@@ -7,8 +7,9 @@ import type { JobSourceAttribution } from '@/data/jobsData'
  *
  * This is a compliance component, not decoration. Several job APIs require a
  * badge on EVERY displayed advert and state that non-compliance means losing
- * access — Adzuna specifies its logo at a minimum of 116×23px, hyperlinked to
- * adzuna.co.uk.
+ * access — a typical requirement is a logo at a minimum pixel size, hyperlinked
+ * back to the aggregator. Sizes and links come from job_sources.attribution, so
+ * this component never hardcodes one vendor's terms.
  *
  * The badge is driven by the listing's `display_source`, NOT its `source`: when
  * a cross-source dedupe elects a different canonical record, the obligation
@@ -73,8 +74,8 @@ export default function SourceAttribution({ sourceKey, sources, className = '' }
 /**
  * The "this figure is an estimate, not an advertised salary" marker.
  *
- * Adzuna requires a ≥20×20px Jobsworth icon with specific hover text wherever
- * one of their estimated salaries is shown. It is also just honest: an inferred
+ * Aggregators that infer salaries generally require a marker icon with specific
+ * hover text wherever one is shown. It is also just honest: an inferred
  * salary presented as a real one is a bad experience regardless of the terms.
  */
 export function SalaryEstimateBadge({

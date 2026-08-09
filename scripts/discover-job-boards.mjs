@@ -105,8 +105,8 @@ async function targets() {
 
   // An enabled query on a DISABLED source fetches nothing, so counting it as
   // coverage hides the company from the one command that exists to find it.
-  // Every company sweep today is Adzuna and Adzuna is disabled pending API
-  // keys, so without this filter --gaps reports one gap where there are twenty.
+  // Company sweeps all belonged to a disabled aggregator, so without this
+  // filter --gaps reported one gap where there were twenty-one.
   const liveSources = new Set((sources || []).filter(s => s.enabled).map(s => s.key));
 
   const covered = new Set([
