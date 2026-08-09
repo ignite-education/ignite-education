@@ -185,6 +185,19 @@ export async function discoverBoards({
     }
   }
 
+  // Employers running their own ATS. Checked before the generic fallbacks
+  // because for these the fallbacks cannot work by construction — no vendor
+  // marker, no sitemap, a JS-rendered page — and would report "no board found"
+  // for a company with a perfectly good public API.
+  if (!result.candidates.length) {
+    try {
+      const candidate = await inHouseCandidate({ company, domain: effectiveDomain, careersUrl, market })
+      if (candidate) result.candidates.push(candidate)
+    } catch (error) {
+      result.notes.push(`in-house probe: ${error.message}`)
+    }
+  }
+
   // Workday tenants are frequently NOT linked from the careers landing page —
   // Roche fronts its Workday board with a Phenom search UI, so the fingerprint
   // finds "phenom" and nothing usable. Probing the tenant directly is the only
@@ -628,6 +641,66 @@ async function eightfoldHostProbe({ company, domain, market }) {
     }
   }
   return null
+}
+
+/**
+ * Employers whose ATS is their own, keyed by the domain that identifies them.
+ *
+ * These have no vendor marker to fingerprint, no sitemap, and a JS-rendered
+ * careers page — so every one of the four discovery stages is genuinely
+ * exhausted and would report "no board found" for a company with a perfectly
+ * good public API. The only thing that finds them is knowing they exist.
+ *
+ * A hand-written adapter per employer does not scale, so the bar for adding one
+ * is high: an allowlisted company, a large board, and no other route to it. The
+ * value of listing them here is that `Find boards` produces a usable answer
+ * rather than a dead end, and the account token stops being folklore.
+ */
+const IN_HOUSE = [
+  { match: /(^|\.)amazon\.(jobs|com|co\.uk)$/i, source: 'amazon', account: 'amazon', params: {} },
+]
+
+/**
+ * Probe an in-house board by calling its real adapter, exactly as the token
+ * stage does for Greenhouse and friends — so a candidate offered here is one
+ * ingest has already proved it can fetch.
+ */
+async function inHouseCandidate({ company, domain, careersUrl, market }) {
+  const hosts = [registrableDomain(domain), registrableDomain(careersUrl)].filter(Boolean)
+  const known = IN_HOUSE.find(entry => hosts.some(host => entry.match.test(host)))
+  if (!known) return null
+
+  const adapter = ADAPTERS[known.source]
+  if (!adapter) return null
+
+  const account = {
+    account: known.account,
+    company,
+    params: known.params,
+    markets: [market?.code || 'gb'],
+  }
+  const { items } = await adapter.fetchPage({
+    market: market || { code: 'gb' },
+    account,
+    query: null,
+    page: 1,
+    http,
+    limiter: { wait: async () => {} },
+    env: process.env,
+  })
+  if (!items?.length) return null
+
+  const normalised = items
+    .map(item => adapter.normalise(item, { market: market || { code: 'gb' }, account }))
+    .filter(Boolean)
+  const marketJobs = countInMarket(normalised, job => job.locationRaw, market)
+
+  return candidateRow(known.source, known.account, company, known.params,
+    normalised.length, marketJobs,
+    [
+      `in-house ATS — hand-written adapter, not discovered by fingerprinting`,
+      `page one returned ${marketJobs} in-market jobs; SET PAGES to cover the whole board`,
+    ])
 }
 
 async function orcCandidate(vendor, { company, market }) {

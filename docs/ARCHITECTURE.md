@@ -605,6 +605,7 @@ deploy. Adapters read their country identifier from `job_markets.source_params`.
 | Orchestrator + filter cascade + hydration | `server/jobs/index.js` |
 | Startup ATS adapters | `server/jobs/sources/{greenhouse,lever,ashby,workable}.js` |
 | Enterprise ATS adapters (two-phase) | `server/jobs/sources/{workday,eightfold,oracleOrc,jsonld}.js` |
+| In-house ATS adapters (one employer each) | `server/jobs/sources/amazon.js` |
 | Aggregator adapters | `server/jobs/sources/{adzuna,reed}.js` |
 | Board discovery | `server/jobs/lib/discover.js` + `scripts/discover-job-boards.mjs` |
 | Seniority inference (pure, testable) | `server/jobs/lib/seniority.js` + `config/seniorityRules.js` |
@@ -694,6 +695,15 @@ domain hint, so a company added by name alone is still discoverable. It does **n
 `DENYLIST` — that check walks up the host labels, so `jobs.apple.com` is refused exactly as
 `apple.com` is — and robots.txt is still checked, now per-origin, because a careers subdomain
 frequently has different rules from the company domain.
+
+**In-house ATSs are the one case discovery cannot solve.** Amazon runs its own recruiting system,
+so there is no vendor marker to fingerprint, no `/sitemap.xml`, and a careers page that is a
+JS-rendered SPA with zero job links in its HTML — all four discovery stages are genuinely
+exhausted and correctly report "no board found" for a company with a perfectly good public API
+(`search.json`, 818 UK jobs, descriptions inline). The only fix is knowing the board exists, so
+`IN_HOUSE` in `lib/discover.js` maps a domain to a hand-written adapter and probes it through the
+real `fetchPage()`. The bar for adding one is deliberately high — an allowlisted company, a large
+board, and no other route — because a hand-written adapter per employer does not scale.
 
 **Boards we deliberately do not build.** Apple, Google, Microsoft, Meta, TikTok, Uber, LinkedIn
 and JD.com all block automated access to their job data (401/403/private GraphQL; LinkedIn's

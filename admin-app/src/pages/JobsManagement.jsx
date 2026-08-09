@@ -102,6 +102,11 @@ const BOARD_SOURCES = {
     hint: 'Any careers site publishing schema.org JobPosting, read through its sitemap.',
     params: { sitemapUrl: '', jobUrlPattern: '/job/' },
   },
+  amazon: {
+    label: 'Amazon Jobs',
+    hint: 'Amazon only — an in-house ATS, so Find boards cannot discover it. Account is "amazon"; the country code is alpha-3, not alpha-2.',
+    params: { countryCode: 'GBR' },
+  },
 };
 
 const JobsManagement = () => {

@@ -38,6 +38,7 @@ import workable from './workable.js'
 import workday from './workday.js'
 import eightfold from './eightfold.js'
 import oracleOrc from './oracleOrc.js'
+import amazon from './amazon.js'
 import jsonld from './jsonld.js'
 import adzuna from './adzuna.js'
 import reed from './reed.js'
@@ -53,6 +54,9 @@ export const ADAPTERS = {
   [workday.key]: workday,
   [eightfold.key]: eightfold,
   [oracleOrc.key]: oracleOrc,
+  // In-house ATSs. One employer each and no discovery route to them, so they
+  // only exist where the company is worth hand-writing an adapter for.
+  [amazon.key]: amazon,
   // Vendor-agnostic: any careers site that publishes schema.org JobPosting.
   [jsonld.key]: jsonld,
   // Aggregators — keyed, rate-limited, snippet descriptions, and the only

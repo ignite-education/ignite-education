@@ -98,6 +98,9 @@ services:
   #
   # Unlike reddit-cache-refresh above, these MUST send the cron secret: they
   # spend metered third-party API quota.
+  #
+  # `amazon` belongs in this tier despite paging: it is single-phase, so nine
+  # requests cover its whole UK board and it costs no per-job description fetch.
   - type: cron
     name: jobs-ingest-ats
     schedule: "0 5 * * *"
@@ -106,7 +109,7 @@ services:
       curl -sS --fail --max-time 600 -X POST
       -H "Authorization: Bearer $CRON_SECRET"
       -H "Content-Type: application/json"
-      -d '{"sources":["greenhouse","lever","ashby","workable"]}'
+      -d '{"sources":["greenhouse","lever","ashby","workable","amazon"]}'
       https://ignite-education-api.onrender.com/api/cron/ingest-jobs
     envVars:
       - key: CRON_SECRET
