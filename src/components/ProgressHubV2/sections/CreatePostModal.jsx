@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { SUBREDDIT_FLAIRS } from '../../../lib/reddit';
+import { SUBREDDIT_FLAIRS, postToReddit, isRedditAuthenticated, initiateRedditAuth, getRedditUsername } from '../../../lib/reddit';
+import { savePostDraft, clearPostDraft } from '../postDraft';
 
 const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPostData, onPostCreated }) => {
   const [newPost, setNewPost] = useState({ title: '', content: '', flair: '' });
@@ -8,6 +9,7 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [invalidFields, setInvalidFields] = useState(new Set());
+  const [postError, setPostError] = useState(null);
 
   // Restore pending post data
   useEffect(() => {
@@ -44,11 +46,14 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
     setTimeout(() => {
       setIsClosingModal(false);
       setNewPost({ title: '', content: '', flair: '' });
+      setPostError(null);
+      // Closing is abandoning: without this the draft would reopen the modal on the next visit.
+      clearPostDraft();
       onClose();
     }, 250);
   };
 
-  const handleSubmitPost = (e) => {
+  const handleSubmitPost = async (e) => {
     e.preventDefault();
     if (isPosting) return;
     const missing = new Set();
@@ -60,25 +65,46 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
       return;
     }
 
-    setIsPosting(true);
-
     const postSubreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
-    const params = new URLSearchParams({
-      type: 'self',
-      title: newPost.title,
-      text: newPost.content,
-    });
-    if (newPost.flair) params.set('flair_name', newPost.flair);
 
-    setTimeout(() => {
-      window.open(`https://www.reddit.com/r/${postSubreddit}/submit?${params.toString()}`, '_blank');
+    // Submitting through the API needs the user's Reddit account connected. Stash the draft
+    // before handing over — the redirect tears this component down.
+    if (!isRedditAuthenticated()) {
+      savePostDraft(newPost);
+      localStorage.setItem('reddit_return_path', '/progress');
+      initiateRedditAuth();
+      return;
+    }
+
+    setIsPosting(true);
+    setPostError(null);
+    try {
+      const result = await postToReddit(postSubreddit, newPost.title, newPost.content, newPost.flair || null);
+
+      // Cosmetic only — it feeds the avatar fallback initial, never the post itself.
+      let author = '';
+      try { author = await getRedditUsername(); } catch { /* the post already landed */ }
+
+      clearPostDraft();
       localStorage.setItem('hasPostedToReddit', 'true');
-
-      setIsPosting(false);
       setNewPost({ title: '', content: '', flair: '' });
       handleCloseModal();
-      if (onPostCreated) onPostCreated();
-    }, 1500);
+      if (onPostCreated) {
+        onPostCreated({
+          redditId: result.id,
+          url: result.url,
+          title: newPost.title,
+          content: newPost.content,
+          tag: newPost.flair || null,
+          author,
+        });
+      }
+    } catch (err) {
+      // Kept on screen rather than alerted, so the draft stays in the fields behind it.
+      setPostError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsPosting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -195,6 +221,15 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                   </span>
                 </div>
               </div>
+
+              {postError && (
+                <p
+                  className="font-light leading-snug"
+                  style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', letterSpacing: '-0.01em', color: '#EF0B72', marginLeft: 'calc(70px + 1.75rem)' }}
+                >
+                  {postError}
+                </p>
+              )}
 
               <div className="flex gap-3 justify-end mt-4">
                 <button

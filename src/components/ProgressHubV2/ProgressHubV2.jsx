@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useLayoutEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import useProgressData from './hooks/useProgressData';
 import useCourseProgress from './hooks/useCourseProgress';
 import useIsMobile from './hooks/useIsMobile';
 import useEnrollmentWatch from './hooks/useEnrollmentWatch';
+import usePinnedPost from './hooks/usePinnedPost';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import Footer from '../Footer';
 import IntroSection from './sections/IntroSection';
@@ -17,6 +18,7 @@ import OfficeHoursCard from './sections/OfficeHoursCard';
 import ResourcesSlider from './sections/ResourcesSlider';
 import CommunityForumCard from './sections/CommunityForumCard';
 import CreatePostModal from './sections/CreatePostModal';
+import { readPostDraft } from './postDraft';
 import MyPostsModal from './sections/MyPostsModal';
 import MerchandiseSection from './sections/MerchandiseSection';
 import BlogSection from './sections/BlogSection';
@@ -29,6 +31,16 @@ const ProgressHubV2 = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
+  const [pinnedPost, pinPost] = usePinnedPost();
+
+  // A draft only exists if composing was interrupted to connect Reddit, so finding one on load
+  // means picking the post back up where it left off.
+  const [postDraft, setPostDraft] = useState(readPostDraft);
+  useEffect(() => {
+    if (postDraft) setShowPostModal(true);
+    // Mount only: reopening later would fight the user closing it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { refreshSession } = useAuth();
 
@@ -109,6 +121,36 @@ const ProgressHubV2 = () => {
 
   const { showContent } = useFadeTransition(loading, { autoRefreshAfter: 30000 });
 
+  // Shaped to match the posts useProgressData builds, so the forum card can't tell them apart —
+  // except for the avatar, which is the user's Ignite picture rather than their Reddit one. This
+  // card is only ever shown to its author, so it may as well show the face they know.
+  const handlePostCreated = useCallback((created) => {
+    pinPost({
+      id: `reddit-${created.redditId}`,
+      redditId: created.redditId,
+      author: created.author ? `u/${created.author}` : 'u/you',
+      author_icon: profilePicture || null,
+      created_at: new Date().toISOString(),
+      title: created.title,
+      content: created.content,
+      tag: created.tag,
+      upvotes: 1,
+      comments: 0,
+      avatar: 'bg-purple-600',
+      url: created.url,
+      source: 'reddit',
+    });
+    refetchCommunityPosts();
+  }, [pinPost, profilePicture, refetchCommunityPosts]);
+
+  // The pin holds the top slot for its full window. Once Reddit's feed catches up and returns
+  // the same post, the fetched copy is dropped rather than the pin — otherwise it would appear
+  // twice, and lower down than the author expects.
+  const forumPosts = useMemo(() => {
+    if (!pinnedPost) return communityPosts;
+    return [pinnedPost, ...communityPosts.filter(p => p.redditId !== pinnedPost.redditId)];
+  }, [pinnedPost, communityPosts]);
+
   // Preload profile picture during loading screen so it's cached when content renders
   useEffect(() => {
     if (profilePicture) {
@@ -183,7 +225,7 @@ const ProgressHubV2 = () => {
             <ResourcesSlider resources={resources} />
           </>
         }
-        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} postsError={communityPostsError} onCreatePost={() => setShowPostModal(true)} onMyPosts={localStorage.getItem('hasPostedToReddit') ? () => setShowMyPostsModal(true) : undefined} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
+        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={forumPosts} postsError={communityPostsError} onCreatePost={() => setShowPostModal(true)} onMyPosts={localStorage.getItem('hasPostedToReddit') ? () => setShowMyPostsModal(true) : undefined} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
       />
       )}
 
@@ -200,10 +242,11 @@ const ProgressHubV2 = () => {
 
       <CreatePostModal
         isOpen={showPostModal}
-        onClose={() => setShowPostModal(false)}
+        onClose={() => { setShowPostModal(false); setPostDraft(null); }}
         courseReddit={courseReddit}
         courseName={courseTitle}
-        onPostCreated={refetchCommunityPosts}
+        initialPostData={postDraft}
+        onPostCreated={handlePostCreated}
       />
 
       <MyPostsModal

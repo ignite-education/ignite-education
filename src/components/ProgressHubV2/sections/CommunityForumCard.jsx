@@ -51,10 +51,11 @@ const COMPOSER_SIZE = '2.6rem';
  * stretch of the outer path — so there is no sub-path to hand a fill to. This redraws the
  * same geometry with that region closed into its own path, which can then be filled while
  * the hand stays outlined. The divider is the closing edge of that path, so it isn't
- * repeated. Fill follows currentColor rather than a literal white, so the cuff turns pink
- * with the rest of the icon on a liked post instead of stranding a white block in it.
+ * repeated. The hand itself is never filled — a like is signalled by colour alone — and the
+ * cuff's fill follows currentColor, so it turns pink with everything else rather than
+ * stranding a white block inside a pink icon.
  */
-const ThumbsUpIcon = ({ size, strokeWidth, filled }) => (
+const ThumbsUpIcon = ({ size, strokeWidth }) => (
   <svg
     width={size}
     height={size}
@@ -66,10 +67,7 @@ const ThumbsUpIcon = ({ size, strokeWidth, filled }) => (
     strokeLinejoin="round"
     aria-hidden="true"
   >
-    <path
-      d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
-      fill={filled ? 'currentColor' : 'none'}
-    />
+    <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
     <path d="M5 10H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h1z" fill="currentColor" />
   </svg>
 );
@@ -195,6 +193,8 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], postsError =
   const anchorRafRef = useRef(null);
   const commentInputRef = useRef(null);
   const replayedRef = useRef(false);
+  const commentsScrollRef = useRef(null);
+  const scrollCommentsToEndRef = useRef(false);
 
   // Open a post and the composer is ready to type into. Skipped on touch, where focusing an input
   // throws up the keyboard and buries the post you just opened. preventScroll because the open
@@ -203,6 +203,15 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], postsError =
     if (isMobile || !expandedPostId) return;
     commentInputRef.current?.focus({ preventScroll: true });
   }, [expandedPostId, isMobile]);
+
+  // Carries the view to a just-posted comment. Only fires off the flag set when submitting, so
+  // loading a thread doesn't yank it to the bottom.
+  useLayoutEffect(() => {
+    if (!scrollCommentsToEndRef.current) return;
+    scrollCommentsToEndRef.current = false;
+    const el = commentsScrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [postComments]);
 
   useEffect(() => {
     return () => {
@@ -371,13 +380,18 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], postsError =
 
       setPostComments(prev => ({
         ...prev,
-        [post.id]: [newComment, ...(prev[post.id] || [])],
+        // Appended, not prepended: the user's own comment belongs at the end of the thread they
+        // just read, and that's where the scroll below takes them.
+        [post.id]: [...(prev[post.id] || []), newComment],
       }));
       setLocalCommentCounts(prev => ({
         ...prev,
         [post.id]: (prev[post.id] ?? post.comments ?? 0) + 1,
       }));
       setCommentInputs(prev => ({ ...prev, [post.id]: '' }));
+      // Flagged rather than scrolled here: the list hasn't rendered the new comment yet, so its
+      // scrollHeight is still the old one. The layout effect below runs once it has.
+      scrollCommentsToEndRef.current = true;
     } catch (error) {
       alert(`Failed to comment: ${error.message || 'Please try again.'}`);
     }
@@ -599,14 +613,16 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], postsError =
                 <PostBody content={post.content} expanded={expandedPostId === post.id} />
                 {/* Actions row - full width */}
                 <div className="flex items-center gap-4 text-white" style={{ fontSize: '0.85rem', fontWeight: 300, lineHeight: '1rem' }}>
-                  <div className="flex items-center gap-1.5">
+                  {/* Liked state is carried on the wrapper, not the button, so the count picks it
+                      up too — it's a sibling of the button, so a class there would never reach it. */}
+                  <div className={`flex items-center gap-1.5 transition-colors duration-300 ${likedPosts.has(post.id) ? 'text-[#EF0B72]' : ''}`}>
                     {/* Tilts anti-clockwise on hover and eases back. Colour is left alone there:
                         pink means the like landed, so hovering must not preview it. */}
                     <button
-                      className={`flex origin-bottom-left transition duration-300 hover:-rotate-[9deg] ${likedPosts.has(post.id) ? 'text-pink-500' : ''}`}
+                      className="flex origin-bottom-left transition duration-300 hover:-rotate-[9deg]"
                       onClick={(e) => handleLikePost(e, post)}
                     >
-                      <ThumbsUpIcon size={META_ICON_SIZE} strokeWidth={META_ICON_STROKE} filled={likedPosts.has(post.id)} />
+                      <ThumbsUpIcon size={META_ICON_SIZE} strokeWidth={META_ICON_STROKE} />
                     </button>
                     <span>{localUpvotes[post.id] ?? post.upvotes}</span>
                   </div>
@@ -670,6 +686,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], postsError =
                       <p className="text-xs text-white/60 py-2">Loading comments...</p>
                     )}
                     <div
+                      ref={expandedPostId === post.id ? commentsScrollRef : null}
                       className="overflow-y-auto"
                       style={{
                         display: 'flex',
