@@ -1,7 +1,23 @@
+# NOT Blueprint-synced. Every service below is maintained by hand in the Render
+# dashboard; this file is the written record of that configuration, not its
+# source of truth. Editing it changes nothing on its own.
+#
+# This is a trap worth spelling out, because it has already cost two days of
+# ingest: the jobs-ingest-* crons were added here on 2026-08-09 and simply never
+# existed in Render, so job_ingest_runs recorded 61 manual runs and not one cron
+# run. Adding a service here means creating it in the dashboard too.
+#
+# Do NOT "fix" this by syncing the Blueprint. The web service was created by
+# hand and Render would not adopt it — it would stand up a second copy alongside
+# the live one. Note also that Render cron jobs carry a $1/month minimum each,
+# so they cannot be added to the free plan the web service runs on.
 services:
   # Backend API Server
+  #
+  # Named for the live service: ignite-education-api.onrender.com, which is what
+  # VITE_API_URL and every cron startCommand below point at.
   - type: web
-    name: ignite-api
+    name: ignite-education-api
     env: node
     region: oregon
     plan: free
@@ -55,7 +71,11 @@ services:
       - key: REFERRAL_IP_DAILY_CAP
         sync: false
       # Shared cron secret. Read by /api/cron/aggregate-memory and
-      # /api/cron/ingest-jobs; previously set only in the dashboard.
+      # /api/cron/ingest-jobs. Set in the dashboard, and set again on EACH cron
+      # service below — sync: false means Render never copies it across, and a
+      # cron missing it sends "Authorization: Bearer " and gets a 401. curl
+      # --fail then exits non-zero before the endpoint records anything, so the
+      # failure shows up only as an empty job_ingest_runs, never as an error.
       - key: CRON_SECRET
         sync: false
       # Job board — ATS feeds need no keys; the aggregators do.
@@ -141,24 +161,37 @@ services:
       - key: CRON_SECRET
         sync: false
 
-  - type: cron
-    name: jobs-ingest-aggregators
-    schedule: "25 5 * * *"
-    buildCommand: ""
-    startCommand: >-
-      curl -sS --fail --max-time 600 -X POST
-      -H "Authorization: Bearer $CRON_SECRET"
-      -H "Content-Type: application/json"
-      -d '{"sources":["reed"]}'
-      https://ignite-education-api.onrender.com/api/cron/ingest-jobs
-    envVars:
-      - key: CRON_SECRET
-        sync: false
+  # The aggregator tier, DELIBERATELY NOT CREATED in Render.
+  #
+  # Removing Adzuna left Reed as its only source, and Reed is disabled with no
+  # REED_API_KEY — its key needs a recruiter account plus contacting Reed
+  # directly, so it is not self-serve (see the rationale at
+  # server/jobs/sources/index.js:61-69). Standing this cron up today would buy a
+  # guaranteed nightly no-op for $1/month.
+  #
+  # Kept here rather than deleted because the schedule is deliberate: 25 5 is
+  # far enough behind the enterprise tier's 420s budget to not overlap it.
+  # Create it in the dashboard when a Reed key exists.
+  #
+  # - type: cron
+  #   name: jobs-ingest-aggregators
+  #   schedule: "25 5 * * *"
+  #   buildCommand: ""
+  #   startCommand: >-
+  #     curl -sS --fail --max-time 600 -X POST
+  #     -H "Authorization: Bearer $CRON_SECRET"
+  #     -H "Content-Type: application/json"
+  #     -d '{"sources":["reed"]}'
+  #     https://ignite-education-api.onrender.com/api/cron/ingest-jobs
+  #   envVars:
+  #     - key: CRON_SECRET
+  #       sync: false
 
   # AI summaries for the board's description text. Last, at 05:45, because it
-  # reads description_text that the three ingests above have just rewritten —
-  # and the enterprise tier can run to 420s, so 05:25 + 420s is the real
-  # constraint on how early this can start.
+  # reads description_text that the ingests above have just rewritten — and the
+  # enterprise tier can run to 420s, so 05:10 + 420s is the real constraint on
+  # how early this can start. It stays at 05:45 rather than moving earlier so
+  # that reviving the aggregator cron at 05:25 needs no rescheduling.
   #
   # Its own cron rather than a step inside the ingest: the ingest is capped at
   # JOBS_INGEST_MAX_SECONDS (240) and 60 sequential Claude calls at 2-5s each

@@ -270,13 +270,28 @@ plan to use via the API; the premade voices do not.
 | Weekly Sunday 4 AM UTC | User memory aggregation via Claude |
 | Daily 2 AM UTC | Notification pruning (`prune_notifications` RPC) |
 | Daily 6 AM UTC (Render cron) | Reddit cache refresh |
-| Daily 5:00 AM UTC (Render cron) | Job ingest — ATS feeds (Greenhouse, Lever, Ashby, Workable) |
+| Daily 5:00 AM UTC (Render cron) | Job ingest — ATS feeds (Greenhouse, Lever, Ashby, Workable, Amazon) |
 | Daily 5:10 AM UTC (Render cron) | Job ingest — enterprise ATS (Workday, Eightfold, Oracle, JSON-LD); `maxSeconds: 420` |
-| Daily 5:25 AM UTC (Render cron) | Job ingest — aggregators (Reed; unkeyed, so a no-op today) |
+| Daily 5:45 AM UTC (Render cron) | Job summaries — `/api/cron/jobs-summaries` |
+| _(not created)_ 5:25 AM UTC | Job ingest — aggregators. Reed is unkeyed, so this would be a nightly no-op for $1/month. Commented out in `render.yaml`; create it when a Reed key exists. |
 
 Both job crons POST to `/api/cron/ingest-jobs` with a `Bearer $CRON_SECRET` header. They are
 split so each run stays inside Render's free-plan limits, the sources' rate limits are
 staggered, and each is independently visible in `job_ingest_runs`.
+
+> **`render.yaml` is NOT Blueprint-synced.** Every Render service is created and edited by
+> hand in the dashboard; the file is the written record, not the source of truth, and
+> editing it deploys nothing. This has already cost real downtime: the jobs crons were
+> added to `render.yaml` on 2026-08-09 and never existed in Render, so the board sat frozen
+> at 29 listings while `job_ingest_runs` logged 61 manual runs and zero cron runs. Do not
+> "fix" this by syncing the Blueprint — the web service was created manually and Render
+> would stand up a duplicate rather than adopt it. Note also that Render cron jobs carry a
+> $1/month minimum each and so cannot live on the web service's free plan.
+>
+> `CRON_SECRET` must be set on **each cron service** as well as the web service (`sync:
+> false` never copies it across). A cron missing it sends `Authorization: Bearer ` and gets
+> a 401; `curl --fail` then exits before the endpoint records anything, so the failure is
+> visible only as an *absence* of rows in `job_ingest_runs` — never as an error.
 
 ---
 
@@ -434,6 +449,7 @@ null is a first-class state, not an error:
 | **Greenhouse / Lever / Ashby / Workable** | Public ATS job-board feeds — no keys, full descriptions, direct employers. Startup ATSs; they cover almost none of the large brands | API (`server/jobs/sources/`) |
 | **Workday / Eightfold / Oracle Recruiting Cloud** | Enterprise ATSs — public, unauthenticated, undocumented. The only route to Roche, Nike, LSEG, Mars, Netflix, M&S. Two-phase: one request per job for the description | API (`server/jobs/sources/`) |
 | **schema.org JobPosting** | Vendor-agnostic — any careers site publishing `JobPosting` JSON-LD, read through its sitemap. British Airways today. The most durable adapter, because the format is a published standard | Sitemap + JSON-LD |
+| **Amazon Jobs** | In-house ATS, the one case discovery cannot solve. Single-phase with inline descriptions, so its whole UK board costs nine requests and no per-job fetch | API (`server/jobs/sources/amazon.js`) |
 | **Reed.co.uk** | UK job aggregation; its `graduate` flag is the best entry-level signal available. Key is not self-serve | API |
 
 ---
