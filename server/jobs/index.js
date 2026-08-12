@@ -32,7 +32,7 @@ import {
   canonicaliseUrl, hashUrl, resolveCanonicalUrl, buildBlockKey,
   rejectionFingerprint, findDuplicate, titleSimilarity, TITLE_MATCH_THRESHOLD,
 } from './lib/dedupe.js'
-import { loadExisting, buildRow, persistBatch } from './lib/persist.js'
+import { loadExisting, buildRow, persistBatch, chunkIds } from './lib/persist.js'
 import { sweepExpired, sweepStalePending, updateTypicalVolume, MAX_POSTED_AGE_DAYS } from './lib/expire.js'
 import { resolveCompanyLogos } from './lib/logos.js'
 
@@ -787,12 +787,11 @@ async function loadCompanyTrust(supabase, companyNames) {
   if (keys.length === 0) return new Map()
 
   const trust = new Map()
-  const CHUNK = 200
-  for (let i = 0; i < keys.length; i += CHUNK) {
+  for (const chunk of chunkIds(keys)) {
     const { data } = await supabase
       .from('job_companies')
       .select('name_norm, trust')
-      .in('name_norm', keys.slice(i, i + CHUNK))
+      .in('name_norm', chunk)
     for (const row of data || []) trust.set(row.name_norm, row.trust)
   }
   return trust
@@ -803,12 +802,16 @@ async function loadRejectionFingerprints(supabase, fingerprints) {
   if (unique.length === 0) return new Set()
 
   const found = new Set()
-  const CHUNK = 200
-  for (let i = 0; i < unique.length; i += CHUNK) {
+  // chunkIds rather than a count: these are 64-character sha256 hexes, so 200 of
+  // them is ~13KB of query string. That failed silently — `error` is not read
+  // here, so an over-long request returned no rows, every rejection was
+  // forgotten, and jobs an admin had already turned down came back into the
+  // queue. See the note on chunkIds().
+  for (const chunk of chunkIds(unique)) {
     const { data } = await supabase
       .from('job_rejection_fingerprints')
       .select('fingerprint')
-      .in('fingerprint', unique.slice(i, i + CHUNK))
+      .in('fingerprint', chunk)
       .gt('expires_at', new Date().toISOString())
     for (const row of data || []) found.add(row.fingerprint)
   }

@@ -38,6 +38,11 @@
 
 import axios from 'axios'
 import { ADAPTERS } from '../sources/index.js'
+// The same reader the jsonld adapter uses at ingest, deliberately shared: a
+// discovery probe that accepted a page the adapter cannot parse (or rejected one
+// it can) would seed boards that quietly return nothing. It handles both
+// serialisations — JSON-LD and microdata.
+import { extractJobPosting } from '../sources/jsonld.js'
 import { normaliseCompany, slugify, matchesMarket } from './normalise.js'
 
 const USER_AGENT = 'IgniteEducationJobBot/1.0 (+https://ignite.education/jobs)'
@@ -91,6 +96,13 @@ export function denialFor(input) {
   return null
 }
 
+/**
+ * Below this, a sampled advert's description is a fragment rather than the job.
+ * Every real advert seen across every board here clears 500 characters
+ * comfortably — the shortest genuine one measured was ~2,800.
+ */
+const MIN_DESCRIPTION_CHARS = 400
+
 /** Vendor fingerprints. `adapter` null means "we can detect it, we cannot ingest it yet". */
 const VENDORS = [
   { key: 'greenhouse', adapter: 'greenhouse', pattern: /(?:boards|job-boards)\.greenhouse\.io\/([a-z0-9_-]+)/i },
@@ -104,7 +116,13 @@ const VENDORS = [
   { key: 'workday', adapter: 'workday', pattern: /([a-z0-9-]+)\.wd(\d+)\.myworkdayjobs\.com(\/[^"'\s<>\\)]*)/ },
   { key: 'eightfold', adapter: 'eightfold', pattern: /([a-z0-9.-]*eightfold\.ai|explore\.jobs\.[a-z0-9.-]+)/i },
   { key: 'oracle_orc', adapter: 'oracle_orc', pattern: /([a-z0-9-]+\.fa\.[a-z0-9.]*oraclecloud\.com)/i },
-  { key: 'smartrecruiters', adapter: null, pattern: /smartrecruiters\.com\/([A-Za-z0-9]+)/ },
+  { key: 'smartrecruiters', adapter: 'smartrecruiters', pattern: /smartrecruiters\.com\/([A-Za-z0-9]+)/ },
+  // Stays `null` on purpose even though BBC and EY are ingested today. The
+  // adapter is `jsonld`, whose config is a sitemap URL rather than a token, so
+  // routing this through buildCandidate()'s token path would seed nonsense.
+  // The jsonld sitemap fallback below picks these boards up correctly instead —
+  // which now works because extractJobPosting() reads the microdata these sites
+  // publish rather than JSON-LD. See sources/jsonld.js.
   { key: 'successfactors', adapter: null, pattern: /(career\d*\.successfactors\.[a-z]+)/i },
   { key: 'avature', adapter: null, pattern: /([a-z0-9-]+)\.avature\.net/i },
   { key: 'teamtailor', adapter: null, pattern: /([a-z0-9-]+)\.teamtailor\.com/i },
@@ -798,9 +816,24 @@ async function jsonldCandidate({ company, domain, careersUrl = null, market, not
       if (!jobUrls.length) continue
 
       const page = await http.get(jobUrls[0], { responseType: 'text', timeout: 30_000 })
-      const posting = typeof page.data === 'string' ? findJobPosting(page.data) : null
+      const posting = typeof page.data === 'string' ? extractJobPosting(page.data) : null
       if (!posting?.description) {
-        notes.push(`${origin}: sitemap has ${jobUrls.length} job URLs but no JobPosting JSON-LD on them`)
+        notes.push(`${origin}: sitemap has ${jobUrls.length} job URLs but no JobPosting on them`)
+        continue
+      }
+      // A JobPosting whose description is a fragment is worse than none: it
+      // reports "ready", and the seeded board then fills the approval queue with
+      // adverts that have no readable text. BT is the live example — its
+      // itemprop="description" covers a single line of hybrid-working blurb
+      // while the actual advert sits in an unmarked sibling element, so it
+      // presents as a 222-job board with 5 characters of description per job.
+      // Anything under a short paragraph means the markup is not where the
+      // advert is.
+      if (String(posting.description).length < MIN_DESCRIPTION_CHARS) {
+        notes.push(
+          `${origin}: JobPosting found but its description is only ` +
+          `${String(posting.description).length} chars — the advert is not in the markup`
+        )
         continue
       }
 
@@ -823,28 +856,17 @@ async function jsonldCandidate({ company, domain, careersUrl = null, market, not
   return null
 }
 
-function findJobPosting(html) {
-  const blocks = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || []
-  for (const block of blocks) {
-    try {
-      const parsed = JSON.parse(block.replace(/^[\s\S]*?>/, '').replace(/<\/script>$/i, ''))
-      const list = Array.isArray(parsed) ? parsed : [parsed, ...(parsed['@graph'] || [])]
-      const posting = list.find(entry => entry?.['@type'] === 'JobPosting')
-      if (posting) return posting
-    } catch {
-      // A malformed block must not hide a valid one later on the page.
-    }
-  }
-  return null
-}
-
 function sampleLocation(posting) {
   const places = Array.isArray(posting.jobLocation) ? posting.jobLocation : [posting.jobLocation]
   return places
     .map(place => {
       const address = place?.address || {}
-      return [address.addressLocality, address.addressCountry?.name || address.addressCountry]
-        .filter(Boolean).join(', ')
+      const parts = [address.addressLocality, address.addressCountry?.name || address.addressCountry]
+        .filter(Boolean)
+      // SuccessFactors puts the whole location in streetAddress and leaves the
+      // structured fields empty — see locationText() in ../sources/jsonld.js.
+      if (!parts.length && address.streetAddress) parts.push(address.streetAddress)
+      return parts.join(', ')
     })
     .join('; ')
 }

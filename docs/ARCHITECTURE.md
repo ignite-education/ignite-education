@@ -447,8 +447,9 @@ null is a first-class state, not an error:
 | **Reddit API** | Community content (ProductManagement, cybersecurity subreddits) | API |
 | **Google Identity Services** | One Tap sign-in | Vite SPA + Next.js |
 | **Greenhouse / Lever / Ashby / Workable** | Public ATS job-board feeds — no keys, full descriptions, direct employers. Startup ATSs; they cover almost none of the large brands | API (`server/jobs/sources/`) |
+| **SmartRecruiters** | Public, vendor-documented Posting API. Two-phase, but its list call filters by country server-side, so a 4,783-posting global board costs 33 detail fetches | API (`server/jobs/sources/smartrecruiters.js`) |
 | **Workday / Eightfold / Oracle Recruiting Cloud** | Enterprise ATSs — public, unauthenticated, undocumented. The only route to Roche, Nike, LSEG, Mars, Netflix, M&S. Two-phase: one request per job for the description | API (`server/jobs/sources/`) |
-| **schema.org JobPosting** | Vendor-agnostic — any careers site publishing `JobPosting` JSON-LD, read through its sitemap. British Airways today. The most durable adapter, because the format is a published standard | Sitemap + JSON-LD |
+| **schema.org JobPosting** | Vendor-agnostic — any careers site publishing `JobPosting` as **JSON-LD or microdata**, read through its sitemap. British Airways, BBC and EY today. The most durable adapter, because the format is a published standard | Sitemap + JSON-LD/microdata |
 | **Amazon Jobs** | In-house ATS, the one case discovery cannot solve. Single-phase with inline descriptions, so its whole UK board costs nine requests and no per-job fetch | API (`server/jobs/sources/amazon.js`) |
 | **Reed.co.uk** | UK job aggregation; its `graduate` flag is the best entry-level signal available. Key is not self-serve | API |
 
@@ -618,7 +619,7 @@ deploy. Adapters read their country identifier from `job_markets.source_params`.
 | Concern | File |
 |---------|------|
 | Orchestrator + filter cascade + hydration | `server/jobs/index.js` |
-| Startup ATS adapters | `server/jobs/sources/{greenhouse,lever,ashby,workable}.js` |
+| Startup ATS adapters | `server/jobs/sources/{greenhouse,lever,ashby,workable,smartrecruiters}.js` |
 | Enterprise ATS adapters (two-phase) | `server/jobs/sources/{workday,eightfold,oracleOrc,jsonld}.js` |
 | In-house ATS adapters (one employer each) | `server/jobs/sources/amazon.js` |
 | Aggregator adapters | `server/jobs/sources/reed.js` |
@@ -631,7 +632,8 @@ deploy. Adapters read their country identifier from `job_markets.source_params`.
 | Employer logos | `server/jobs/lib/logos.js` |
 | Local runner | `scripts/run-job-ingest.mjs` |
 
-**Two-phase sources.** Workday, Oracle Recruiting Cloud and the JSON-LD careers-site adapter all
+**Two-phase sources.** Workday, Oracle Recruiting Cloud, SmartRecruiters and the schema.org
+careers-site adapter all
 return a list with no advert text, so the description costs one HTTP request per job. Those
 adapters set `needsDetail: true` and implement `hydrateOne()`; the orchestrator's hydrate step
 calls it only after three cheap gates (blocked title, age, `couldMapProfession()` on the title
@@ -712,6 +714,36 @@ domain hint, so a company added by name alone is still discoverable. It does **n
 `DENYLIST` — that check walks up the host labels, so `jobs.apple.com` is refused exactly as
 `apple.com` is — and robots.txt is still checked, now per-origin, because a careers subdomain
 frequently has different rules from the company domain.
+
+**The schema.org adapter reads two serialisations.** JSON-LD in a `<script>` block is the common
+one; **microdata** (`itemtype="…/JobPosting"` with `itemprop` attributes) is what SAP
+SuccessFactors RMK emits, and that is BBC, BT and EY. `extractJobPosting()` in
+`sources/jsonld.js` tries LD first and falls back to microdata, so everything downstream sees one
+shape — and `lib/discover.js` imports that same function rather than keeping its own copy, so a
+probe can never accept a page the adapter cannot parse. Three things about the microdata path are
+counter-intuitive and are commented where they live:
+
+- **Properties are read from the whole page, not from inside the JobPosting element.**
+  SuccessFactors renders each careers-page module independently; on the BBC's board
+  `itemprop="title"` sits *before* the element that opens the JobPosting. Scoping to that element
+  finds a description and no title and drops the entire board.
+- **The longest `description` wins, not the first.** BT publishes two — a one-line hybrid-working
+  preamble and then boilerplate.
+- **`params.locationPattern` moves the market gate before hydration.** Neither BBC nor EY publishes
+  a usable `jobLocation`, and EY's sitemap is 7,414 adverts worldwide. The pattern reads the city
+  out of the RMK slug (`{City}-{Title}-{Postcode}`) and the adapter drops out-of-market entries from
+  the list itself — 7,414 → 315 for EY, before a single description is fetched. Opt-in per board,
+  because it is only sound where the slug really carries the location. Where it does not, the job is
+  dropped as `wrong_market`: a false negative, never a false positive, since a title fragment like
+  "Customer" matches no market pattern.
+
+**A board can fingerprint perfectly and still be unusable.** BT runs the same vendor as BBC and EY
+and its adverts carry `JobPosting` microdata, but the marked-up description is 5 characters — the
+real advert is in an unmarked sibling element. Discovery reports "ready" for anything with a
+description, so it now also enforces `MIN_DESCRIPTION_CHARS`; without that, pasting the generated
+SQL seeds a 222-job board whose every listing has no readable text. Reaching BT needs a
+SuccessFactors-specific adapter that knows the RMK page template, which the vendor-agnostic adapter
+should not learn.
 
 **In-house ATSs are the one case discovery cannot solve.** Amazon runs its own recruiting system,
 so there is no vendor marker to fingerprint, no `/sitemap.xml`, and a careers page that is a
@@ -847,6 +879,13 @@ config change has no history at the new scope, so it re-baselines immediately.
 
 #### Coverage gap
 
+**`job_companies.reason` records why an uncovered company is uncovered.** Ten of them are not
+"not done yet" but "cannot be done from an ATS feed" — the eight DENYLIST brands, Bloomberg
+(Avature, plus a 403) and Comic Relief (BeApplied, authenticated API, no JobPosting markup). Without
+that written down, every sweep re-probes them and every reviewer re-asks. `allowed` is deliberately
+left alone: dropping a brand from the allowlist is a brand decision, and the eight become reachable
+again the moment an aggregator is ever accepted.
+
 ATS feeds are used almost exclusively by tech companies and digital agencies. A live probe of
 ~60 UK healthcare and renewable-energy employers found **zero** usable boards. So the ATS tier
 serves UX Designer, Data Analyst, Cyber Security Analyst, Product Manager and Digital Marketing
@@ -856,6 +895,14 @@ here reaching non-tech roles. Those three profession pages stay empty, and empty
 from the filter, noindexed, and excluded from the sitemap. Restoring them means either accepting
 an aggregator's attribution badge or finding direct employer boards in those sectors, where an
 earlier survey of ~60 UK healthcare and renewable-energy employers found zero usable feeds.
+
+**Where the volume actually goes.** Measured across every enabled board on a full dry run:
+**8,150 fetched → 16 new**. The two dominant drops are `no_profession` (~3,700; the 8-specialism
+taxonomy is keyed to `courses.title`, so widening it means adding specialisms to the catalogue) and
+`too_old` (~3,700; `MAX_POSTED_AGE_DAYS`). `company_not_allowed` drops **nothing**, because a board
+only exists for an allowlisted company in the first place — so the allowlist throttles the board
+through which employers have boards at all, not through per-listing rejection. Adding sources moves
+this number far less than either filter does; budget accordingly before building an adapter.
 
 **Excluded sources and why:** LinkedIn and Indeed have no readable API at any price (Indeed
 retired its publisher API in 2024; LinkedIn's is write-only and not accepting partners), and

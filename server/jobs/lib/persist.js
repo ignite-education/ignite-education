@@ -49,14 +49,46 @@ const VOLATILE_FIELDS = [
  *     run (Workday says "2 Locations", a sitemap says nothing), never refresh
  *     last_seen_at, and be delisted three days later.
  */
+/**
+ * Split ids into `.in()` filters that fit in a URL.
+ *
+ * A count-based chunk is not enough. `.in()` goes into the query string, and
+ * source_job_id is whatever shape a source gives us: Greenhouse's are ~8-digit
+ * numbers, but the jsonld adapter's are "{board}:{advert URL}" at 80-120
+ * characters each, which url-encode to roughly double. 200 of those is ~40KB of
+ * query string and PostgREST answers 400 Bad Request — a failure that only
+ * appears once a board grows past a few hundred adverts, and presents as
+ * "loadExisting failed: Bad Request" with no hint that length is the problem.
+ *
+ * So: cap on encoded length as well as count. Short numeric ids still chunk at
+ * MAX_IDS exactly as before.
+ */
+export function* chunkIds(sourceJobIds) {
+  const MAX_IDS = 200
+  // Comfortably inside the ~8KB request line that proxies commonly allow, with
+  // room for the rest of the query and PostgREST's own quoting.
+  const MAX_ENCODED_CHARS = 4000
+
+  let chunk = []
+  let encoded = 0
+  for (const id of sourceJobIds) {
+    const cost = encodeURIComponent(id).length + 3   // separator plus quoting
+    if (chunk.length && (chunk.length >= MAX_IDS || encoded + cost > MAX_ENCODED_CHARS)) {
+      yield chunk
+      chunk = []
+      encoded = 0
+    }
+    chunk.push(id)
+    encoded += cost
+  }
+  if (chunk.length) yield chunk
+}
+
 export async function loadExisting(supabase, source, sourceJobIds) {
   if (sourceJobIds.length === 0) return new Map()
 
   const found = new Map()
-  // Chunked: a company board can exceed what fits in one `.in()` filter.
-  const CHUNK = 200
-  for (let i = 0; i < sourceJobIds.length; i += CHUNK) {
-    const chunk = sourceJobIds.slice(i, i + CHUNK)
+  for (const chunk of chunkIds(sourceJobIds)) {
     const { data, error } = await supabase
       .from('job_listings')
       // Every VOLATILE_FIELD, plus posted_at. restoreFromStored() in ../index.js

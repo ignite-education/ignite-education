@@ -156,7 +156,20 @@ export const PROFESSION_RULES = {
     ],
     titleWeak: [],
     // Sales and desk roles at renewable-energy firms are not technician jobs.
-    titleExclude: [/\b(sales|account|business development|telesales|marketing|recruit)\b/i, /\bgas (safe )?engineer\b/i],
+    //
+    // The professional-services words are here because "renewable energy" is a
+    // SECTOR as often as it is a job. EY advertises "Senior Manager, Corporate
+    // Tax, Renewable Energy" and "Senior, Corporate Tax, Renewable Energy",
+    // both of which cleared titleInclude on /renewable energy/ alone — and with
+    // no other source feeding this specialism they would have been the only two
+    // listings on its page, which is also what would take that page out of
+    // noindex. Same reasoning as the titleExclude on Data Analyst: the
+    // discriminator is the role word, not the industry word.
+    titleExclude: [
+      /\b(sales|account|business development|telesales|marketing|recruit)\b/i,
+      /\b(tax|audit|assurance|accountant|accounting|actuarial|legal|counsel|solicitor|paralegal|investment|banking|procurement|underwrit)\b/i,
+      /\bgas (safe )?engineer\b/i,
+    ],
     keywordBoost: [/photovoltaic/i, /\bmcs\b/i, /net zero/i, /decarbonis/i, /insulation/i, /\bnvq\b/i, /\bepc\b/i, /renewable/i],
   },
 }

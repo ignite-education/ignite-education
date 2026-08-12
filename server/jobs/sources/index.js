@@ -35,6 +35,7 @@ import greenhouse from './greenhouse.js'
 import lever from './lever.js'
 import ashby from './ashby.js'
 import workable from './workable.js'
+import smartrecruiters from './smartrecruiters.js'
 import workday from './workday.js'
 import eightfold from './eightfold.js'
 import oracleOrc from './oracleOrc.js'
@@ -48,6 +49,11 @@ export const ADAPTERS = {
   [lever.key]: lever,
   [ashby.key]: ashby,
   [workable.key]: workable,
+  // Two-phase but keyed on nothing more than a company identifier, so it sits
+  // with the startup ATSs rather than the enterprise tier: its list call filters
+  // by country server-side, which keeps a 4,783-posting global board down to the
+  // 33 UK ones before any description is fetched.
+  [smartrecruiters.key]: smartrecruiters,
   // Enterprise ATSs. Two-phase, config-driven, and the only route to the large
   // brands on the allowlist — Greenhouse/Lever/Ashby/Workable are startup ATSs.
   [workday.key]: workday,
