@@ -270,28 +270,61 @@ plan to use via the API; the premade voices do not.
 | Weekly Sunday 4 AM UTC | User memory aggregation via Claude |
 | Daily 2 AM UTC | Notification pruning (`prune_notifications` RPC) |
 | Daily 6 AM UTC (Render cron) | Reddit cache refresh |
-| Daily 5:00 AM UTC (Render cron) | Job ingest — ATS feeds (Greenhouse, Lever, Ashby, Workable, Amazon) |
-| Daily 5:10 AM UTC (Render cron) | Job ingest — enterprise ATS (Workday, Eightfold, Oracle, JSON-LD); `maxSeconds: 420` |
-| Daily 5:45 AM UTC (Render cron) | Job summaries — `/api/cron/jobs-summaries` |
-| _(not created)_ 5:25 AM UTC | Job ingest — aggregators. Reed is unkeyed, so this would be a nightly no-op for $1/month. Commented out in `render.yaml`; create it when a Reed key exists. |
 
-Both job crons POST to `/api/cron/ingest-jobs` with a `Bearer $CRON_SECRET` header. They are
-split so each run stays inside Render's free-plan limits, the sources' rate limits are
-staggered, and each is independently visible in `job_ingest_runs`.
+#### The nightly job ingest (GitHub Actions)
 
-> **`render.yaml` is NOT Blueprint-synced.** Every Render service is created and edited by
-> hand in the dashboard; the file is the written record, not the source of truth, and
-> editing it deploys nothing. This has already cost real downtime: the jobs crons were
-> added to `render.yaml` on 2026-08-09 and never existed in Render, so the board sat frozen
-> at 29 listings while `job_ingest_runs` logged 61 manual runs and zero cron runs. Do not
-> "fix" this by syncing the Blueprint — the web service was created manually and Render
-> would stand up a duplicate rather than adopt it. Note also that Render cron jobs carry a
-> $1/month minimum each and so cannot live on the web service's free plan.
->
-> `CRON_SECRET` must be set on **each cron service** as well as the web service (`sync:
-> false` never copies it across). A cron missing it sends `Authorization: Bearer ` and gets
-> a 401; `curl --fail` then exits before the endpoint records anything, so the failure is
-> visible only as an *absence* of rows in `job_ingest_runs` — never as an error.
+`.github/workflows/jobs-ingest.yml` — one job, three sequential steps at 05:00 UTC:
+ATS feeds → enterprise ATS (`maxSeconds: 420`) → `/api/cron/jobs-summaries`. Each POSTs to the
+same endpoints as before with a `Bearer $CRON_SECRET` header; **the server is unchanged**.
+
+> **This did not run for the board's entire first week.** The crons were declared in
+> `render.yaml` on 2026-08-09 and never created in the Render dashboard, which is **not
+> Blueprint-synced** — editing that file deploys nothing. `job_ingest_runs` recorded 75
+> manual runs and **zero** cron runs while the board silently aged out against the 45-day
+> read-time cut in `jobsData.ts`. Do not "fix" the sync — the web service was created by hand
+> and Render would stand up a duplicate rather than adopt it.
+
+Why Actions rather than Render crons, given Render is where everything else lives:
+
+- **The schedule now lives in the repo**, so it cannot diverge from a dashboard nobody checks.
+  That divergence *was* the outage.
+- **Failure is audible.** GitHub emails the repo owner when a scheduled workflow fails. Nothing
+  in the Render setup would have said anything, which is why a dead board went unnoticed for a
+  week. This mattered more than raw scheduler reliability — every scheduler is ~99%.
+- **Free** on a public repo, versus $1/month per Render cron service.
+- **One secret, once.** Render needed `CRON_SECRET` set on each of three services, and a miss
+  sends `Authorization: Bearer ` → 401 → `curl --fail` exits before the endpoint records
+  anything, failing as an *absence* of rows. That is the same invisible signature as the bug.
+
+**Ordering is why it is one job and not three workflows.** GitHub can start a scheduled run
+5–30 minutes late, so three independent schedules could interleave and run the summaries before
+the ingest that rewrites the `description_text` they read. Steps inside a job are sequential by
+construction.
+
+**Every step asserts on the response body, not just the HTTP status**
+(`.github/scripts/ingest.sh`). `curl --fail` alone is not enough, because the endpoint has two
+ways to return a perfectly green 200 on top of a dead board — and both look identical to "the
+cron does not exist":
+
+| Green 200, nothing done | Where |
+|---|---|
+| `JOBS_INGEST_ENABLED=false` → `{skipped:true}` | `server.js` |
+| Every source in the payload disabled or unknown → `runs: []` | `server/jobs/index.js` |
+
+The script also fails on any per-source `status: 'failed'`, which by design does *not* affect the
+HTTP status (one dead Workday tenant must not abort the other eight sources), and warns on
+`partial`. The aggregator tier is still unscheduled: Reed is the only one left and is unkeyed, so
+it would be a guaranteed no-op — the old commented-out Render cron posting `{"sources":["reed"]}`
+would have been silently green forever.
+
+`CRON_SECRET` now lives in two places and must match: the Render web service validates it, the
+GitHub Actions repository secret sends it.
+
+**Cron auth is fail-closed** (`verifyCronSecret()` in `server.js`). It previously read
+`if (cronSecret && authHeader !== ...)`, so a web service with no `CRON_SECRET` skipped the check
+entirely and served `/api/cron/ingest-jobs`, `/api/cron/jobs-summaries` and
+`/api/cron/aggregate-memory` to anyone on the internet — endpoints that spend metered job-board
+quota and Claude tokens. A missing secret is now a `503`, distinct from the `401` for a wrong one.
 
 ---
 

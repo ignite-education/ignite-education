@@ -1,0 +1,112 @@
+# Nightly job-board ingest.
+#
+# WHY THIS IS HERE AND NOT IN RENDER. The ingest was designed to run from
+# render.yaml, and for the first week of the board's life it did not run at all:
+# the crons were written into that file on 2026-08-09 and never created in the
+# Render dashboard, which is not Blueprint-synced. job_ingest_runs recorded 75
+# manual runs and zero cron runs while the board silently aged out against the
+# 45-day read-time cut in next-app/src/data/jobsData.ts. Keeping the schedule in
+# git means it cannot diverge from a dashboard nobody remembers to check.
+#
+# ONE JOB, THREE SEQUENTIAL STEPS — not three workflows on three schedules.
+# GitHub routinely starts scheduled runs 5-30 minutes late under load, and three
+# independent schedules could interleave badly enough to run the summaries
+# before the ingest that produces their input. Steps within a job are ordered by
+# construction: step 2 cannot start until step 1's curl returns.
+#
+# EVERY STEP ASSERTS ON THE RESPONSE BODY, not just the HTTP status. This is the
+# part that was missing all along. What made the original outage last a week was
+# not an unreliable scheduler — it was that nothing said anything. `--fail`
+# alone would not have helped either, because the endpoint has two ways to
+# return a perfectly green 200 on top of a dead board:
+#
+#   - JOBS_INGEST_ENABLED=false returns 200 {skipped:true} (server.js), and
+#   - a source name that is disabled or unknown yields zero work units and a
+#     200 (server/jobs/index.js). The old commented-out aggregators cron posted
+#     {"sources":["reed"]}, and reed is disabled — had it ever been created it
+#     would have been a silent no-op forever.
+#
+# runJobIngest() returns {runs, totals, durationMs}, so the assertions below can
+# check what actually happened. A failed scheduled workflow emails the repo
+# owner, which turns silence into a message.
+#
+# CRON_SECRET is the ONLY secret needed and must match the value on the Render
+# web service exactly. A mismatch gives 401, which now surfaces as a red X
+# rather than as an absence of rows.
+
+name: Job board ingest
+
+on:
+  schedule:
+    # 05:00 UTC. GitHub interprets cron as UTC and may start late; nothing here
+    # depends on the exact minute.
+    - cron: '0 5 * * *'
+  # The supported way to recover after a missed night, and to run the chain on
+  # demand without a local checkout.
+  workflow_dispatch:
+
+# Two runs at once would race on job_listings and waste third-party quota.
+concurrency:
+  group: jobs-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    name: Ingest and summarise
+    runs-on: ubuntu-latest
+    # The enterprise tier alone can run to 420s. This is a backstop against a
+    # hung request holding a runner for the 6-hour default.
+    timeout-minutes: 30
+
+    env:
+      API: https://ignite-education-api.onrender.com
+
+    steps:
+      # Shallow — this is only here for .github/scripts/ingest.sh. Nothing is
+      # built and no dependencies are installed; the runner just calls the API.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check CRON_SECRET is configured
+        # Fail with a readable message rather than at the first 401, which is
+        # indistinguishable from a wrong value.
+        run: |
+          if [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "::error::CRON_SECRET repository secret is not set. Add it under Settings -> Secrets and variables -> Actions, matching the value on the Render web service."
+            exit 1
+          fi
+
+      # First and cheapest: one request per company board, descriptions inline.
+      # Payload copied verbatim from the render.yaml cron this replaces.
+      - name: Ingest startup ATS feeds
+        run: |
+          ./.github/scripts/ingest.sh \
+            '{"sources":["greenhouse","lever","ashby","workable","amazon"]}' \
+            "$API/api/cron/ingest-jobs"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      # Two-phase sources: these page through their boards AND fetch a
+      # description per new job, so they get their own longer budget. maxSeconds
+      # overrides JOBS_INGEST_MAX_SECONDS for this request only.
+      - name: Ingest enterprise ATS feeds
+        run: |
+          ./.github/scripts/ingest.sh \
+            '{"sources":["workday","eightfold","oracle_orc","jsonld"],"maxSeconds":420}' \
+            "$API/api/cron/ingest-jobs"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      # Reads description_text the two steps above have just rewritten, so it
+      # must come last. Capped per run server-side, so a cold board works
+      # through its backlog over several nights rather than in one long request.
+      # Not asserted on totals — a night with nothing new to summarise is a
+      # legitimate no-op, unlike an ingest that fetched nothing.
+      - name: Write AI summaries
+        run: |
+          curl -sS --fail --max-time 600 -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "$API/api/cron/jobs-summaries"

@@ -692,15 +692,40 @@ app.post('/api/user-question-response', async (req, res) => {
   }
 });
 
+/**
+ * Bearer check for the /api/cron/* endpoints. Returns true when the request may
+ * proceed; otherwise it has already sent the response.
+ *
+ * FAIL-CLOSED, and that is the whole point of the helper. All three cron
+ * endpoints previously guarded themselves with
+ *
+ *   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) return 401
+ *
+ * where the `cronSecret &&` short-circuit meant that a web service with no
+ * CRON_SECRET set skipped the check entirely and served the endpoints to
+ * anyone on the internet — endpoints that spend metered third-party job-board
+ * quota and Claude tokens. The safe default for a missing secret is to refuse,
+ * not to wave everything through, and a 503 says "misconfigured" where a 401
+ * would say "wrong key" and send someone hunting for the wrong bug.
+ */
+function verifyCronSecret(req, res) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error('CRON_SECRET is not set — refusing cron request');
+    res.status(503).json({ success: false, error: 'CRON_SECRET not configured' });
+    return false;
+  }
+  if (req.headers.authorization !== `Bearer ${cronSecret}`) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return false;
+  }
+  return true;
+}
+
 // Weekly memory aggregation cron endpoint (also callable via HTTP for manual trigger)
 app.post('/api/cron/aggregate-memory', async (req, res) => {
   try {
-    // Verify cron secret
-    const authHeader = req.headers.authorization;
-    const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+    if (!verifyCronSecret(req, res)) return;
 
     const result = await aggregateUserMemory();
     res.json({ success: true, ...result });
@@ -4857,11 +4882,7 @@ app.get('/api/reddit-flairs', async (req, res) => {
 // rate limits are staggered.
 app.post('/api/cron/ingest-jobs', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+    if (!verifyCronSecret(req, res)) return;
 
     if (process.env.JOBS_INGEST_ENABLED === 'false') {
       return res.json({ success: true, skipped: true, reason: 'JOBS_INGEST_ENABLED=false' });
@@ -4895,11 +4916,7 @@ app.post('/api/cron/ingest-jobs', async (req, res) => {
 // as its own failed cron rather than as a mysteriously partial ingest.
 app.post('/api/cron/jobs-summaries', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+    if (!verifyCronSecret(req, res)) return;
 
     if (process.env.JOBS_SUMMARIES_ENABLED === 'false') {
       return res.json({ success: true, skipped: true, reason: 'JOBS_SUMMARIES_ENABLED=false' });

@@ -2,15 +2,28 @@
 # dashboard; this file is the written record of that configuration, not its
 # source of truth. Editing it changes nothing on its own.
 #
-# This is a trap worth spelling out, because it has already cost two days of
-# ingest: the jobs-ingest-* crons were added here on 2026-08-09 and simply never
-# existed in Render, so job_ingest_runs recorded 61 manual runs and not one cron
-# run. Adding a service here means creating it in the dashboard too.
+# This is a trap worth spelling out, because it cost the job board its first
+# week: the jobs-ingest-* crons were added here on 2026-08-09 and simply never
+# existed in Render, so job_ingest_runs recorded 75 manual runs and not one cron
+# run while the board silently aged out against the 45-day read-time cut in
+# next-app/src/data/jobsData.ts. Adding a service here means creating it in the
+# dashboard too.
 #
 # Do NOT "fix" this by syncing the Blueprint. The web service was created by
 # hand and Render would not adopt it — it would stand up a second copy alongside
 # the live one. Note also that Render cron jobs carry a $1/month minimum each,
 # so they cannot be added to the free plan the web service runs on.
+#
+# ── THE JOB CRONS NOW LIVE IN GITHUB ACTIONS ────────────────────────────────
+# .github/workflows/jobs-ingest.yml runs the whole nightly chain. It was moved
+# there precisely because of the drift above: a schedule in the repo cannot
+# diverge from a dashboard nobody remembers to check, it costs nothing on a
+# public repo, and GitHub emails the owner when a scheduled run fails — which
+# is the alerting whose absence let the original outage run for a week.
+#
+# CRON_SECRET therefore has to exist in two places now: on the web service
+# below (which validates it) and as a GitHub Actions repository secret (which
+# sends it). They must match.
 services:
   # Backend API Server
   #
@@ -109,104 +122,25 @@ services:
     buildCommand: ""
     startCommand: curl -X POST https://ignite-education-api.onrender.com/api/reddit-cache/refresh
 
-  # Job board ingest — split into separate crons rather than one so each run
-  # stays bounded (Render's free plan can kill a long run), the sources' rate
-  # limits are staggered, and each is independently observable in
-  # job_ingest_runs. Summarisation is another for the same reason: see
-  # jobs-summaries below.
+  # ── Job board crons: MOVED TO GITHUB ACTIONS ──────────────────────────────
   #
-  # Unlike reddit-cache-refresh above, these MUST send the cron secret: they
-  # spend metered third-party API quota.
+  # jobs-ingest-ats (05:00), jobs-ingest-ats-enterprise (05:10) and
+  # jobs-summaries (05:45) were declared here and never created in the Render
+  # dashboard, so they never ran once. They now live in
+  # .github/workflows/jobs-ingest.yml as three sequential steps of a single job,
+  # which also fixes the ordering risk that three independent schedules carried:
+  # GitHub can start a scheduled run 5-30 minutes late, and the summaries step
+  # reads description_text that the two ingest steps rewrite.
   #
-  # `amazon` belongs in this tier despite paging: it is single-phase, so nine
-  # requests cover its whole UK board and it costs no per-job description fetch.
-  - type: cron
-    name: jobs-ingest-ats
-    schedule: "0 5 * * *"
-    buildCommand: ""
-    startCommand: >-
-      curl -sS --fail --max-time 600 -X POST
-      -H "Authorization: Bearer $CRON_SECRET"
-      -H "Content-Type: application/json"
-      -d '{"sources":["greenhouse","lever","ashby","workable","amazon"]}'
-      https://ignite-education-api.onrender.com/api/cron/ingest-jobs
-    envVars:
-      - key: CRON_SECRET
-        sync: false
-
-  # The enterprise ATS tier, ten minutes behind the fast one.
+  # The payloads and the reasoning behind the split are preserved in that file.
+  # Nothing about the server changed — both crons always just POSTed to
+  # /api/cron/ingest-jobs, and that endpoint is unchanged.
   #
-  # Separate because it is a different shape of work, not just more of it: these
-  # four page through their boards AND fetch a description per new job, so a
-  # single slow Workday tenant could eat the whole budget. Isolating them means
-  # that costs this cron, not the four sources above which are one request each.
+  # The aggregator tier is still not scheduled anywhere: Reed is the only
+  # aggregator left and it is disabled with no REED_API_KEY, so it would be a
+  # guaranteed nightly no-op. Add a step to the workflow when a key exists.
   #
-  # maxSeconds overrides JOBS_INGEST_MAX_SECONDS (240) for this request only —
-  # that env var is shared by every cron, so it cannot be raised for one tier
-  # without raising it for all of them. Stays under curl's --max-time 600.
-  #
-  # It also lands 10 minutes after a run that has already woken the free-plan
-  # web service, so it skips the cold start.
-  - type: cron
-    name: jobs-ingest-ats-enterprise
-    schedule: "10 5 * * *"
-    buildCommand: ""
-    startCommand: >-
-      curl -sS --fail --max-time 600 -X POST
-      -H "Authorization: Bearer $CRON_SECRET"
-      -H "Content-Type: application/json"
-      -d '{"sources":["workday","eightfold","oracle_orc","jsonld"],"maxSeconds":420}'
-      https://ignite-education-api.onrender.com/api/cron/ingest-jobs
-    envVars:
-      - key: CRON_SECRET
-        sync: false
-
-  # The aggregator tier, DELIBERATELY NOT CREATED in Render.
-  #
-  # Removing Adzuna left Reed as its only source, and Reed is disabled with no
-  # REED_API_KEY — its key needs a recruiter account plus contacting Reed
-  # directly, so it is not self-serve (see the rationale at
-  # server/jobs/sources/index.js:61-69). Standing this cron up today would buy a
-  # guaranteed nightly no-op for $1/month.
-  #
-  # Kept here rather than deleted because the schedule is deliberate: 25 5 is
-  # far enough behind the enterprise tier's 420s budget to not overlap it.
-  # Create it in the dashboard when a Reed key exists.
-  #
-  # - type: cron
-  #   name: jobs-ingest-aggregators
-  #   schedule: "25 5 * * *"
-  #   buildCommand: ""
-  #   startCommand: >-
-  #     curl -sS --fail --max-time 600 -X POST
-  #     -H "Authorization: Bearer $CRON_SECRET"
-  #     -H "Content-Type: application/json"
-  #     -d '{"sources":["reed"]}'
-  #     https://ignite-education-api.onrender.com/api/cron/ingest-jobs
-  #   envVars:
-  #     - key: CRON_SECRET
-  #       sync: false
-
-  # AI summaries for the board's description text. Last, at 05:45, because it
-  # reads description_text that the ingests above have just rewritten — and the
-  # enterprise tier can run to 420s, so 05:10 + 420s is the real constraint on
-  # how early this can start. It stays at 05:45 rather than moving earlier so
-  # that reviving the aggregator cron at 05:25 needs no rescheduling.
-  #
-  # Its own cron rather than a step inside the ingest: the ingest is capped at
-  # JOBS_INGEST_MAX_SECONDS (240) and 60 sequential Claude calls at 2-5s each
-  # would exhaust that budget by themselves. Capped per run, so a cold board
-  # works through its backlog over a few nights rather than in one long request.
-  - type: cron
-    name: jobs-summaries
-    schedule: "45 5 * * *"
-    buildCommand: ""
-    startCommand: >-
-      curl -sS --fail --max-time 600 -X POST
-      -H "Authorization: Bearer $CRON_SECRET"
-      -H "Content-Type: application/json"
-      -d '{}'
-      https://ignite-education-api.onrender.com/api/cron/jobs-summaries
-    envVars:
-      - key: CRON_SECRET
-        sync: false
+  # If you ever move these back to Render, remember CRON_SECRET must be set on
+  # each cron service individually — sync: false never copies it across, and a
+  # cron missing it sends "Authorization: Bearer " and gets a 401 that
+  # curl --fail swallows before the endpoint records anything.
