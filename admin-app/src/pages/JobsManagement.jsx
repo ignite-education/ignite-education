@@ -40,6 +40,19 @@ const STATUS_COLOURS = {
   stale: '#999999',
 };
 
+/**
+ * Ingest run statuses. Separate from STATUS_COLOURS because they are a
+ * different vocabulary on a different table — job_ingest_runs.status is
+ * success/partial/failed, none of which appear above, so every run badge used
+ * to fall through to the grey default and a failed run looked like a fine one.
+ */
+const RUN_STATUS_COLOURS = {
+  success: '#00A47C',
+  partial: '#B45309',
+  failed: '#EF0B72',
+  running: '#8200EA',
+};
+
 const formatDate = (value) => {
   if (!value) return '—';
   return new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
@@ -1563,55 +1576,220 @@ function DomainField({ row, onSave }) {
 /* Runs                                                                       */
 /* ========================================================================== */
 
+/** How far back the Runs tab looks. */
+const RUNS_WINDOW_DAYS = 21;
+
+/**
+ * Local Y-M-D, zero-padded so a plain string sort is chronological.
+ *
+ * Local rather than UTC deliberately: every timestamp on this tab is rendered
+ * with toLocaleString, so grouping by UTC would file a run displayed as
+ * "16/08/2026, 00:30" under the 15th and look like a bug.
+ */
+function localDayKey(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * One row per source×market is the right grain for tuning and the wrong grain
+ * for "did last night work" — a single night is nine rows you have to add up.
+ * This rolls them into a day, keeping the per-source rows underneath.
+ */
+function groupRunsByDay(runs) {
+  const days = new Map();
+
+  for (const run of runs) {
+    if (!run.started_at) continue;
+    const key = localDayKey(run.started_at);
+
+    if (!days.has(key)) {
+      days.set(key, {
+        key,
+        runs: [],
+        triggers: new Set(),
+        dropped: {},
+        fetched: 0, inserted: 0, updated: 0, expired: 0,
+        autoApproved: 0, queued: 0, apiCalls: 0, detailCalls: 0,
+        firstAt: run.started_at, lastAt: run.started_at,
+      });
+    }
+
+    const day = days.get(key);
+    day.runs.push(run);
+    day.triggers.add(run.trigger);
+    day.fetched += run.fetched || 0;
+    day.inserted += run.inserted || 0;
+    day.updated += run.updated || 0;
+    day.expired += run.expired || 0;
+    day.autoApproved += run.auto_approved || 0;
+    day.queued += run.queued || 0;
+    day.apiCalls += run.api_calls || 0;
+    day.detailCalls += run.detail_calls || 0;
+    for (const [reason, count] of Object.entries(run.dropped || {})) {
+      day.dropped[reason] = (day.dropped[reason] || 0) + count;
+    }
+    if (run.started_at < day.firstAt) day.firstAt = run.started_at;
+    if (run.started_at > day.lastAt) day.lastAt = run.started_at;
+  }
+
+  // Worst status wins: one failed source among nine must not read as a good
+  // night, which is exactly the kind of thing a summary row can hide.
+  for (const day of days.values()) {
+    const statuses = day.runs.map(r => r.status);
+    day.status = statuses.includes('failed') ? 'failed'
+      : statuses.includes('partial') ? 'partial'
+      : statuses.includes('running') ? 'running'
+      : 'success';
+    day.failedCount = statuses.filter(s => s === 'failed').length;
+  }
+
+  return [...days.values()].sort((a, b) => b.key.localeCompare(a.key));
+}
+
+const timeOnly = iso => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
 function RunsTab() {
   const [runs, setRuns] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [openDays, setOpenDays] = useState(() => new Set());
 
   useEffect(() => {
+    // A date window rather than a row limit. `.limit(60)` cut the oldest day in
+    // half, and a day totalled from half its runs is worse than no total —
+    // it reads as a real number.
+    const since = new Date(Date.now() - RUNS_WINDOW_DAYS * 86400000).toISOString();
     supabase
       .from('job_ingest_runs')
       .select('*')
+      .gte('started_at', since)
       .order('started_at', { ascending: false })
-      .limit(60)
-      .then(({ data }) => setRuns(data || []));
+      .limit(1000)
+      .then(({ data }) => {
+        setRuns(data || []);
+        setLoaded(true);
+      });
   }, []);
+
+  const days = useMemo(() => groupRunsByDay(runs), [runs]);
+
+  // Open the most recent day, and anything that went wrong — those are the two
+  // reasons anyone opens this tab.
+  useEffect(() => {
+    if (!days.length) return;
+    setOpenDays(new Set([days[0].key, ...days.filter(d => d.status !== 'success').map(d => d.key)]));
+  }, [days]);
+
+  const toggle = key => setOpenDays(prev => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
 
   return (
     <div>
       <p className="text-sm text-gray-500 mb-4">
-        All ingest tuning starts here. The <strong>dropped</strong> breakdown says which filter to move if the
-        queue is too big or the board too thin.
+        Grouped by the day each run started. The day line answers &ldquo;did it run and what did it add&rdquo;;
+        open it for the per-source detail. All ingest tuning starts with the <strong>dropped</strong> breakdown,
+        which says which filter to move if the queue is too big or the board too thin.
       </p>
 
       <div className="border border-gray-200 rounded-lg overflow-hidden">
-        {runs.map(run => (
-          <div key={run.id} className="px-3 py-2 text-sm border-b border-gray-100 last:border-b-0 bg-white">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="font-medium text-gray-900" style={{ width: '110px' }}>{run.source}/{run.market}</span>
-              <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: STATUS_COLOURS[run.status] || '#999' }}>
-                {run.status}
-              </span>
-              <span className="text-xs text-gray-500">
-                {run.fetched} fetched · {run.inserted} new · {run.auto_approved} auto · {run.queued} queued ·{' '}
-                {run.updated} refreshed · {run.expired} expired · {run.api_calls} list calls
-                {run.detail_calls > 0 && ` · ${run.detail_calls} detail calls`}
-              </span>
-              <span className="ml-auto text-xs text-gray-400">
-                {run.started_at ? new Date(run.started_at).toLocaleString('en-GB') : ''} ({run.trigger})
-              </span>
+        {days.map(day => {
+          const isOpen = openDays.has(day.key);
+          const label = new Date(day.firstAt).toLocaleDateString('en-GB', {
+            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+          });
+
+          return (
+            <div key={day.key} className="border-b border-gray-200 last:border-b-0">
+              <button
+                type="button"
+                onClick={() => toggle(day.key)}
+                className={`w-full text-left px-3 py-2.5 flex items-center gap-3 flex-wrap hover:bg-gray-50 ${day.status === 'success' ? 'bg-white' : 'bg-amber-50'}`}
+              >
+                <span className="text-gray-400 text-xs" style={{ width: 10 }}>{isOpen ? '▾' : '▸'}</span>
+                <span className="font-medium text-gray-900 text-sm" style={{ width: 150 }}>{label}</span>
+
+                <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: RUN_STATUS_COLOURS[day.status] || '#999' }}>
+                  {day.status}
+                  {day.failedCount > 0 && ` (${day.failedCount})`}
+                </span>
+
+                {/* The number anyone actually came here for. */}
+                <span className="text-sm text-gray-900">
+                  <strong>{day.inserted}</strong> new
+                </span>
+                <span className="text-xs text-gray-500">
+                  {day.fetched.toLocaleString('en-GB')} fetched · {day.updated} refreshed · {day.expired} expired
+                  {day.queued > 0 && ` · ${day.queued} queued`}
+                </span>
+
+                <span className="ml-auto text-xs text-gray-400">
+                  {day.runs.length} source {day.runs.length === 1 ? 'run' : 'runs'} ·{' '}
+                  {timeOnly(day.firstAt)}
+                  {timeOnly(day.firstAt) !== timeOnly(day.lastAt) && `–${timeOnly(day.lastAt)}`}
+                  {' · '}{[...day.triggers].join(', ')}
+                </span>
+              </button>
+
+              {isOpen && (
+                <div>
+                  {/* Day-level drop totals. More use than nine separate
+                      breakdowns when the question is which filter to move. */}
+                  {Object.keys(day.dropped).length > 0 && (
+                    <div className="px-3 pb-2 pl-8 flex gap-2 flex-wrap bg-gray-50 border-t border-gray-100 pt-2">
+                      <span className="text-[11px] text-gray-500">dropped all day:</span>
+                      {Object.entries(day.dropped)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([reason, count]) => (
+                          <span key={reason} className="text-[11px] px-1.5 py-0.5 rounded bg-white border border-gray-200 text-gray-600">
+                            {reason}: {count.toLocaleString('en-GB')}
+                          </span>
+                        ))}
+                    </div>
+                  )}
+
+                  {day.runs.map(run => (
+                    <div key={run.id} className="px-3 py-2 pl-8 text-sm border-t border-gray-100 bg-white">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="font-medium text-gray-900" style={{ width: '110px' }}>{run.source}/{run.market}</span>
+                        <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: RUN_STATUS_COLOURS[run.status] || '#999' }}>
+                          {run.status}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {run.fetched} fetched · {run.inserted} new · {run.auto_approved} auto · {run.queued} queued ·{' '}
+                          {run.updated} refreshed · {run.expired} expired · {run.api_calls} list calls
+                          {run.detail_calls > 0 && ` · ${run.detail_calls} detail calls`}
+                        </span>
+                        <span className="ml-auto text-xs text-gray-400">
+                          {run.started_at ? new Date(run.started_at).toLocaleTimeString('en-GB') : ''} ({run.trigger})
+                        </span>
+                      </div>
+                      {run.dropped && Object.keys(run.dropped).length > 0 && (
+                        <div className="mt-1 flex gap-2 flex-wrap">
+                          {Object.entries(run.dropped).map(([reason, count]) => (
+                            <span key={reason} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
+                              {reason}: {count}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {run.error && <p className="text-xs text-[#EF0B72] mt-1">{run.error}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            {run.dropped && Object.keys(run.dropped).length > 0 && (
-              <div className="mt-1 flex gap-2 flex-wrap">
-                {Object.entries(run.dropped).map(([reason, count]) => (
-                  <span key={reason} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
-                    {reason}: {count}
-                  </span>
-                ))}
-              </div>
-            )}
-            {run.error && <p className="text-xs text-[#EF0B72] mt-1">{run.error}</p>}
-          </div>
-        ))}
-        {runs.length === 0 && <p className="p-6 text-center text-sm text-gray-500">No ingest runs yet.</p>}
+          );
+        })}
+
+        {loaded && days.length === 0 && (
+          <p className="p-6 text-center text-sm text-gray-500">
+            No ingest runs in the last {RUNS_WINDOW_DAYS} days.
+          </p>
+        )}
+        {!loaded && <p className="p-6 text-center text-sm text-gray-500">Loading…</p>}
       </div>
     </div>
   );
