@@ -485,10 +485,19 @@ async function ingestSourceMarket({
     // initial tile on the board, which is a cosmetic outcome, not an outage.
     if (!dryRun && rows.length) {
       try {
+        /* JOBS_LOGO_FORCE_REFRESH re-resolves every company regardless of the
+           30-day throttle. It exists for one situation: the rules for CHOOSING
+           a logo changed, and companies already resolved would otherwise keep
+           the mark picked under the old rules until their window expired. Set
+           it for a single run, then unset it — left on, it turns a cheap
+           nightly step into ~60 lookups every night for no gain. */
         const logoStats = await resolveCompanyLogos(
           supabase, http,
           rows.map(r => ({ company: r.company, source: r.source, account: r.source_account })),
-          { log: msg => console.log(`📋 [jobs] ${label}${msg}`) }
+          {
+            force: process.env.JOBS_LOGO_FORCE_REFRESH === 'true',
+            log: msg => console.log(`📋 [jobs] ${label}${msg}`),
+          }
         )
         stats.logosResolved = logoStats.resolved
       } catch (error) {

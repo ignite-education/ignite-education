@@ -159,7 +159,7 @@ Two non-obvious failure modes this configuration prevents:
 | `/blog/[slug]` | SSR | — | Blog posts with audio narration, BlogPosting schema |
 | `/certificate/[id]` | ISR | 3600s | Certificate sharing with dynamic OG image generation |
 | `/prompts` | SSR | — | AI prompt toolkit (3-level dynamic routing) |
-| `/jobs` | ISR | 300s | Job board — client-side filtering by profession + seniority |
+| `/jobs` | ISR | 300s | Job board — list + detail pane; client-side search and filtering |
 | `/jobs/[professionSlug]` | ISR | 300s | Same board pre-filtered; the SEO asset for the feature |
 | `/sign-in` | SSR | — | Auth entry with OAuth + email/password |
 | `/reset-password` | SSR | — | Password recovery |
@@ -610,13 +610,38 @@ use `resolveInsider()` in `server.js` or `isInsider` from `AuthContext`:
 
 Public board at `/jobs`, backed by a nightly ingest pipeline in `server/jobs/` and an admin
 approval queue at `admin.ignite.education/jobs`. Modelled on `/prompts` — same profession
-taxonomy (`courses` rows where `course_type = 'specialism'`), same filter UX, same public
-Next.js + admin CRUD split.
+taxonomy (`courses` rows where `course_type = 'specialism'`), same filter UX (the hover-dropdown
+chips of `PromptFilters`, in `JobFilterBar`), same public Next.js + admin CRUD split.
 
-**There are no per-job pages.** Job detail expands in place on the board, and `?job=<id>` makes a
-listing linkable. That is a deliberate scope choice: it removes an entire route tree, the
-soft-404-on-expiry problem, and the `JobPosting` structured-data question. The profession pages
-(`/jobs/[professionSlug]`) are the SEO asset instead.
+**Master–detail, one column each.** `JobFilterBar` (search + three filter chips) runs across the
+top; `JobCard` rows fill a fixed 380px left column; `JobDetailPane` holds the selected role on the
+right, sticky. Exactly one role is selected — `JobBoardClient` owns `selectedJobId` and derives
+the shown job from the sorted list, so the pane can never point at a row a filter has removed.
+Rows select on click only. Below `lg` the pane stops
+being a column and covers the list, with its own back control; that switch is pure CSS, so
+nothing has to know the viewport width during hydration.
+
+**There are no per-job pages.** The pane is the detail view, and `?job=<id>` makes a listing
+linkable (it selects the role as well as scrolling to it, so the OAuth round trip from the apply
+gate lands on the Apply button the visitor left for). That is a deliberate scope choice: it
+removes an entire route tree, the soft-404-on-expiry problem, and the `JobPosting` structured-data
+question. The profession pages (`/jobs/[professionSlug]`) are the SEO asset instead.
+
+**All description lives in the pane.** `JobCard` shows no body text at all — title, employer and
+the filterable facts, nothing more. The pane shows the employer's full `description_text` (up to
+40KB), fetched **one row at a time in the browser** by `lib/jobDescription.ts` and never
+server-rendered. `description_text` therefore stays out of `BOARD_COLUMNS`; a 300-row page
+carrying it would be ~12MB. The fetch needs no API route — the anon policy on `job_listings` is
+row-level, so the browser is already entitled to exactly the rows the board renders. It is
+rendered as **text, not `description_html`**: that column is markup from hundreds of employers and
+would mean `dangerouslySetInnerHTML` plus a sanitiser to maintain.
+
+> **SEO consequence, deliberate.** Because the pane fetches client-side and the rows carry no
+> prose, **no descriptive text about any role reaches the server-rendered HTML** — a crawler sees
+> titles, employers, places and dates. `ai_summary` is still selected and still on `job.snippet`
+> (the pane falls back to it when an advert is empty or the fetch fails), so if the profession
+> pages need body text to rank, restoring a clamped snippet to `JobCard` puts it back in the
+> markup for all 300 rows at once.
 
 **No `JobPosting` JSON-LD anywhere.** With no per-job pages there is nothing to attach it to, and
 emitting it would feed listings into the Google Jobs widget — which renders the vacancy inside
@@ -832,6 +857,26 @@ Three things here are counter-intuitive enough to be worth stating:
   homepage-title check, because a company genuinely called "Harvey" does have "Harvey" in its
   `<title>`. No cheap heuristic separates same-name-different-company, and a wrong logo is a
   trademark complaint rather than a rendering glitch.
+- **Take the biggest mark, not the first one.** Providers are not interchangeable on resolution,
+  and the first that answers is often the smallest. Every candidate is measured with
+  `readImageWidth` (header parsing, no image library) and the widest wins, stopping early at
+  `TARGET_LOGO_PX = 128` — the board paints at 40/52 CSS px, so a 2x display needs 80/104 real
+  pixels. Order is s2 `sz=256` → DuckDuckGo → the site's own `/apple-touch-icon.png`.
+
+  Measured on the live board: Marks & Spencer is 32px from both caches and **144px** from its
+  apple-touch-icon; Monzo, Tide and Multiverse go 128 → 256 purely from raising `sz`. Some marks
+  do not exist at any size — Amazon and The Trainline are 48px everywhere, publish no icon links
+  on their homepages, and will stay soft on a retina display. Parsing homepages for
+  `<link rel=icon>` was tried and dropped: Amazon serves none at all, and Trainline and M&S
+  declare only the same or smaller files than the paths above already return.
+
+  Raising `sz` was *not* on its own the fix, and the reason is worth keeping: s2 never upscales, so
+  `sz=128` was already returning the largest it held. The blur came from keeping that answer
+  without asking anyone else.
+- **Changing the selection rules does not reach companies already resolved.** They sit on
+  `logo_checked_at` for `REFRESH_DAYS` still pointing at the old mark. `JOBS_LOGO_FORCE_REFRESH=true`
+  bypasses the window for one run; unset it afterwards, or every night pays for ~60 lookups that
+  return identical bytes. Suppressed logos stay suppressed either way.
 
 The trusted path is `job_source_accounts.domain` — hand-filled, and it covers every ATS employer.
 Companies with no domain keep the coloured initial tile. `logo_status = 'suppressed'` is the

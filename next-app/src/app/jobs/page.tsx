@@ -91,9 +91,9 @@ export default async function JobBoardPage() {
               jobs={jobs}
               professions={professionsWithJobs}
               sources={sources}
-              heading="Find your next role"
-              tagline="Updated daily · Reviewed by hand"
-              subheading="Live UK vacancies across the professions we teach, filtered by experience level. Every listing links straight to the employer."
+              heading="Job Board"
+              tagline="Handpicked and updated daily"
+              subheading="Discover the top entry-level and graduate jobs in the UK. Every vacancy is hand-picked and ready for you to directly apply."
             />
 
             <JobsFAQSection faqs={SITE_FAQS} posts={recentPosts} />

@@ -39,6 +39,92 @@ const MAX_LOOKUPS_PER_RUN = 60
 const MIN_LOGO_BYTES = 100
 
 /**
+ * Stop looking once a candidate is at least this many pixels wide.
+ *
+ * The board paints the mark at 40 CSS px in the list and 52 in the detail pane.
+ * A 2x display therefore needs 80 and 104 real pixels, and a 3x phone 120 and
+ * 156 — so 128 is the first round number that is sharp everywhere we draw it.
+ *
+ * This is the number the old code had no concept of. It asked s2 for sz=128 and
+ * kept whatever came back, and s2 does not upscale: it returns the largest it
+ * holds, capped at the request. Measured on the live board, that meant 32x32
+ * for Marks & Spencer and 48x48 for Amazon and The Trainline — 24 of the first
+ * 30 logos on the page were being blown up, which is exactly what "blurry"
+ * looked like. Asking one provider harder does not fix that; the mark is not
+ * there to be had. Asking several and keeping the biggest does.
+ */
+const TARGET_LOGO_PX = 128
+
+/**
+ * Pixel width of an encoded image, without decoding it.
+ *
+ * Enough of each container's header to read one number, because the whole
+ * question here is "which of these candidates is the largest" and pulling in an
+ * image library to answer it would be absurd. Anything unrecognised scores 0:
+ * usable if it is all we have, never preferred over a candidate we can measure.
+ */
+export function readImageWidth(buffer, ext) {
+  try {
+    // Vector. Infinitely sharp at any size, so nothing can beat it.
+    if (ext === 'svg') return Number.MAX_SAFE_INTEGER
+
+    if (ext === 'png') {
+      // 8-byte signature, then the IHDR chunk: length, type, width, height.
+      return buffer.readUInt32BE(16)
+    }
+
+    if (ext === 'ico') {
+      // An .ico is a container: 6-byte header then one 16-byte directory entry
+      // per size it holds. Browsers pick the best fit, so the largest entry is
+      // what this file is really worth. A stored 0 means 256 — the field is one
+      // byte and 256 does not fit in it.
+      const count = buffer.readUInt16LE(4)
+      let widest = 0
+      for (let i = 0; i < count; i++) {
+        const entry = 6 + i * 16
+        if (entry + 16 > buffer.length) break
+        const width = buffer[entry] === 0 ? 256 : buffer[entry]
+        if (width > widest) widest = width
+      }
+      return widest
+    }
+
+    if (ext === 'gif') return buffer.readUInt16LE(6)
+
+    if (ext === 'jpg') {
+      // Walk the marker chain to a Start Of Frame, which is the only segment
+      // carrying the dimensions. Skip every other segment by its own length.
+      let offset = 2
+      while (offset + 9 < buffer.length) {
+        if (buffer[offset] !== 0xff) { offset++; continue }
+        const marker = buffer[offset + 1]
+        const isSOF = marker >= 0xc0 && marker <= 0xcf &&
+          marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc
+        if (isSOF) return buffer.readUInt16BE(offset + 7)
+        if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+          offset += 2
+          continue
+        }
+        offset += 2 + buffer.readUInt16BE(offset + 2)
+      }
+      return 0
+    }
+
+    if (ext === 'webp') {
+      const chunk = buffer.slice(12, 16).toString('ascii')
+      if (chunk === 'VP8X') return (buffer.readUIntLE(24, 3) & 0xffffff) + 1
+      if (chunk === 'VP8L') return (buffer.readUInt32LE(21) & 0x3fff) + 1
+      if (chunk === 'VP8 ') return buffer.readUInt16LE(26) & 0x3fff
+      return 0
+    }
+  } catch {
+    // Truncated or malformed header. Treat as unmeasurable rather than throwing
+    // — a candidate we cannot size is still a candidate.
+  }
+  return 0
+}
+
+/**
  * Domain guesses for the aggregator long tail. ATS employers never reach this
  * path — they join to job_source_accounts.domain instead.
  */
@@ -122,7 +208,29 @@ export function sniffImageType(buffer) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Fetch a favicon for `domain`, Google first then DuckDuckGo.
+ * Fetch the LARGEST favicon we can find for `domain`.
+ *
+ * Was: Google, then DuckDuckGo only if Google failed, keeping whichever
+ * answered first. That treats the providers as interchangeable, and on
+ * resolution they are not — s2 holds a 32x32 for some domains that DuckDuckGo
+ * serves at 144, and a mark that answers first is not a mark that is any good.
+ * Now every candidate is measured and the widest wins.
+ *
+ * Ordered by how well each behaves, not by how big it tends to be, because the
+ * loop stops as soon as something clears TARGET_LOGO_PX:
+ *
+ *  - s2 at sz=256, up from 128. It returns the largest it holds capped at the
+ *    request and never upscales — which is exactly why the old sz=128 was not
+ *    the cause of the blur, and why raising it costs nothing and occasionally
+ *    doubles what we get.
+ *  - DuckDuckGo, independent infrastructure, and .ico files often carry several
+ *    sizes in one container.
+ *  - The site's own apple-touch-icon, last. It is the highest-resolution mark
+ *    most sites publish — 180x180 by convention — but it is a request to the
+ *    employer rather than to a cache, and the header note on direct favicon
+ *    fetching applies: SPA 404 handlers answer 200 with HTML, Cloudflare answers
+ *    403. Both are rejected below, by sniffImageType and the byte floor, and it
+ *    is only reached for a domain the two caches served something small for.
  *
  * The HTTP STATUS is the signal, not the body. Google returns a valid 726-byte
  * grey-globe PNG alongside its 404 for unknown domains, so code that sniffed
@@ -131,9 +239,12 @@ export function sniffImageType(buffer) {
  */
 async function fetchFavicon(http, domain) {
   const attempts = [
-    { source: 'google', url: `${GOOGLE_S2}?domain=${encodeURIComponent(domain)}&sz=128` },
+    { source: 'google', url: `${GOOGLE_S2}?domain=${encodeURIComponent(domain)}&sz=256` },
     { source: 'ddg', url: `${DDG_IP3}/${encodeURIComponent(domain)}.ico` },
+    { source: 'apple-touch', url: `https://${domain}/apple-touch-icon.png` },
   ]
+
+  let best = null
 
   for (const attempt of attempts) {
     try {
@@ -151,13 +262,21 @@ async function fetchFavicon(http, domain) {
       const type = sniffImageType(buffer)
       if (!type) continue
 
-      return { buffer, type, source: attempt.source }
+      const width = readImageWidth(buffer, type.ext)
+      if (!best || width > best.width) best = { buffer, type, source: attempt.source, width }
+
+      // Good enough to stop paying for more requests. Most companies resolve on
+      // the first attempt and never reach DuckDuckGo, let alone the employer's
+      // own server — so the added cost lands only on the domains that were
+      // producing the blurry marks in the first place.
+      if (best.width >= TARGET_LOGO_PX) break
     } catch {
-      // Timeout or transport failure. Try the next provider; if both fail the
+      // Timeout or transport failure. Try the next provider; if all fail the
       // company is marked 'none' and retried in REFRESH_DAYS.
     }
   }
-  return null
+
+  return best
 }
 
 /* -------------------------------------------------------------------------- */
@@ -250,7 +369,17 @@ async function confirmDomainBelongsTo(http, domain, compact) {
  *                   job_source_accounts key when the listing came from an ATS
  * @returns          counters for the run log
  */
-export async function resolveCompanyLogos(supabase, http, companies, { dryRun = false, log = () => {} } = {}) {
+/**
+ * `force` ignores the REFRESH_DAYS window and re-resolves every company it is
+ * given, up to MAX_LOOKUPS_PER_RUN.
+ *
+ * Needed because a change to how logos are CHOSEN does not reach any company
+ * already resolved — they sit untouched for 30 days, still pointing at the
+ * small mark that was picked under the old rules. Nothing else changes: a
+ * suppressed logo stays suppressed, the per-run ceiling still applies, and a
+ * re-fetch that returns identical bytes hashes identically and is a no-op.
+ */
+export async function resolveCompanyLogos(supabase, http, companies, { dryRun = false, force = false, log = () => {} } = {}) {
   const stats = { considered: 0, resolved: 0, unchanged: 0, missing: 0, skipped: 0, failed: 0 }
 
   // Collapse to one entry per normalised company, keeping any ATS account we saw.
@@ -306,8 +435,9 @@ export async function resolveCompanyLogos(supabase, http, companies, { dryRun = 
     // An admin killed this logo. Never retried — that is the whole point.
     if (current?.logo_status === 'suppressed') { stats.skipped++; continue }
 
-    // Still inside the refresh window and already resolved.
-    if (current?.logo_checked_at && new Date(current.logo_checked_at).getTime() > cutoff) {
+    // Still inside the refresh window and already resolved. `force` skips this
+    // check so a change to the selection rules can be applied to everyone.
+    if (!force && current?.logo_checked_at && new Date(current.logo_checked_at).getTime() > cutoff) {
       // Re-assert the URL onto this company's listings anyway. Newly inserted
       // rows start with a null logo, and the company itself is not due a
       // re-check for another 30 days — without this they would show the initial

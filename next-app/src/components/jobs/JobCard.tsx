@@ -1,28 +1,45 @@
 'use client'
 
 import { useState } from 'react'
-import type { Job, JobSourceAttribution } from '@/data/jobsData'
-import { SENIORITY_SHORT, formatSalary, formatPostedAt } from '@/lib/seniorityLabels'
-import SourceAttribution, { SalaryEstimateBadge } from './SourceAttribution'
-import { useApplyAction, ApplyButton } from './ApplyGate'
+import type { Job } from '@/data/jobsData'
+import { SENIORITY_SHORT, formatPostedAt } from '@/lib/seniorityLabels'
 
 /**
- * One row of the board: everything the visitor needs to decide, and the way out.
+ * One row of the list column.
  *
- * There are no per-job pages and the card does not expand — the summary is the
- * whole listing here, and Apply goes straight to the employer's own advert. That
- * is why the full description is never loaded: `description_text` runs to tens of
- * kilobytes per row, and the reader who wants it is one click from the source.
- * The board therefore ships only the precomputed snippet (300 characters, see
- * buildSnippet in server/jobs/lib/normalise.js), which is about the four lines
- * shown below.
+ * This is now a chooser, not a listing: it carries enough to pick between roles
+ * and hands the reading to JobDetailPane on the right. Apply left with it —
+ * a 380px column has no room for a button beside a title, and the pane is where
+ * the decision is actually made.
+ *
+ * Selecting is a click, and only a click. Resting the pointer on a row used to
+ * open it after a second, which was pleasant to demonstrate and tiring to use:
+ * the pane changed under a cursor that was only passing through, and the
+ * gesture existed on desktop and nowhere else. Exactly one row is selected at a
+ * time and the board owns which — this component is told, it does not decide.
+ *
+ * NO description and no pay figure. The row is the role, the employer and the
+ * three facts you would filter on; everything else is in the pane.
+ * That makes the column scan fast and keeps the rows a uniform height, and it
+ * is a deliberate design choice rather than an oversight — the summary is still
+ * on `job.snippet` and JobDetailPane still falls back to it.
+ *
+ * The cost is paid in SEO, and is worth stating where someone will find it: the
+ * pane fetches its advert in the browser, so with the summary gone from here,
+ * NO descriptive prose about any role reaches the server-rendered HTML. What a
+ * crawler now sees of this board is titles, employers, places and dates. If the
+ * profession pages ever need body text to rank on, this row is where it went —
+ * put a clamped `job.snippet` back and it returns to the markup for all 300
+ * rows at once.
  */
 
 interface JobCardProps {
   job: Job
-  sources: Record<string, JobSourceAttribution>
-  isSignedIn: boolean | null
   index?: number
+  /** Whether this is the one selected row. Owned by the board — see JobBoardClient. */
+  isSelected: boolean
+  /** Pass this job's id to select it. Selecting replaces the last. */
+  onSelect: (jobId: string) => void
 }
 
 /**
@@ -30,7 +47,7 @@ interface JobCardProps {
  * employer we could not resolve a domain for, a logo an admin suppressed, or an
  * image that fails to load in the browser.
  */
-function CompanyTile({ company }: { company: string }) {
+function CompanyTile({ company, size }: { company: string; size: number }) {
   const palette = ['#8200EA', '#EF0B72', '#7500F1', '#0B8FEF', '#00A47C', '#E5760B']
   let hash = 0
   for (let i = 0; i < company.length; i++) hash = (hash * 31 + company.charCodeAt(i)) >>> 0
@@ -39,7 +56,7 @@ function CompanyTile({ company }: { company: string }) {
   return (
     <div
       className="shrink-0 rounded-[6px] flex items-center justify-center text-white font-semibold"
-      style={{ width: '45px', height: '45px', backgroundColor: colour, fontSize: '1.16rem' }}
+      style={{ width: `${size}px`, height: `${size}px`, backgroundColor: colour, fontSize: `${size * 0.42}px` }}
       aria-hidden="true"
     >
       {company.trim().charAt(0).toUpperCase()}
@@ -59,10 +76,24 @@ function CompanyTile({ company }: { company: string }) {
  * If this is ever migrated to next/image, `remotePatterns` must be updated in
  * BOTH vercel.json and next-app/next.config.ts — the apex-only failure mode
  * (400 INVALID_IMAGE_OPTIMIZE_REQUEST) is invisible on next.ignite.education.
+ *
+ * Exported because JobDetailPane shows the same mark a size up. `size` rather
+ * than a className so the width, the height and the tile's letter stay in step
+ * — they were three numbers that had to agree, and now they are one.
  */
-function CompanyLogo({ company, logoUrl, eager }: { company: string; logoUrl: string | null; eager: boolean }) {
+export function CompanyLogo({
+  company,
+  logoUrl,
+  eager,
+  size = 45,
+}: {
+  company: string
+  logoUrl: string | null
+  eager: boolean
+  size?: number
+}) {
   const [broken, setBroken] = useState(false)
-  if (!logoUrl || broken) return <CompanyTile company={company} />
+  if (!logoUrl || broken) return <CompanyTile company={company} size={size} />
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -72,8 +103,8 @@ function CompanyLogo({ company, logoUrl, eager }: { company: string; logoUrl: st
       // here would just make screen readers say it twice.
       alt=""
       aria-hidden="true"
-      width={45}
-      height={45}
+      width={size}
+      height={size}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       referrerPolicy="no-referrer"
@@ -83,79 +114,90 @@ function CompanyLogo({ company, logoUrl, eager }: { company: string; logoUrl: st
       // square — never assume the dimensions. No padding, so a full-bleed mark
       // reaches the edges and the 6px radius actually crops its corners; that
       // is the whole point of the radius, and with 5px of inset it did nothing.
-      style={{ width: '45px', height: '45px' }}
+      style={{ width: `${size}px`, height: `${size}px` }}
     />
   )
 }
 
-const badgeStyle = {
-  backgroundColor: '#F6F6F6',
-  color: '#7500F1',
-  fontSize: '0.75rem',
-  letterSpacing: '-0.01em',
-} as const
-
 /**
  * The tag from /progress section 1 (IntroSection's "Joined" / "12 Lessons" /
- * "Insider" row): 12px, black, 4px radius, 8×3 padding. Every fact under the
- * job title wears it, so the meta line reads as a row of chips rather than a
+ * "Insider" row): 12px, black, 4px radius, 8×3 padding. Every circumstance of
+ * the role wears it, so the meta line reads as a row of chips rather than a
  * run-on sentence with middots.
  *
+ * The employer is the exception, and deliberately: it sits above this row as
+ * plain text. Where the job is, when it was posted and what level it is are all
+ * filters — the same facts the bar above the board sorts by, and a chip is what
+ * a filterable value looks like on this page. Who the job is for is not one of
+ * those; it is half the headline.
+ *
  * The one departure is the fill — #F6F6F6 rather than /progress's #F0F0F0, so
- * it is the same grey as the band behind the cards and the Apply plate. Three
- * near-identical greys on one row would read as a mistake.
+ * it is the same grey as the band behind the cards. Three near-identical greys
+ * on one row would read as a mistake.
+ *
+ * Exported alongside the logo so the detail pane's header states the same facts
+ * in the same clothes; a chip that changed shape between the list and the pane
+ * would read as a different kind of fact.
  */
-const META_TAG_CLASS = 'inline-block px-[8px] py-[3px] text-black bg-[#F6F6F6] rounded-[4px] font-normal'
-const metaTagStyle = {
+export const META_TAG_CLASS = 'inline-block px-[8px] py-[3px] text-black bg-[#F6F6F6] rounded-[4px] font-normal'
+export const metaTagStyle = {
   fontFamily: 'var(--font-geist-sans), sans-serif',
   fontSize: '12px',
   letterSpacing: '-0.02em',
 } as const
 
-export default function JobCard({ job, sources, isSignedIn, index = 0 }: JobCardProps) {
-  const { apply, error, modal } = useApplyAction({
-    jobId: job.id,
-    jobTitle: job.title,
-    company: job.company,
-    isSignedIn,
-  })
-
-  const salary = formatSalary({
-    min: job.salaryMin,
-    max: job.salaryMax,
-    currency: job.salaryCurrency,
-    period: job.salaryPeriod,
-  })
+export default function JobCard({ job, index = 0, isSelected, onSelect }: JobCardProps) {
   const posted = formatPostedAt(job.postedAt)
   const location = job.isRemote
     ? job.locationCity ? `Remote · ${job.locationCity}` : 'Remote'
     : job.locationCity || job.location || null
 
   return (
-    <>
     <article
-      /* The whole row is the click target — anywhere on it applies. `group` so
-         the button inside can answer to the card's hover rather than its own.
+      /* The whole row is the click target, and it has exactly two appearances:
+         flat white, or flat white with a shadow when the pane is showing it.
+         Nothing responds to hover — no lift, no shadow, no growth. A row does
+         not change under the cursor at all; only choosing it changes it.
 
-         White on the section's grey band, lifted by the same glow the "Continue
-         with" sign-in buttons use (EnrollmentCTA), deepened on hover and grown
-         0.3% to mark the row the cursor is on. The growth is drawn, not laid out,
-         so its neighbours stay exactly where they are.
+         That makes the shadow unambiguous. It used to be a scale of three —
+         resting, hovered, selected — so the state had to be read as a
+         difference between two shadows, and the row you happened to be pointing
+         at competed with the row actually open. Now the shadow means one thing.
 
-         `scale`, not `transform`: the fadeInUp entry below animates transform
-         with fill-mode `both`, so its final translateY(0) is applied forever and
-         beats any transform declared here. Tailwind v4's scale-* utilities set
-         the independent `scale` property, which sidesteps that entirely — but it
-         does mean the transition has to name `scale`, since transitioning
-         `transform` would not cover it. */
-      onClick={apply}
-      className="group bg-white rounded-[8px] p-6 cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_14px_rgba(103,103,103,0.55)] hover:scale-[1.003] transition-[box-shadow,scale] duration-350 ease-in-out"
+         The shadow itself is deliberately light — 12px at 0.35, roughly half
+         what it was. It could afford to come down because nothing competes with
+         it any more: against a column of rows casting no shadow at all, a faint
+         one is still the only one, and it no longer has to shout over a hover
+         state to be told apart from it.
+
+         There is a floor under this, though. It is the ONLY thing marking the
+         selected row — no colour, no size, no border — so it cannot be reduced
+         much further without the list losing any sign of which role the pane is
+         showing. If it needs to be quieter than this, it needs to be joined by
+         something rather than replaced.
+
+         Two other consequences worth knowing. `cursor-pointer` is the only
+         remaining signal that a row is clickable, so it is load-bearing rather
+         than decorative. And an unselected row is white on the band's #F6F6F6 —
+         a 3% step, with nothing else to separate it — so how legible the list is
+         rests entirely on that contrast.
+
+         No `group` either: it was here so a chevron and an Apply button could
+         answer to the row's hover, and both have since left the card.
+
+         box-shadow is the only transitioned property left, which is why the
+         transition names it rather than listing scale as well. */
+      onClick={() => onSelect(job.id)}
+      aria-current={isSelected ? 'true' : undefined}
+      className={`bg-white rounded-[8px] px-5 py-[18px] cursor-pointer transition-shadow duration-300 ease-in-out ${
+        isSelected ? 'shadow-[0_0_12px_rgba(103,103,103,0.35)]' : ''
+      }`}
       style={{
         animation: 'fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
         animationDelay: `${Math.min(index, 8) * 0.04}s`,
       }}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-start gap-4">
         {/* Keyed on the URL so the `broken` flag resets when React recycles
             this card for a different job during filtering — otherwise one
             failed image would leave later cards stuck on the initial tile. */}
@@ -164,133 +206,60 @@ export default function JobCard({ job, sources, isSignedIn, index = 0 }: JobCard
           company={job.company}
           logoUrl={job.companyLogoUrl}
           eager={index < 8}
+          size={40}
         />
 
         <div className="min-w-0 flex-1">
-          {/* Weight and tracking match the sidebar's group headings
-              (JobFilterPanel), which in turn take them from the course pages'
-              module titles; the size sits a point under theirs. Colour does not
-              follow either — those are purple because they head a column, and a
-              job title is the card's own subject. */}
+          {/* The row's own subject, and the whole card is the control that
+              opens it — so this is a heading rather than a button. Making the
+              title focusable would put a tab stop on every one of up to 300
+              rows before the reader reached the pane; the list is navigated by
+              pointer and by the search box above it. */}
           <h3
-            className="text-black font-semibold truncate"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '17px', letterSpacing: '-0.01em' }}
+            className="text-black font-semibold line-clamp-2"
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '16px', letterSpacing: '-0.01em', lineHeight: 1.3 }}
           >
             {job.title}
           </h3>
 
-          {/* Meta row: one tag per fact. Seniority sits here rather than in a
-              badge column of its own — it is the same order of fact as the
-              employer, the location and the posting date.
+          <p
+            className="text-black font-normal truncate mt-[3px]"
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '13px', letterSpacing: '-0.01em' }}
+          >
+            {job.company}
+          </p>
 
-              Only the location can run long (some are a full street address),
-              so it is the only one allowed to ellipsize; the rest are shrink-0
-              and always readable in full. */}
-          <div className="flex items-center gap-2 mt-1 min-w-0">
-            <span className={`${META_TAG_CLASS} shrink-0 whitespace-nowrap`} style={metaTagStyle}>
-              {job.company}
-            </span>
+          {/* Wraps rather than truncating: the column is narrow enough that a
+              location and a date will not always share a line, and a second row
+              of chips is better than one of them cut off. */}
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             {location && (
-              <span className={`${META_TAG_CLASS} truncate`} style={{ ...metaTagStyle, maxWidth: '45%' }}>
+              <span className={`${META_TAG_CLASS} truncate`} style={{ ...metaTagStyle, maxWidth: '100%' }}>
                 {location}
               </span>
             )}
-            {posted && (
-              <span className={`${META_TAG_CLASS} shrink-0 whitespace-nowrap`} style={metaTagStyle}>
-                {posted}
-              </span>
-            )}
-            <span className={`${META_TAG_CLASS} shrink-0 whitespace-nowrap`} style={metaTagStyle}>
+            {posted && <span className={META_TAG_CLASS} style={metaTagStyle}>{posted}</span>}
+            <span className={META_TAG_CLASS} style={metaTagStyle}>
               {SENIORITY_SHORT[job.seniority] || job.seniority}
             </span>
           </div>
+
+          {/* No pay figure here, and none in the pane either.
+              The row is the role, the employer and the three facts you would
+              filter on. Our figure is derived — normalised to a period, and on
+              some sources an estimate rather than the advert's own number — so
+              the only place it was ever certain is the employer's text, which
+              is what the pane shows. Showing it on two rows in three also made
+              the column look inconsistent rather than informative, because most
+              listings carry no salary at all.
+
+              job.salaryMin/Max/Currency/Period/IsEstimate are still selected in
+              jobsData.ts and still on the type; nothing renders them now. Left
+              in place because dropping them from BOARD_COLUMNS is a data-layer
+              change, and because a salary filter is the obvious next thing to
+              want from them. */}
         </div>
-
-        {salary && (
-          <span
-            className="hidden xl:flex items-center gap-1.5 shrink-0 text-black font-medium"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '0.82rem', letterSpacing: '-0.01em' }}
-          >
-            {salary}
-            {job.salaryIsEstimate && <SalaryEstimateBadge sourceKey={job.displaySource} sources={sources} />}
-          </span>
-        )}
-
-        {/* Where the action reads from, top right. It carries no handler of its
-            own — the click bubbles to the card, which owns it. */}
-        <ApplyButton className="shrink-0" />
-      </div>
-
-      {/* The description, and all of it the board ever shows. Usually an AI
-          summary of the full advert (server/jobs/lib/summarise.js), falling
-          back to the 300-character truncation for listings not yet summarised —
-          jobsData.ts picks between them, so this component sees one field.
-
-          Clamped to four lines so every row is the same height however long the
-          text runs. Both producers cap at 300 characters, which is roughly four
-          lines at this width, so most listings clamp by a word or two rather
-          than losing a paragraph.
-
-          It is also the only descriptive text about the role that reaches the
-          server-rendered HTML, which is what a board page trying to rank for
-          "ux designer jobs uk" needs beyond a list of titles. -webkit-line-clamp
-          hides the overflow visually without removing it from the document. */}
-      {job.snippet && (
-        <p
-          className="text-black font-light mt-5"
-          style={{
-            fontFamily: 'var(--font-geist-sans), sans-serif',
-            fontSize: '0.9rem',
-            letterSpacing: '-0.01em',
-            lineHeight: 1.5,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: 4,
-            overflow: 'hidden',
-          }}
-        >
-          {job.snippet}
-        </p>
-      )}
-
-      {/* Salary, for the widths where it does not fit in the row above. xl
-          rather than lg: the inline figure appears at xl, so gating this at lg
-          left a band between the two where the salary showed nowhere at all. */}
-      {salary && (
-        <div className="flex xl:hidden items-center gap-2 mt-[18px] flex-wrap">
-          <span className="inline-flex items-center gap-1 font-semibold px-2.5 py-1 rounded-[5px]" style={badgeStyle}>
-            {salary}
-            {job.salaryIsEstimate && <SalaryEstimateBadge sourceKey={job.displaySource} sources={sources} />}
-          </span>
-        </div>
-      )}
-
-      {/* Attribution renders on every advert — a contractual requirement for
-          some sources, not a courtesy. Driven by display_source. empty:hidden
-          because the ATS feeds require nothing, and SourceAttribution then
-          renders null — without it those cards would carry 12px of dead space.
-
-          Any apply error lands on this row too, rather than under the button:
-          the header row keeps its height whatever happens.
-
-          The gap depends on what this row actually follows. At xl the salary
-          pill above is hidden, so it follows the description and takes the 18px
-          the description is given below it; narrower than that, with a salary to
-          show, it follows the pill instead and the pair stay at the tighter
-          12px. No salary at all and it follows the description at every width. */}
-      <div className={`flex items-center justify-between gap-3 empty:hidden ${salary ? 'mt-3 xl:mt-[18px]' : 'mt-[18px]'}`}>
-        {error && (
-          <p
-            className="text-[#EF0B72]"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '0.72rem', letterSpacing: '-0.01em' }}
-          >
-            {error}
-          </p>
-        )}
-        <SourceAttribution sourceKey={job.displaySource} sources={sources} />
       </div>
     </article>
-    {modal}
-    </>
   )
 }

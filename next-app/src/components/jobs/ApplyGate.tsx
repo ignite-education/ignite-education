@@ -17,10 +17,10 @@ import JobSignupModal from './JobSignupModal'
  * the URL server-side "when the user is signed in" would bake one signed-in
  * render into the cache and serve it to every anonymous visitor.
  *
- * Split into a hook and a button because the whole card is the click target.
- * The card owns the handler; the button is the affordance inside it and a real
- * focusable control for keyboard users, and its click simply bubbles up to the
- * card. One handler, so a click can never resolve the same job twice.
+ * Split into a hook and a button because the card owns its own click — that
+ * opens and closes the description (see JobCard) — while Apply is one control
+ * inside it. The button therefore stops the click from reaching the card, so
+ * applying never also collapses the row out from under the visitor.
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api.onrender.com'
@@ -105,9 +105,9 @@ export function useApplyAction({ jobId, jobTitle, company, isSignedIn }: UseAppl
   }, [jobId])
 
   /**
-   * Hang this on the whole card. Guarded on `loading` because the card is a far
-   * bigger target than the button was — without it, an impatient second click
-   * anywhere on the row would resolve the job and open a second tab.
+   * Hang this on the Apply button. Guarded on `loading` so an impatient second
+   * click while the lookup is in flight cannot resolve the job twice and open a
+   * second tab.
    */
   const apply = useCallback(() => {
     if (loading) return
@@ -144,17 +144,37 @@ export function useApplyAction({ jobId, jobTitle, company, isSignedIn }: UseAppl
 
 interface ApplyButtonProps {
   className?: string
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
+  /**
+   * 'block' is the detail pane's prominent purple action, now sitting in the
+   * top-right corner of its header; 'inline' is the compact grey plate for a
+   * row. A variant rather than a padding override from outside, because the
+   * inline padding here would beat any class the caller passed and the override
+   * would silently do nothing.
+   */
+  size?: 'inline' | 'block'
 }
 
 /**
- * The visible control. Deliberately carries NO onClick: activating it — by
- * mouse or by keyboard — dispatches a click that bubbles to the card's handler,
- * which is the single entry point. Adding one here would fire the action twice.
+ * The visible control, and the only way to apply. It now lives in
+ * JobDetailPane — one button against the role being read, rather than one on
+ * every row of a list being scanned.
  *
- * It has no in-flight state either — no "Opening…", no disabled dimming. The
+ * Nothing behind it wants the click any more, so it needs no stopPropagation.
+ * The handler is still passed in rather than wired here, because the hook that
+ * owns the in-flight guard lives with the pane's other state.
+ *
+ * It has no in-flight state — no "Opening…", no disabled dimming. The
  * button reads the same before and after a click; the tab that opens is the
  * feedback. Re-entry while a lookup is running is still blocked, but in the
  * hook's `apply` rather than here, so the guard costs the button nothing.
+ *
+ * The label reads "Explore", not "Apply". What the click actually does is open
+ * the employer's own advert in a new tab — nobody has applied to anything by
+ * the time it lands, and "Apply" promised a form that was never on the other
+ * side of it. The component keeps its name because the mechanism is unchanged:
+ * this is still the sign-in-to-apply gate, and everything the architecture doc
+ * says about job_listing_apply still holds.
  *
  * The label does not change for signed-out visitors either. Advertising the
  * gate on the button ("Create free account to apply") priced the sign-up before
@@ -162,22 +182,29 @@ interface ApplyButtonProps {
  * it. Signed out, the click still lands on JobSignupModal — the gate moved, it
  * did not go away.
  */
-export function ApplyButton({ className = '' }: ApplyButtonProps) {
+export function ApplyButton({ className = '', onClick, size = 'inline' }: ApplyButtonProps) {
+  const isBlock = size === 'block'
+
   return (
     <button
       type="button"
-      /* Grey plate, black label, no colour change on hover — the card's own
-         shadow and lift already answer the cursor, and the arrow's motion marks
-         the button itself. Strokes below are currentColor, so they stay black
-         with the label. */
-      className={`inline-flex items-center justify-center gap-1 bg-[#F6F6F6] text-black text-sm font-medium rounded-[6px] cursor-pointer ${className}`}
+      onClick={onClick}
+      /* Grey plate and black label at 'inline'. At 'block' it is the pane's one
+         instruction and takes the brand purple to say so. Strokes below are
+         currentColor, so the arrow follows the label either way. */
+      className={`inline-flex items-center justify-center gap-1 text-sm font-medium rounded-[6px] cursor-pointer transition-colors duration-200 ${
+        isBlock ? 'bg-[#8200EA] hover:bg-[#7500F1] text-white' : 'bg-[#F6F6F6] text-black'
+      } ${className}`}
       style={{
         fontFamily: 'var(--font-geist-sans), sans-serif',
         letterSpacing: '-0.01em',
-        padding: '7px 12px',
+        // Wider than it is tall at 'block'. It used to run the pane's full
+        // width, where horizontal padding did nothing; in a corner the label
+        // needs air either side of it to read as a button rather than a chip.
+        padding: isBlock ? '9px 16px' : '7px 12px',
       }}
     >
-      Apply
+      Explore
       {/* The /progress share glyph — an arrow rising out of a tray, same paths
           and stroke weight as IntroSection's ShareButton.
 

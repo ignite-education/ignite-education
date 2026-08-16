@@ -1,5 +1,6 @@
-export { default as JobFilterPanel, WORK_TYPES } from './JobFilterPanel'
-export { default as JobCard } from './JobCard'
+export { default as JobFilterBar, WORK_TYPES } from './JobFilterBar'
+export { default as JobCard, CompanyLogo, META_TAG_CLASS, metaTagStyle } from './JobCard'
+export { default as JobDetailPane } from './JobDetailPane'
 export { useApplyAction, ApplyButton } from './ApplyGate'
 export { default as JobSignupModal } from './JobSignupModal'
 export { default as JobAuthCTA } from './JobAuthCTA'

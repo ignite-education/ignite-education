@@ -118,7 +118,7 @@ export default async function ProfessionJobsPage({
               sources={sources}
               initialProfession={name}
               heading={`${plural} jobs`}
-              tagline={jobs.length > 0 ? 'Updated daily · Reviewed by hand' : 'Coming to the board soon'}
+              tagline={jobs.length > 0 ? 'Handpicked and updated daily' : 'Coming to the board soon'}
               subheading={
                 jobs.length > 0
                   ? `Live UK ${name} vacancies, filtered by experience level and linked straight to the employer.`

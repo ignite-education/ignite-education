@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getCoursesByType } from '@/lib/courseData'
 import { getRecentPosts } from '@/lib/blogData'
 import Footer from '@/components/Footer'
+import TrustpilotBar from './TrustpilotBar'
 import WelcomeHero from './WelcomeHero'
 import EducationSection from './EducationSection'
 import CoursesSection from './CoursesSection'
@@ -135,6 +136,10 @@ export default async function WelcomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+
+      {/* Above <main> and in normal flow: it pushes the page down when it
+          opens, two seconds in. */}
+      <TrustpilotBar />
 
       <main className="bg-black min-h-screen">
         {/* Section 1: Course Catalog */}
