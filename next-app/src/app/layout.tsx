@@ -25,10 +25,18 @@ export const metadata: Metadata = {
   },
   description: "AI-powered courses designed to help you learn practical skills and advance your career.",
   applicationName: SITE_NAME,
+  // Next emits these hrefs verbatim — metadataBase does NOT absolutise icons — so
+  // the apex serves them from the root Vite project's public/ dir, which wins over
+  // the /:username rewrite. Keep the files in sync via `npm run icons` at the repo
+  // root; the raster .ico is what Google Search actually reads.
   icons: {
-    icon: { url: "/favicon.svg", type: "image/svg+xml" },
-    apple: "/favicon.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/favicon.svg", type: "image/svg+xml", sizes: "any" },
+    ],
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
+  manifest: "/site.webmanifest",
   openGraph: {
     siteName: SITE_NAME,
     locale: "en_GB",

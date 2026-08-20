@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "server": "node server.js",
+    "icons": "node scripts/generate-icons.mjs",
     "inject-seo": "node scripts/inject-seo.js",
     "prerender": "node scripts/prerender.js",
     "build": "vite build && npm run inject-seo && cp dist/index.html dist/404.html",

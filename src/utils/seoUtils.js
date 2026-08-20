@@ -113,7 +113,7 @@ export const injectArticleSchema = (articleData) => {
       "name": "Ignite",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
+        "url": "https://ignite.education/ignite-logo.png"
       }
     },
     "mainEntityOfPage": {

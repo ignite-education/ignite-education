@@ -18,8 +18,14 @@ export const ORG_ID = `${SITE_URL}/#organization`
 export const SITE_ID = `${SITE_URL}/#website`
 export const LOGO_ID = `${SITE_URL}/#logo`
 
-export const ORG_LOGO =
-  'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png'
+/**
+ * Self-hosted from the ROOT public/ dir, same rule as DEFAULT_OG_IMAGE below.
+ * Must NOT point at Supabase storage: that origin responds `x-robots-tag: none`,
+ * so a logo hosted there is noindex and can never reach a Knowledge Panel —
+ * Google requires the Organization logo to be crawlable *and* indexable.
+ * Flattened onto white, since Google expects it to render on a white surface.
+ */
+export const ORG_LOGO = `${SITE_URL}/ignite-logo.png`
 
 export const ORG_EMAIL = 'hello@ignite.education'
 export const ORG_LEGAL_NAME = 'Ignite Education AI Ltd.'

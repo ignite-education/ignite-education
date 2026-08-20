@@ -153,7 +153,7 @@ export const generateBlogPostStructuredData = (post, url) => {
       url: baseUrl,
       logo: {
         '@type': 'ImageObject',
-        url: `${baseUrl}/logo.png`,
+        url: `${baseUrl}/ignite-logo.png`,
       },
     },
     mainEntityOfPage: {

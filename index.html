@@ -2,8 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
+    <!--
+      Icons live in the ROOT public/ dir, same rule as og-image.png: Vercel checks
+      the filesystem before rewrites, so these resolve on the apex instead of being
+      swallowed by the /:username rewrite into next-app's 404. Keep .ico first and
+      untyped (what Google's own docs exemplify); sizes="any" makes browsers prefer
+      the SVG for the tab. Regenerate the rasters with `npm run icons`.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- Primary Meta Tags -->
@@ -67,7 +76,7 @@
       "url": "https://ignite.education",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
+        "url": "https://ignite.education/ignite-logo.png"
       },
       "sameAs": [
         "https://www.linkedin.com/school/ignite-courses"

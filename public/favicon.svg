@@ -1,5 +1,23 @@
-<svg viewBox="48.06949698189135 48.5112 141.82881287726357 142.2044" xmlns="http://www.w3.org/2000/svg">
-  <rect height="140.99" width="140.99" y="48.4" x="47.77" fill="#ef0b72"/>
-  <rect height="93.99" width="93.99" y="95.4" x="47.77" fill="#b30fa9"/>
-  <rect height="47" width="47" y="142.4" x="47.77" fill="#7714e0"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Ignite">
+  <!--
+    Source of truth for every icon in the repo — regenerate the rasters with
+    `npm run icons` after editing. Two constraints drive the geometry:
+
+    1. Square viewBox with explicit width/height. Google rejects a favicon that
+       isn't exactly 1:1, and the previous mark was 141.83 x 142.20 with no
+       intrinsic size, which is why it vanished from Search.
+    2. Pink bleeds to all four edges, so every corner samples #EF0B72. Google
+       only crops a favicon into a full circle when the background is ONE
+       uniform colour; with two or more corner colours it centres the square on
+       white instead. The old mark put pink, purple and violet in the corners,
+       which is what produced the white gaps in search results.
+
+    The staircase is preserved: violet (172) shares purple's (344) bottom-left
+    corner, a 2:1 ratio matching the original's 93.99:47. Purple's corners sit
+    243.24 from centre, inside the 256 inscribed-circle radius, so the circular
+    crop never clips the mark.
+  -->
+  <rect width="512" height="512" fill="#EF0B72"/>
+  <rect x="84" y="84" width="344" height="344" fill="#B30FA9"/>
+  <rect x="84" y="256" width="172" height="172" fill="#7714E0"/>
 </svg>

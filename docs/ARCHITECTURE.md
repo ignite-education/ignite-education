@@ -375,6 +375,34 @@ crawlers would receive an HTML document where a PNG was declared, with no error
 to alert anyone. `npm run seo:validate` now fetches every `og:image` and asserts
 it resolves to `image/*`.
 
+**Site icons and the Organization logo follow the same rule.** `favicon.ico`,
+`favicon.svg`, `apple-touch-icon.png`, `icon-192/512.png`, `icon-maskable-512.png`,
+`site.webmanifest` and `ignite-logo.png` all live in the repo-root `public/`.
+Next emits `metadata.icons` and `metadata.manifest` hrefs **verbatim** —
+`metadataBase` does not absolutise them — so a root-relative `/favicon.ico` on an
+apex page resolves against the Vite project's filesystem. Before these files
+existed, `/favicon.ico` and `/apple-touch-icon.png` were swallowed by the
+`/:username` rewrite and returned next-app's 404, which is why the favicon
+disappeared from Google Search and Search Console.
+
+Run `npm run icons` (`scripts/generate-icons.mjs`) to regenerate every raster from
+the single source `public/favicon.svg` and mirror them into `next-app/public/` and
+`admin-app/public/` — the sibling origins need their own copies. **Commit the
+output**; the script is deliberately not part of `build`, because `sharp` reaches
+this repo only as an optional transitive dep of `next`.
+
+Two constraints the mark itself must satisfy, both learned the hard way:
+- **Exactly square.** Google rejects any other aspect ratio; the previous SVG was
+  141.83 × 142.20 with no intrinsic `width`/`height`.
+- **One uniform background colour.** Google only crops a favicon into a full
+  circle when every corner is the same colour; with two or more corner colours it
+  centres the square on white, leaving visible gaps. The mark's pink therefore
+  bleeds to all four edges and the nested squares stay inside the inscribed circle.
+
+`ORG_LOGO` in `next-app/src/lib/siteConfig.ts` must also stay self-hosted: the
+Supabase storage origin serves `x-robots-tag: none`, so a logo hosted there is
+noindex and can never reach a Knowledge Panel.
+
 ### SEO traps worth knowing
 
 Three non-obvious failure modes, all of which shipped to production undetected:
