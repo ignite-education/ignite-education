@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Job, JobSourceAttribution } from '@/data/jobsData'
 import { SENIORITY_SHORT, formatPostedAt } from '@/lib/seniorityLabels'
 import { fetchJobDescription, parseDescription, type DescriptionBlock } from '@/lib/jobDescription'
@@ -23,6 +23,16 @@ import { CompanyLogo, META_TAG_CLASS, metaTagStyle } from './JobCard'
  * identical ones you are scrolling past. The gate itself is unchanged —
  * ApplyGate still resolves the outbound URL server-side behind auth.
  */
+
+/**
+ * The sticky offset the pane parks at on desktop, in pixels.
+ *
+ * Must match `lg:top-24` on the pane's wrapper in JobBoardClient — the two are
+ * describing the same edge, one to the stylesheet and one to the scroll
+ * handler below, and if they drift the pane starts scrolling its advert a few
+ * pixels early or late.
+ */
+const STICKY_TOP_PX = 96
 
 interface JobDetailPaneProps {
   job: Job
@@ -106,6 +116,65 @@ export default function JobDetailPane({ job, sources, isSignedIn, onClose }: Job
   // degrades to what the card had rather than to an apology.
   const showSummaryInstead = failed || (blocks !== null && blocks.length === 0)
 
+  /* Page first, advert second.
+
+     The pane is its own scroll container at lg, which meant a wheel over it
+     was swallowed the moment the page loaded: the advert scrolled away under
+     its own header while the pane itself still sat well down the page, with
+     the filter bar and half the board above it. You were reading through a
+     slot in the middle of the screen.
+
+     So the pane only scrolls once it has nowhere left to go. Until it reaches
+     its sticky offset, overflow-y is hidden — not a scroll container the
+     browser will hand the wheel to, so the event chains straight out to the
+     window, the page scrolls, and the pane rises to the top of the viewport.
+     The instant it parks there, overflow-y goes back to auto and the advert
+     takes over. Scrolling back up is the same trip in reverse for free: at
+     scrollTop 0 the pane chains to the window by default, unsticks, and flips
+     back to hidden.
+
+     The list beside it is deliberately NOT gated this way. It stays a normal
+     part of the page: the page scroll is what moves it, which keeps "Load more"
+     and the end of the list reachable the way the rest of the site behaves.
+
+     scrollTop is deliberately not reset on the flip. An `overflow: hidden` box
+     is still a scroll container to script, so the offset survives, and someone
+     who scrolls the list back up keeps their place in the advert instead of
+     being thrown to the top of it. */
+  const paneRef = useRef<HTMLDivElement>(null)
+  const [stuck, setStuck] = useState(false)
+
+  useEffect(() => {
+    const el = paneRef.current
+    if (!el) return
+
+    // Below lg the pane is not a scroll container at all — it is the whole
+    // screen and the page scrolls it — so none of this applies and `stuck`
+    // stays false rather than fighting the phone's own scrolling.
+    const desktop = window.matchMedia('(min-width: 1024px)')
+
+    let frame = 0
+    const measure = () => {
+      frame = 0
+      // 1px of slack: sticky lands on a subpixel at fractional zoom levels and
+      // an exact comparison can leave the pane permanently one hair short.
+      setStuck(desktop.matches && el.getBoundingClientRect().top <= STICKY_TOP_PX + 1)
+    }
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(measure) }
+
+    measure()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    desktop.addEventListener('change', schedule)
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      desktop.removeEventListener('change', schedule)
+    }
+  }, [])
+
   return (
     <>
       {/* One scroll region, header included.
@@ -143,8 +212,11 @@ export default function JobDetailPane({ job, sources, isSignedIn, onClose }: Job
           container at all, and setting overflow on one axis there would promote
           the other to auto and hand the phone a nested scroller to get stuck
           in. Narrow widths are covered by the wrapping instead. */}
-      <div className="bg-white rounded-[8px] hide-scrollbar lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto lg:overflow-x-hidden">
-        <div className="px-7 pt-6 pb-5 border-b border-black/[0.07]">
+      <div
+        ref={paneRef}
+        className={`bg-white rounded-[8px] hide-scrollbar lg:max-h-[calc(100vh-7.5rem)] lg:overflow-x-hidden ${stuck ? 'lg:overflow-y-auto' : 'lg:overflow-y-hidden'}`}
+      >
+        <div className="px-7 pt-6 pb-5">
           {/* lg:hidden rather than conditional on the prop: the board passes
               onClose at every width because it cannot know which layout the
               stylesheet has chosen, and on desktop there is nothing to go back

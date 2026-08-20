@@ -19,10 +19,13 @@ import Image from 'next/image'
  * `auto`, and this avoids hard-coding a pixel height that would drift the
  * moment the asset widths change across the md breakpoint.
  *
- * The inner translateY runs on the same curve and duration, so the bar's
- * bottom edge tracks the opening clip edge exactly — it reads as the bar being
- * pulled down out from under the top edge rather than being uncovered in
- * place.
+ * The bar keeps its full natural height inside that clip and is pinned to the
+ * clip's bottom edge (flex-col + justify-end, shrink-0), so the lockup travels
+ * down locked to the opening edge — it reads as the bar being pulled out from
+ * under the top of the page rather than grey growing underneath a lockup that
+ * already arrived. Anchoring beats animating the content in parallel: 0fr->1fr
+ * does not interpolate its used height on the same curve as a transform, so a
+ * matched translateY drifts ahead of the edge and opens a gap under the text.
  */
 const EASE = '1.2s cubic-bezier(0.22, 1, 0.36, 1)'
 
@@ -78,18 +81,12 @@ export default function TrustpilotBar() {
         transition: `grid-template-rows ${EASE}`,
       }}
     >
-      <div style={{ overflow: 'hidden' }}>
-        <div
-          className="flex items-center justify-center bg-[#f4f4f5] py-[12px]"
-          style={{
-            transform: isDown ? 'translateY(0)' : 'translateY(-100%)',
-            transition: `transform ${EASE}`,
-          }}
-        >
-          {/* `group` on the lockup, not on the bar: hovering the word, the
-              stars or the brandmark drops the underline and deepens the green,
-              but the empty grey either side of it does not. */}
-          <div className="group inline-flex items-center gap-[11px] md:gap-[13px]">
+      <div className="flex flex-col justify-end" style={{ overflow: 'hidden' }}>
+        <div className="group flex shrink-0 items-center justify-center bg-[#f4f4f5] py-[12px]">
+          {/* `group` sits on the grey bar above, not here: anywhere in the
+              full-width strip drops the underline and deepens the green, so the
+              hover target is the whole band rather than just the lockup. */}
+          <div className="inline-flex items-center gap-[11px] md:gap-[13px]">
             {/* Trustpilot's own lockup order: rating word, stars, brandmark.
                 The word is live text rather than an image so it stays crisp and
                 stays readable to screen readers ahead of the star label. */}
