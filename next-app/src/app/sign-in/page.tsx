@@ -2,10 +2,12 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import SignInForm from './SignInForm'
-import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, brandTitle, ogImages } from '@/lib/siteConfig'
+
+const TITLE = 'Sign In'
 
 export const metadata: Metadata = {
-  title: 'Sign In',
+  title: TITLE,
   description: 'Sign in to Ignite Education to access your courses. New to Ignite? Create a free account to start learning.',
   // An auth form has no query value and competes with nothing. Keep it
   // crawlable (follow) so it still passes equity, but out of the index.
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     ...OG_DEFAULTS,
-    title: 'Sign In | Ignite Education',
+    title: brandTitle(TITLE),
     description: 'Sign in to Ignite Education to access your courses. New to Ignite? Create a free account to start learning.',
     url: '/sign-in',
     images: ogImages(),
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     images: ogImages(),
-    title: 'Sign In | Ignite Education',
+    title: brandTitle(TITLE),
     description: 'Sign in to Ignite Education to access your courses.',
   },
 }

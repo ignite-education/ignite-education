@@ -6,6 +6,7 @@ import {
   generateCertificateBreadcrumbStructuredData,
 } from '@/lib/structuredData'
 import CertificateClient from './CertificateClient'
+import { OG_DEFAULTS, brandTitle } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
@@ -34,14 +35,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     robots: { index: false, follow: true },
     alternates: { canonical: `/certificate/${id}` },
     openGraph: {
-      title,
+      // Spread, never replace: Next overwrites openGraph across layout → page
+      // rather than merging it, so omitting this drops siteName and locale.
+      // Deliberately NO `images` — leaving it unset lets the file-convention
+      // opengraph-image.tsx supply the per-certificate card, which is the whole
+      // reason these noindexed pages exist.
+      ...OG_DEFAULTS,
+      title: brandTitle(title),
       description,
       url,
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: brandTitle(title),
       description,
     },
   }

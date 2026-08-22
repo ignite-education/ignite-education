@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { getAllPromptSlugs, getPromptBySlug } from '@/data/placeholderPrompts'
 import PromptDetailClient from './PromptDetailClient'
-import { OG_DEFAULTS, ORG_ID, SITE_URL, ogImages, truncateAtWord } from '@/lib/siteConfig'
+import { OG_DEFAULTS, ORG_ID, SITE_URL, brandTitle, ogImages, truncateAtWord } from '@/lib/siteConfig'
 
 export const revalidate = 60
 
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Prompt Not Found' }
   }
 
-  // No brand suffix — the root layout applies `%s | Ignite Education`.
+  // No brand suffix — the root layout applies `%s | Ignite`.
   const title = `${prompt.title} — Free AI Prompt Template`
   const description = truncateAtWord(prompt.description)
   const url = `${BASE_URL}/prompts/${professionSlug}/${promptSlug}`
@@ -44,7 +44,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     openGraph: {
       ...OG_DEFAULTS,
-      title: `${prompt.title} | Ignite Prompt Toolkit`,
+      // One brand, and the same wording as <title>. This previously carried an
+      // "Ignite Prompt Toolkit" sub-brand that appears in no schema.org graph
+      // and made the social card disagree with the search result twice over.
+      title: brandTitle(title),
       description,
       url,
       images: ogImages(),
@@ -52,7 +55,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${prompt.title} | Ignite Prompt Toolkit`,
+      title: brandTitle(title),
       description,
       images: ogImages(),
     },

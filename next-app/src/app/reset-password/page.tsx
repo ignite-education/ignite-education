@@ -1,15 +1,17 @@
 import { Metadata } from 'next'
 import ResetPasswordForm from './ResetPasswordForm'
-import { ogImages } from '@/lib/siteConfig'
+import { brandTitle, ogImages } from '@/lib/siteConfig'
+
+const TITLE = 'Reset Password'
 
 export const metadata: Metadata = {
-  title: 'Reset Password',
+  title: TITLE,
   description: 'Reset your Ignite Education password to regain access to your courses and learning progress.',
   // follow:true so the page still passes equity onward; a canonical alongside
   // noindex was contradictory, so it's gone.
   robots: { index: false, follow: true },
   openGraph: {
-    title: 'Reset Password | Ignite Education',
+    title: brandTitle(TITLE),
     description: 'Reset your Ignite Education password to regain access to your courses and learning progress.',
     url: '/reset-password',
     images: ogImages(),
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     images: ogImages(),
-    title: 'Reset Password | Ignite Education',
+    title: brandTitle(TITLE),
     description: 'Reset your Ignite Education password to regain access to your courses and learning progress.',
   },
 }

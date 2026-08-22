@@ -454,6 +454,36 @@ the layout/page boundary. Defaults declared in `app/layout.tsx` do NOT reach any
 page that declares its own `openGraph` — spread `OG_DEFAULTS` and call
 `ogImages()` from `@/lib/siteConfig` instead of relying on inheritance.
 
+### Page titles and the two brand constants
+
+`siteConfig.ts` exports two brand strings that look interchangeable and are not:
+
+| Constant | Value | Used for |
+|---|---|---|
+| `SITE_NAME` | `Ignite Education` | The **entity** — schema.org `Organization.name` / `WebSite.name`, `og:site_name`, `applicationName`, OG image alt |
+| `BRAND_SUFFIX` | `Ignite` | **Title chrome** — the `%s \| Ignite` template in `app/layout.tsx` and the `brandTitle()` helper |
+
+Renaming `SITE_NAME` re-points the entity Google consolidates towards a
+Knowledge Panel, so it is not the lever for shortening titles. `BRAND_SUFFIX`
+exists because every character in a `<title>` competes with the descriptive part
+for roughly 580px of SERP width.
+
+**The rule:** where the brand is a title suffix after a separator it is
+`Ignite`; where it is prose or an entity name — meta descriptions, JSON-LD
+`name`, alt text, legal copy — it stays `Ignite Education`.
+
+Next only templates `<title>`, never `openGraph`, so og:title and twitter:title
+must brand by hand. Always do it with **`brandTitle()` fed the identical
+expression passed to `metadata.title`** — hand-written literals drift, and the
+site once served `| Ignite Education`, `— Ignite Education` and `| Ignite Prompt
+Toolkit` on pages whose `<title>` said none of those. `npm run seo:validate`
+now warns on any og:title/`<title>` divergence.
+
+Course page titles are `Free {title} Course with Certificate`
+(`getCourseSeoTitle` in `courseUtils.ts`), deliberately **separate** from
+`getCourseTitlePhrase`, which still opens the visible hero tagline with the
+course-type verb ("Become a…"). Editing one must not silently rewrite the other.
+
 ---
 
 ## Authentication

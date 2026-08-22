@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
 import ComplexityIcon from '@/components/prompts/ComplexityIcon'
+import { brandTitle } from '@/lib/siteConfig'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api.onrender.com'
 
@@ -526,7 +527,7 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
 
   const handleShare = async () => {
     const shareData = {
-      title: `${prompt.title} | Ignite Education`,
+      title: brandTitle(prompt.title),
       url: shareUrl,
     }
     if (navigator.share) {

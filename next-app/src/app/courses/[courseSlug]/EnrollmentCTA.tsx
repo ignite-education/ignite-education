@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 import { enrollUserInCourse, registerInterestForUser } from '@/lib/enroll'
 import { readReferrer, clearReferrer, claimReferral } from '@/lib/referral'
 import ShareButtons from '@/components/ShareButtons'
+import { brandTitle } from '@/lib/siteConfig'
 
 interface EnrollmentCTAProps {
   courseSlug: string
@@ -449,7 +450,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
       {/* Share Buttons Row */}
       <ShareButtons
         url={`https://ignite.education/courses/${courseSlug}`}
-        title={`${courseTitle} | Ignite Education`}
+        title={brandTitle(courseTitle)}
         shareText={`Check out this course: ${courseTitle || 'Course'} on Ignite Education`}
         clip={clipText}
       />

@@ -4,7 +4,7 @@ import Footer from '@/components/Footer'
 import BlogCard from '@/components/BlogCard'
 import { getAllPublishedPosts } from '@/lib/blogData'
 import { generateStaticPageBreadcrumb } from '@/lib/structuredData'
-import { SITE_URL, SITE_NAME, ORG_ID, OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
+import { SITE_URL, ORG_ID, OG_DEFAULTS, brandTitle, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/blog' },
   openGraph: {
     ...OG_DEFAULTS,
-    title: `${TITLE} | ${SITE_NAME}`,
+    title: brandTitle(TITLE),
     description: DESCRIPTION,
     url: '/blog',
     type: 'website',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${TITLE} | ${SITE_NAME}`,
+    title: brandTitle(TITLE),
     description: DESCRIPTION,
     images: ogImages(),
   },
@@ -48,7 +48,7 @@ export default async function BlogIndexPage() {
     {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      'name': `${TITLE} | ${SITE_NAME}`,
+      'name': brandTitle(TITLE),
       'description': DESCRIPTION,
       'url': `${SITE_URL}/blog`,
       'inLanguage': 'en-GB',

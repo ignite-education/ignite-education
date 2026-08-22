@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { getCourseBySlug, getCoachesByCourseSlug } from '@/lib/courseData'
 import { generateCourseKeywords } from '@/lib/seoKeywords'
-import { getCourseTitlePhrase, getCourseTagline, getFirstSentence } from '@/lib/courseUtils'
-import { OG_DEFAULTS, SITE_NAME, SITE_URL, ogImages, truncateAtWord } from '@/lib/siteConfig'
+import { getCourseSeoTitle, getCourseTagline, getFirstSentence } from '@/lib/courseUtils'
+import { OG_DEFAULTS, SITE_URL, brandTitle, ogImages, truncateAtWord } from '@/lib/siteConfig'
 import {
   generateCourseStructuredData,
   generateFAQStructuredData,
@@ -79,7 +79,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Course Not Found' }
   }
 
-  const title = getCourseTitlePhrase(course)
+  // The <title> and the visible hero copy come from different helpers on
+  // purpose — see getCourseSeoTitle. The description still opens with the
+  // tagline, so the SERP snippet reads as prose rather than repeating the title.
+  const title = getCourseSeoTitle(course)
   const shortDesc = getCourseTagline(course)
   // A flat .slice(0, 160) here used to cut mid-word — SERPs were showing
   // "...decisions across organisa". Take whole sentences, then trim on a word
@@ -105,8 +108,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     openGraph: {
       ...OG_DEFAULTS,
-      // openGraph.title has no template applied, so it keeps the brand suffix.
-      title: `${title} | ${SITE_NAME}`,
+      // openGraph.title has no template applied, so it brands by hand.
+      title: brandTitle(title),
       description,
       url,
       type: 'website',
@@ -114,7 +117,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | ${SITE_NAME}`,
+      title: brandTitle(title),
       description,
       images: ogImages_,
     },

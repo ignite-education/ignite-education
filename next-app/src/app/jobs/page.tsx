@@ -6,7 +6,7 @@ import JobsFAQSection from './JobsFAQSection'
 import { getJobs, getSourceAttribution, getProfessionsWithJobs } from '@/data/jobsData'
 import { getRecentPosts } from '@/lib/blogData'
 import { SITE_FAQS } from '@/lib/faqs'
-import { OG_DEFAULTS, ORG_ID, SITE_URL, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, ORG_ID, SITE_URL, brandTitle, ogImages } from '@/lib/siteConfig'
 
 // Five minutes. Ingest runs once a day, so a shorter window would just add
 // Supabase reads for content that has not changed.
@@ -14,9 +14,12 @@ export const revalidate = 300
 
 const BASE_URL = SITE_URL
 
+// No brand suffix — the root layout's `%s | Ignite` template adds it, and
+// brandTitle() adds it to the social cards below.
+const TITLE = 'UK Job Board for Entry, Mid and Senior Roles'
+
 export const metadata: Metadata = {
-  // No brand suffix — the root layout's `%s | Ignite Education` template adds it.
-  title: 'UK Job Board for Entry, Mid and Senior Roles',
+  title: TITLE,
   description:
     'Browse current UK vacancies by profession and experience level. Entry level, mid and senior roles in UX design, data analysis, cyber security, product management and digital marketing.',
   keywords:
@@ -26,7 +29,7 @@ export const metadata: Metadata = {
     // Spread, never replace: Next overwrites openGraph across layout → page
     // rather than merging it.
     ...OG_DEFAULTS,
-    title: 'Job Board | Ignite Education',
+    title: brandTitle(TITLE),
     description:
       'Current UK vacancies filtered by profession and experience level, reviewed by hand before they appear.',
     url: '/jobs',
@@ -35,7 +38,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Job Board | Ignite Education',
+    title: brandTitle(TITLE),
     description: 'Current UK vacancies filtered by profession and experience level.',
     images: ogImages(),
   },

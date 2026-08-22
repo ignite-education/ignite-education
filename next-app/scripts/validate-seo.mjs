@@ -52,6 +52,15 @@ const PAGES = [
     requireKeywords: true,
   },
   {
+    // The longest course title on the site — 73 chars once branded. Here so the
+    // title-length check has something to catch; the other four course pages
+    // are the four shortest and all sit inside the 60-char budget.
+    path: '/courses/artificial-intelligence-foundations',
+    expectedTitle: /artificial intelligence/i,
+    expectedTypes: ['WebSite', 'Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
+    requireKeywords: true,
+  },
+  {
     path: '/blog/the-case-for-slow-dopamine',
     expectedTitle: /slow dopamine/i,
     expectedTypes: ['WebSite', 'BlogPosting', 'BreadcrumbList'],
@@ -117,6 +126,20 @@ const PAGES = [
 function extractTag(html, regex) {
   const match = html.match(regex);
   return match ? match[1] : null;
+}
+
+// Element text and attribute values are escaped by different rules, so the same
+// string can arrive as `SEO &amp; GEO` in <title> and `SEO &#x26; GEO` in a meta
+// content attribute. Normalise both before comparing them.
+function decodeEntities(str) {
+  return str
+    .replace(/&(?:#x27|#39|apos);/gi, "'")
+    .replace(/&(?:#x22|#34|quot);/gi, '"')
+    .replace(/&(?:#x3c|#60|lt);/gi, '<')
+    .replace(/&(?:#x3e|#62|gt);/gi, '>')
+    .replace(/&(?:#x26|#38|amp);/gi, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function extractMetaContent(html, attr, name) {
@@ -216,18 +239,28 @@ async function validatePage(page) {
     } else if (page.expectedTitle) {
       fail(`Title doesn't match pattern ${page.expectedTitle}`);
     }
-    if (/ignite education/i.test(title)) {
+    if (/\bignite\b/i.test(title)) {
       pass(`Title includes brand name`);
     } else {
-      warn(`Title missing brand name "Ignite Education"`);
+      warn(`Title missing brand name "Ignite"`);
     }
-    // The root layout applies a `%s | Ignite Education` template, so any title
-    // that already carries the brand renders double- or triple-branded.
+    // The root layout applies a `%s | Ignite` template, so any title that
+    // already carries the brand renders double- or triple-branded.
     const brandCount = (title.match(/ignite/gi) || []).length;
     if (brandCount > 1) {
       fail(`Title is multi-branded (${brandCount}x "Ignite"): "${title}"`);
     } else {
       pass(`Title is branded exactly once`);
+    }
+    // Google renders roughly 580px of title — about 60 characters at typical
+    // widths — then replaces the tail with an ellipsis. On a course page that
+    // costs "| Ignite" and possibly "with Certificate". Warn rather than fail:
+    // 13 of the 24 course titles exceed this by design, and a truncated
+    // descriptive title still beats a short vague one.
+    if (title.length > 60) {
+      warn(`Title is ${title.length} chars (>60, Google truncates ~580px): "${title}"`);
+    } else {
+      pass(`Title length ${title.length} chars`);
     }
   } else {
     fail(`Missing <title>`);
@@ -293,6 +326,18 @@ async function validatePage(page) {
 
   if (ogTitle) pass(`OG title: "${ogTitle}"`);
   else fail(`Missing og:title`);
+
+  // og:title gets no template — Next only templates <title> — so every page
+  // appends the brand by hand, and hand-appended literals drift. This site
+  // simultaneously served "| Ignite Education", "— Ignite Education" and
+  // "| Ignite Prompt Toolkit" on pages whose <title> said none of those.
+  // Warn, not fail: the two are HTML-escaped by different rules, so a title
+  // containing an ampersand ("SEO & GEO Optimisation") can differ harmlessly.
+  if (ogTitle && title && decodeEntities(ogTitle) !== decodeEntities(title)) {
+    warn(
+      `og:title differs from <title>:\n      <title>  "${title}"\n      og:title "${ogTitle}"`
+    );
+  }
 
   if (ogDesc) pass(`OG description present`);
   else fail(`Missing og:description`);

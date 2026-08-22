@@ -10,6 +10,7 @@ import Navbar from '@/components/Navbar'
 import ProfileHero from './ProfileHero'
 import CourseCatalogClient from '../courses/CourseCatalogClient'
 import Footer from '@/components/Footer'
+import { OG_DEFAULTS, brandTitle } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
@@ -51,15 +52,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     robots: { index: true, follow: true },
     alternates: { canonical: url },
     openGraph: {
-      title: `${profile.display_name} — Ignite Education`,
+      // Spread rather than hardcoding siteName — that literal was the only
+      // thing here, so locale was silently dropped. No `images`: the
+      // file-convention opengraph-image.tsx supplies the per-profile card.
+      ...OG_DEFAULTS,
+      title: brandTitle(profile.display_name),
       description,
       url,
-      siteName: 'Ignite Education',
       type: 'profile',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${profile.display_name} — Ignite Education`,
+      title: brandTitle(profile.display_name),
       description,
     },
   }

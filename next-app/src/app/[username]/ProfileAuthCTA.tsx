@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import ShareButtons from '@/components/ShareButtons'
 import { claimReferral, clearReferrer } from '@/lib/referral'
+import { brandTitle } from '@/lib/siteConfig'
 
 /**
  * The signed-out sign-up block for the public profile hero — the same two
@@ -171,7 +172,7 @@ export default function ProfileAuthCTA({
       <div className="hidden md:block">
         <ShareButtons
           url={profileUrl}
-          title={`${displayName} | Ignite Education`}
+          title={brandTitle(displayName)}
           shareText={`Check out ${displayName} on Ignite Education`}
         />
       </div>

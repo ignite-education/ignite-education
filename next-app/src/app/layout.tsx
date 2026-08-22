@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import SiteJsonLd from "@/components/SiteJsonLd";
-import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE, GA_MEASUREMENT_ID } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, BRAND_SUFFIX, DEFAULT_OG_IMAGE, GA_MEASUREMENT_ID } from "@/lib/siteConfig";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,9 +19,13 @@ export const metadata: Metadata = {
   // Resolves every relative canonical / openGraph.url / image below to the apex
   // host, so pages don't each hardcode 'https://ignite.education'.
   metadataBase: new URL(SITE_URL),
+  // The suffix is BRAND_SUFFIX ("Ignite"), not SITE_NAME — see siteConfig.ts for
+  // why those are deliberately different. `default` keeps the longer brand: it
+  // only ever renders on 404s and unknown job professions, where there is no
+  // descriptive part competing for width.
   title: {
     default: "Ignite Education - Learn skills that matter",
-    template: "%s | Ignite Education",
+    template: `%s | ${BRAND_SUFFIX}`,
   },
   description: "AI-powered courses designed to help you learn practical skills and advance your career.",
   applicationName: SITE_NAME,

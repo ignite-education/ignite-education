@@ -9,7 +9,7 @@ import {
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import BlogPostClient from './BlogPostClient'
-import { SITE_NAME, OG_DEFAULTS, ogImages, stripBrand, truncateAtWord } from '@/lib/siteConfig'
+import { OG_DEFAULTS, brandTitle, ogImages, stripBrand, truncateAtWord } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
@@ -46,8 +46,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     openGraph: {
       ...OG_DEFAULTS,
-      // openGraph.title has no template applied, so it keeps the brand suffix.
-      title: `${post.title} | ${SITE_NAME}`,
+      // openGraph.title has no template applied, so it brands by hand. Feed it
+      // the stripped `title`, not raw post.title — the latter double-branded
+      // whenever an editor saved meta_title with the brand already on it.
+      title: brandTitle(title),
       description,
       url,
       type: 'article',
@@ -58,7 +60,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${post.title} | ${SITE_NAME}`,
+      title: brandTitle(title),
       description,
       images,
     },

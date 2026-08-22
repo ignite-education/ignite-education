@@ -4,14 +4,16 @@ import { generateItemListStructuredData, generateSpeakableSchema } from '@/lib/s
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import CourseCatalogClient from './CourseCatalogClient'
-import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, brandTitle, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
 const BASE_URL = 'https://ignite.education'
 
+const TITLE = 'Courses'
+
 export const metadata: Metadata = {
-  title: 'Courses',
+  title: TITLE,
   description:
     'Explore free courses in Product Management, Cybersecurity, Data Analysis, and more. Find your specialism, skill, or subject and start learning today with Ignite Education.',
   keywords:
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     ...OG_DEFAULTS,
-    title: 'Courses | Ignite Education',
+    title: brandTitle(TITLE),
     description:
       'Explore free, expert-led courses in Product Management, Cybersecurity, Data Analysis, and more.',
     url: `${BASE_URL}/courses`,
@@ -30,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Courses | Ignite Education',
+    title: brandTitle(TITLE),
     description:
       'Explore free, expert-led courses in Product Management, Cybersecurity, Data Analysis, and more.',
     images: ogImages(),
@@ -52,7 +54,7 @@ export default async function CourseCatalogPage() {
     },
     generateSpeakableSchema(
       `${BASE_URL}/courses`,
-      'Courses | Ignite Education',
+      brandTitle(TITLE),
       ['h1', 'h2', '.course-search-input']
     ),
   ]

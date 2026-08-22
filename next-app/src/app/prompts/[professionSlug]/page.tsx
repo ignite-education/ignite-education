@@ -6,7 +6,7 @@ import { getPromptBySlug, getAllPrompts } from '@/data/placeholderPrompts'
 import { getCoursesByType } from '@/lib/courseData'
 import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from '@/lib/professionUtils'
 import PromptToolkitClient from '../PromptToolkitClient'
-import { OG_DEFAULTS, ORG_ID, SITE_URL, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, ORG_ID, SITE_URL, brandTitle, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 60
 
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (profession) {
     const professionName = profession.title || profession.name
     const plural = pluraliseProfession(professionName)
-    // No brand suffix — the root layout applies `%s | Ignite Education`.
+    // No brand suffix — the root layout applies `%s | Ignite`.
     const title = `AI Prompt Toolkit for ${plural}`
     const description = `Free AI prompt templates for ${plural}. Ready-to-use prompts for ChatGPT, Claude, Co-Pilot and Gemini tailored to ${professionName} workflows.`
     const url = `${BASE_URL}/prompts/${professionSlug}`
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       alternates: { canonical: url },
       openGraph: {
         ...OG_DEFAULTS,
-        title: `AI Prompt Toolkit for ${plural} | Ignite Education`,
+        title: brandTitle(title),
         description,
         url,
         images: ogImages(),
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       },
       twitter: {
         card: 'summary_large_image',
-        title: `AI Prompt Toolkit for ${plural} | Ignite Education`,
+        title: brandTitle(title),
         description,
         images: ogImages(),
       },

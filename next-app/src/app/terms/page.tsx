@@ -4,10 +4,12 @@ import { Home, ChevronRight } from 'lucide-react'
 import { generateStaticPageBreadcrumb } from '@/lib/structuredData'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, brandTitle, ogImages } from '@/lib/siteConfig'
+
+const TITLE = 'Terms of Service'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service',
+  title: TITLE,
   description: "Read Ignite Education's Terms of Service. Learn about course enrollment, payment terms, refund policy, and user conduct guidelines for our online learning platform.",
   keywords: 'terms of service, terms and conditions, user agreement, course enrollment, refund policy, Ignite Education terms',
   alternates: {
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     ...OG_DEFAULTS,
-    title: 'Terms of Service | Ignite Education',
+    title: brandTitle(TITLE),
     description: "Read Ignite Education's Terms of Service. Learn about course enrollment, payment terms, refund policy, and user conduct guidelines.",
     url: '/terms',
     images: ogImages(),
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     images: ogImages(),
-    title: 'Terms of Service | Ignite Education',
+    title: brandTitle(TITLE),
     description: "Read Ignite Education's Terms of Service for our online learning platform.",
   },
 }

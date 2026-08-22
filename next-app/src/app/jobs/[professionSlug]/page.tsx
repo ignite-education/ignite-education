@@ -4,7 +4,7 @@ import Footer from '@/components/Footer'
 import JobBoardClient from '../JobBoardClient'
 import { getJobs, getSourceAttribution, getProfessionsWithJobs } from '@/data/jobsData'
 import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from '@/lib/professionUtils'
-import { OG_DEFAULTS, ORG_ID, SITE_URL, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, ORG_ID, SITE_URL, brandTitle, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 300
 
@@ -50,7 +50,7 @@ export async function generateMetadata({
     robots: hasJobs ? undefined : { index: false, follow: true },
     openGraph: {
       ...OG_DEFAULTS,
-      title: `${title} | Ignite Education`,
+      title: brandTitle(title),
       description,
       url: `/jobs/${professionSlug}`,
       images: ogImages(),
@@ -58,7 +58,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | Ignite Education`,
+      title: brandTitle(title),
       description,
       images: ogImages(),
     },

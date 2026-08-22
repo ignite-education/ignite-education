@@ -4,16 +4,18 @@ import Footer from '@/components/Footer'
 import PromptToolkitClient from './PromptToolkitClient'
 import { getCoursesByType } from '@/lib/courseData'
 import { getAllPrompts } from '@/data/placeholderPrompts'
-import { OG_DEFAULTS, ORG_ID, SITE_URL, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, ORG_ID, SITE_URL, brandTitle, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 60
 
 const BASE_URL = SITE_URL
 
+// No brand suffix here — the root layout's `%s | Ignite` template adds it, and
+// brandTitle() adds it to the social cards. This title once rendered triple-branded.
+const TITLE = 'Free AI Prompt Templates for Professionals'
+
 export const metadata: Metadata = {
-  // No brand suffix here — the root layout's `%s | Ignite Education` template
-  // adds it. This title previously rendered triple-branded.
-  title: 'Free AI Prompt Templates for Professionals',
+  title: TITLE,
   description:
     'Browse free AI prompt templates for ChatGPT, Claude, Co-Pilot and Gemini. Ready-to-use prompts for product managers, marketers, analysts, engineers and more.',
   keywords:
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     ...OG_DEFAULTS,
-    title: 'Prompt Toolkit | Ignite Education',
+    title: brandTitle(TITLE),
     description:
       'Discover the best AI prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
     url: `/prompts`,
@@ -32,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Prompt Toolkit | Ignite Education',
+    title: brandTitle(TITLE),
     description:
       'Discover the best AI prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
     images: ogImages(),

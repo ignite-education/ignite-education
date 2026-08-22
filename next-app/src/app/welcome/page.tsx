@@ -12,13 +12,18 @@ import TestimonialsSection from './TestimonialsSection'
 import MerchSection from './MerchSection'
 import FAQSection from './FAQSection'
 import WelcomeScrollManager from './WelcomeScrollManager'
-import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, brandTitle, ogImages } from '@/lib/siteConfig'
 import { SITE_FAQS } from '@/lib/faqs'
 
 export const revalidate = 3600 // Revalidate at most once per hour
 
+// No brand suffix — the root layout's `%s | Ignite` template adds it, and
+// brandTitle() adds it to the social cards. This was 'Welcome', which carried
+// no query surface on the page the apex root redirects to.
+const TITLE = 'Free Online Courses, Built by Experts'
+
 export const metadata: Metadata = {
-  title: 'Welcome',
+  title: TITLE,
   description: 'Transform your career with Ignite\'s interactive courses in Product Management, Cyber Security, Data Analysis, and UX Design. Learn from industry experts with AI-powered lessons, real-world projects, and personalized feedback.',
   keywords: 'product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development, free online courses, tech career, professional development',
   alternates: {
@@ -26,7 +31,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     ...OG_DEFAULTS,
-    title: 'Welcome to Ignite Education',
+    title: brandTitle(TITLE),
     description: 'Transform your career with free, expert-led courses in Product Management, Cyber Security, Data Analysis, and more.',
     url: '/welcome',
     images: ogImages(),
@@ -34,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Welcome to Ignite Education',
+    title: brandTitle(TITLE),
     description: 'Transform your career with free, expert-led courses.',
     images: ogImages(),
   },

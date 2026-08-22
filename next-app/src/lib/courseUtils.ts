@@ -99,9 +99,10 @@ const TITLE_VERBS: Record<string, string> = {
 
 /**
  * Get the verb phrase for a course, e.g. "Upskill at Conflict Resolution".
- * Used bare in page titles and as the head of the full tagline.
+ * Used as the head of the full tagline. NOT a page title — see
+ * getCourseSeoTitle for that.
  */
-export function getCourseTitlePhrase(course: Course): string {
+function getCourseTitlePhrase(course: Course): string {
   if (!course?.title) return 'Learn'
 
   return `${TITLE_VERBS[course.course_type] || TITLE_VERBS.specialism} ${course.title}`
@@ -113,6 +114,29 @@ export function getCourseTitlePhrase(course: Course): string {
  */
 export function getCourseTagline(course: Course): string {
   return withFullStop(`${getCourseTitlePhrase(course)} ${TAGLINE_SUFFIX}`)
+}
+
+/**
+ * The SEO title, e.g. "Free Product Manager Course with Certificate".
+ *
+ * Deliberately NOT built on getCourseTitlePhrase(). The SERP title leads with
+ * the two things a searcher filters on — price and credential — while the
+ * on-page tagline still opens with the course-type verb ("Become a Product
+ * Manager with Ignite's free…"). The two strings look similar and are not:
+ * editing the visible hero copy must never silently rewrite 24 indexed page
+ * titles, and vice versa. Keep them separate even if the wording converges.
+ *
+ * No brand suffix — the root layout's `%s | Ignite` template appends it, and
+ * appending it here renders double-branded.
+ *
+ * `course.status` is ignored on purpose: a coming_soon course carries the
+ * identical title, so a URL keeps one stable title across launch and never has
+ * to be re-indexed for a rename.
+ */
+export function getCourseSeoTitle(course: Course): string {
+  if (!course?.title) return 'Free Course with Certificate'
+
+  return `Free ${course.title} Course with Certificate`
 }
 
 /**
