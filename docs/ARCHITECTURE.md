@@ -391,13 +391,18 @@ the single source `public/favicon.svg` and mirror them into `next-app/public/` a
 output**; the script is deliberately not part of `build`, because `sharp` reaches
 this repo only as an optional transitive dep of `next`.
 
-Two constraints the mark itself must satisfy, both learned the hard way:
-- **Exactly square.** Google rejects any other aspect ratio; the previous SVG was
-  141.83 × 142.20 with no intrinsic `width`/`height`.
-- **One uniform background colour.** Google only crops a favicon into a full
-  circle when every corner is the same colour; with two or more corner colours it
-  centres the square on white, leaving visible gaps. The mark's pink therefore
-  bleeds to all four edges and the nested squares stay inside the inscribed circle.
+One constraint the mark itself must satisfy, learned the hard way:
+- **Exactly square.** Google rejects any other aspect ratio; the pre-2026-08-20 SVG
+  was 141.83 × 142.20 with no intrinsic `width`/`height`.
+
+The mark bleeds corner to corner — purple and violet against the left and bottom
+edges, pink filling the rest — matching the brand mark. A revision on 2026-08-20
+briefly inset the squares so all four corners sampled pink, on the theory that
+Google only crops to a full circle when the corner colours match. That inference
+was never verified against Google's behaviour and it cost the mark its edge bleed
+in every browser tab, so it was reverted on 2026-08-22. If Search ever does render
+the icon as a square stranded on white, that theory becomes worth retesting —
+but not before.
 
 `ORG_LOGO` in `next-app/src/lib/siteConfig.ts` must also stay self-hosted: the
 Supabase storage origin serves `x-robots-tag: none`, so a logo hosted there is

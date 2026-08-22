@@ -1,23 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Ignite">
   <!--
     Source of truth for every icon in the repo — regenerate the rasters with
-    `npm run icons` after editing. Two constraints drive the geometry:
+    `npm run icons` after editing.
 
-    1. Square viewBox with explicit width/height. Google rejects a favicon that
-       isn't exactly 1:1, and the previous mark was 141.83 x 142.20 with no
-       intrinsic size, which is why it vanished from Search.
-    2. Pink bleeds to all four edges, so every corner samples #EF0B72. Google
-       only crops a favicon into a full circle when the background is ONE
-       uniform colour; with two or more corner colours it centres the square on
-       white instead. The old mark put pink, purple and violet in the corners,
-       which is what produced the white gaps in search results.
+    The mark bleeds corner to corner: purple and violet sit hard against the left
+    and bottom edges, exactly as in the brand mark, with pink filling the rest.
+    A 2:1 staircase (344 -> 172) sharing one bottom-left corner.
 
-    The staircase is preserved: violet (172) shares purple's (344) bottom-left
-    corner, a 2:1 ratio matching the original's 93.99:47. Purple's corners sit
-    243.24 from centre, inside the 256 inscribed-circle radius, so the circular
-    crop never clips the mark.
+    ONE constraint is load-bearing and must not be broken: a square viewBox with
+    explicit width/height. Google rejects a favicon that isn't exactly 1:1, and
+    the pre-2026-08-20 mark was 141.83 x 142.20 with no intrinsic size, which is
+    why it vanished from Search along with the missing .ico/PNG fallbacks.
+
+    An earlier revision inset the squares to keep all four corners pink, on the
+    theory that Google only crops to a full circle when the corners match. That
+    is an unverified inference, not documented behaviour, and it cost the mark
+    its edge bleed in every browser tab. The circular crop renders this version
+    cleanly, so the brand geometry wins.
   -->
   <rect width="512" height="512" fill="#EF0B72"/>
-  <rect x="84" y="84" width="344" height="344" fill="#B30FA9"/>
-  <rect x="84" y="256" width="172" height="172" fill="#7714E0"/>
+  <rect x="0" y="168" width="344" height="344" fill="#B30FA9"/>
+  <rect x="0" y="340" width="172" height="172" fill="#7714E0"/>
 </svg>

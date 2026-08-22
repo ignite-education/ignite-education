@@ -52,11 +52,12 @@ const renderIcoFrame = (size) =>
 
 /**
  * The W3C maskable safe zone is a circle covering 80% of the canvas — radius
- * 204.8 at 512. The base mark's outer square reaches 243.2 from centre, so a
- * launcher mask would clip it. Shrink the whole design to 80% and re-pad the
- * margin in the same brand pink: the outer square then reaches 194.6 < 204.8,
- * and because the padding colour is the pink that already bleeds to the edge,
- * this stays the same artwork with more bleed rather than a second design.
+ * 204.8 at 512. The base mark bleeds corner to corner, so it reaches 256 from
+ * centre and a launcher mask would clip it. Shrink the whole design to 80% and
+ * re-pad the margin in the same brand pink: the artwork then reaches exactly
+ * 204.8, sitting on the safe-zone boundary, and because the padding colour is
+ * the pink that already bleeds to the edge, this stays the same artwork with
+ * more bleed rather than a second design.
  */
 const renderMaskable = async (size) => {
   const inner = Math.round(size * 0.8)
