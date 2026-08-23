@@ -1,33 +1,22 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
 
 /**
  * Thin grey bar carrying the Trustpilot lockup — "Excellent", the 4.5-star
- * rating, then the brandmark, in Trustpilot's own order. Sits at
- * the very top of the document and drops down two seconds after mount, so the
- * page opens on the headline and the rating arrives as a second beat.
+ * rating, then the brandmark, in Trustpilot's own order. Sits at the very top
+ * of the document, present from first paint: no mount delay, no slide-down, so
+ * the page opens with the rating already in place.
  *
  * No bottom border: the fill alone separates it from the hero's white.
  * Height comes from the padding, which is what to change if the bar needs to
- * be thicker or thinner — the assets themselves are sized by width.
+ * be thicker or thinner — the assets themselves are sized by width. Mobile
+ * runs 15% taller than desktop's band: the lockup is the same size, the
+ * padding absorbs the difference.
  *
- * In normal flow, above <main>, so opening it pushes the whole page down
- * rather than painting over the hero. The 0fr -> 1fr grid-template-rows
- * transition is what makes that animatable: height alone cannot transition to
- * `auto`, and this avoids hard-coding a pixel height that would drift the
- * moment the asset widths change across the md breakpoint.
- *
- * The bar keeps its full natural height inside that clip and is pinned to the
- * clip's bottom edge (flex-col + justify-end, shrink-0), so the lockup travels
- * down locked to the opening edge — it reads as the bar being pulled out from
- * under the top of the page rather than grey growing underneath a lockup that
- * already arrived. Anchoring beats animating the content in parallel: 0fr->1fr
- * does not interpolate its used height on the same curve as a transform, so a
- * matched translateY drifts ahead of the edge and opens a gap under the text.
+ * In normal flow, above <main>, so it occupies its own band rather than
+ * painting over the hero. Nothing here is stateful, so it stays a server
+ * component and ships in the SSR HTML with no client JS behind it — the hover
+ * treatment is pure CSS.
  */
-const EASE = '1.2s cubic-bezier(0.22, 1, 0.36, 1)'
 
 /** Trustpilot green, and the hover shade. */
 const GREEN = 'fill-[#00B67A] transition-[fill] duration-200 group-hover:fill-[#009663]'
@@ -66,53 +55,35 @@ function TrustpilotRating({ className }: { className?: string }) {
 }
 
 export default function TrustpilotBar() {
-  const [isDown, setIsDown] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsDown(true), 2000)
-    return () => clearTimeout(timer)
-  }, [])
-
   return (
-    <div
-      className="grid"
-      style={{
-        gridTemplateRows: isDown ? '1fr' : '0fr',
-        transition: `grid-template-rows ${EASE}`,
-      }}
-    >
-      <div className="flex flex-col justify-end" style={{ overflow: 'hidden' }}>
-        <div className="group flex shrink-0 items-center justify-center bg-[#f4f4f5] py-[12px]">
-          {/* `group` sits on the grey bar above, not here: anywhere in the
-              full-width strip drops the underline and deepens the green, so the
-              hover target is the whole band rather than just the lockup. */}
-          <div className="inline-flex items-center gap-[11px] md:gap-[13px]">
-            {/* Trustpilot's own lockup order: rating word, stars, brandmark.
-                The word is live text rather than an image so it stays crisp and
-                stays readable to screen readers ahead of the star label. */}
-            <span
-              className="font-medium text-black text-[13px] md:text-[14px] leading-none tracking-[-0.01em] underline decoration-[1px] underline-offset-[3px] group-hover:no-underline"
-              style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-            >
-              Excellent
-            </span>
-            <TrustpilotRating className="w-[76px] md:w-[90px] h-auto" />
-            {/* priority: the bar starts at zero height, so Next's default lazy
-                loading would not fetch this until the row opens and it would
-                pop in after the slide. Served from Supabase like every other
-                image on the public pages — next-app/public is not reachable
-                from ignite.education, which serves these pages through a
-                Vercel rewrite. */}
-            <Image
-              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
-              alt="Trustpilot"
-              width={576}
-              height={144}
-              priority
-              className="w-[58px] md:w-[70px] h-auto"
-            />
-          </div>
-        </div>
+    <div className="group flex items-center justify-center bg-[#f4f4f5] py-[14.9px] md:py-[12px]">
+      {/* `group` sits on the full-width grey bar above, not here: anywhere in
+          the strip drops the underline and deepens the green, so the hover
+          target is the whole band rather than just the lockup. */}
+      <div className="inline-flex items-center gap-[11px] md:gap-[13px]">
+        {/* Trustpilot's own lockup order: rating word, stars, brandmark.
+            The word is live text rather than an image so it stays crisp and
+            stays readable to screen readers ahead of the star label. */}
+        <span
+          className="font-medium text-black text-[13px] md:text-[14px] leading-none tracking-[-0.01em] underline decoration-[1px] underline-offset-[3px] group-hover:no-underline"
+          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+        >
+          Excellent
+        </span>
+        <TrustpilotRating className="w-[76px] md:w-[90px] h-auto" />
+        {/* priority: this is the topmost element on the page, so it should be
+            fetched with the hero rather than lazily. Served from Supabase like
+            every other image on the public pages — next-app/public is not
+            reachable from ignite.education, which serves these pages through a
+            Vercel rewrite. */}
+        <Image
+          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
+          alt="Trustpilot"
+          width={576}
+          height={144}
+          priority
+          className="w-[58px] md:w-[70px] h-auto"
+        />
       </div>
     </div>
   )

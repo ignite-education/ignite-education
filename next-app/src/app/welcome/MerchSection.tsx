@@ -3,30 +3,33 @@
 import { useState, useEffect, useRef } from 'react'
 import useTypingAnimation from '@/hooks/useTypingAnimation'
 
+// Same five products, in the same order, as the merch rail on /progress
+// (src/components/ProgressHubV2/sections/MerchandiseSection.jsx).
 const merchItems = [
+  {
+    src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp',
+    alt: 'Tote bag',
+    url: 'https://shop.ignite.education/products/tote-bag-1?variant=53677278495051'
+  },
   {
     src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp',
     alt: 'Black Mug',
-    url: 'https://shop.ignite.education/products/black-mug-11oz-15oz?variant=53677361889611',
-    mobileOrder: 0
-  },
-  {
-    src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/14638277160201691379_2048.webp',
-    alt: 'Quote Tote',
-    url: 'https://shop.ignite.education/products/copy-of-empowering-quote-organic-cotton-tote-bag-eco-friendly-shopper-sustainable-gift-motivational-bag-reusable-grocery-tote-1?variant=53677328367947',
-    mobileOrder: 3
+    url: 'https://shop.ignite.education/products/black-mug-11oz-15oz?variant=53677361889611'
   },
   {
     src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg',
     alt: 'Notebook',
-    url: 'https://shop.ignite.education/products/notebook?variant=53241113084235',
-    mobileOrder: 1
+    url: 'https://shop.ignite.education/products/notebook?variant=53241113084235'
+  },
+  {
+    src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/14638277160201691379_2048.webp',
+    alt: 'Quote Tote',
+    url: 'https://shop.ignite.education/products/copy-of-empowering-quote-organic-cotton-tote-bag-eco-friendly-shopper-sustainable-gift-motivational-bag-reusable-grocery-tote-1?variant=53677328367947'
   },
   {
     src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp',
     alt: 'Sweatshirt',
-    url: 'https://shop.ignite.education/products/unisex-heavy-blend™-crewneck-sweatshirt?variant=53677325254987',
-    mobileOrder: 2
+    url: 'https://shop.ignite.education/products/unisex-heavy-blend™-crewneck-sweatshirt?variant=53677325254987'
   }
 ]
 
@@ -34,13 +37,9 @@ export default function MerchSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const [typingEnabled, setTypingEnabled] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [isTablet, setIsTablet] = useState(false)
 
   useEffect(() => {
-    const update = () => {
-      setIsMobile(window.innerWidth < 768)
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200)
-    }
+    const update = () => setIsMobile(window.innerWidth < 768)
     update()
     let timeout: ReturnType<typeof setTimeout>
     const handleResize = () => {
@@ -142,39 +141,34 @@ export default function MerchSection() {
           </p>
         </div>
 
-        {/* Images Container */}
-        <div
-          style={{
-            width: '100%',
-            paddingLeft: isTablet ? '1rem' : 'calc(40px + 99px)',
-            paddingRight: isTablet ? '1rem' : 'calc(40px + 85px)'
-          }}
-          className="auth-section-merch-grid"
-        >
-          <div
-            className={(isMobile || isTablet) ? 'grid grid-cols-2 gap-4' : 'flex justify-between items-center'}
-            style={{
-              width: '100%',
-              maxWidth: isTablet ? '36rem' : 'none',
-              margin: isTablet ? '0 auto' : undefined
-            }}
-          >
-            {((isMobile || isTablet) ? [...merchItems].sort((a, b) => a.mobileOrder - b.mobileOrder) : merchItems).map((item, idx) => (
-              <img
-                key={idx}
-                src={item.src}
-                alt={item.alt}
-                loading="lazy"
-                decoding="async"
-                className="object-contain rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                style={{
-                  height: 'auto',
-                  width: (isMobile || isTablet) ? '85%' : '18%',
-                  maxWidth: '100%',
-                  margin: (isMobile || isTablet) ? '0 auto' : undefined
-                }}
-                onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
-              />
+        {/*
+          Images: one CSS-driven layout that reflows on resize without any JS
+          breakpoint state. Below 1024px the five products sit in a snapping
+          rail whose items widen as the viewport does (45% -> 30% -> 22%), so
+          there is always a partial item peeking to signal the scroll. From
+          1024px up they shrink to fit and the whole set is visible in a row.
+        */}
+        <div className="auth-section-merch-grid w-full px-4 sm:px-6 lg:pl-[9%] lg:pr-[8%]">
+          {/* Below sm the rail bleeds to the screen edges (-mx-8 cancels this
+              wrapper's px-4 plus the section's 1rem) while px-8 keeps the first
+              product aligned with the copy above, so the next item peeks in. */}
+          <div className="flex items-center hide-scrollbar overflow-x-auto lg:overflow-visible snap-x snap-mandatory gap-3 md:gap-4 lg:gap-[clamp(12px,1.5vw,32px)] -mx-8 px-8 scroll-pl-8 sm:mx-0 sm:px-0 sm:scroll-pl-0">
+            {merchItems.map((item) => (
+              <a
+                key={item.alt}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-[0_0_45%] sm:flex-[0_0_30%] md:flex-[0_0_22%] lg:flex-[1_1_0%] lg:min-w-0 snap-start"
+              >
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="block w-full h-auto object-contain rounded-lg transition-transform duration-200 hover:scale-[1.02]"
+                />
+              </a>
             ))}
           </div>
         </div>

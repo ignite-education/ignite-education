@@ -61,8 +61,6 @@ interface JobFilterBarProps {
   onWorkTypesChange: (value: string[]) => void
   onSearchChange: (value: string) => void
   onResetAll: () => void
-  /** True on /jobs/[professionSlug], where the URL already pins the profession. */
-  hideProfession?: boolean
   /** Shown at the end of the row — "12 roles". */
   resultCount: number
 }
@@ -78,7 +76,6 @@ export default function JobFilterBar({
   onWorkTypesChange,
   onSearchChange,
   onResetAll,
-  hideProfession,
   resultCount,
 }: JobFilterBarProps) {
   const [openFilter, setOpenFilter] = useState<FilterType | null>(null)
@@ -153,12 +150,16 @@ export default function JobFilterBar({
   const labelFor = (type: FilterType, option: string) =>
     type === 'seniority' ? SENIORITY_LABELS[option as Seniority] || option : option
 
-  const types: FilterType[] = hideProfession
-    ? ['seniority', 'workType']
-    : ['profession', 'seniority', 'workType']
+  /* Every filter, on every page. /jobs/[professionSlug] used to drop the
+     profession chip on the grounds that the URL already pinned it, which left
+     that page's control row a chip short of the board it is meant to be a copy
+     of — and left a visitor no way to see WHICH profession was filtering the
+     list, or to change it. The profession page now arrives with this chip
+     selected instead of missing. */
+  const types: FilterType[] = ['profession', 'seniority', 'workType']
 
   const hasAnyFilter =
-    (!hideProfession && selectedProfessions.length > 0) ||
+    selectedProfessions.length > 0 ||
     selectedSeniorities.length > 0 ||
     selectedWorkTypes.length > 0 ||
     search.trim().length > 0

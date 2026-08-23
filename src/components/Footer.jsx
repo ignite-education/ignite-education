@@ -32,6 +32,13 @@ const Footer = ({ className = '' }) => {
                 AI Prompt Toolkit
               </a>
               <a
+                href="/jobs"
+                className="text-white font-light hover:text-[#EF0B72] transition"
+                style={{ fontSize: '14px' }}
+              >
+                Job Board
+              </a>
+              <a
                 href="https://shop.ignite.education"
                 target="_blank"
                 rel="noopener noreferrer"

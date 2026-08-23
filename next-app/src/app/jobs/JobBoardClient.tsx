@@ -52,16 +52,39 @@ const FILTER_MS = 420
 const FILTER_OPACITY_MS = Math.round((FILTER_MS * 5) / 6)
 const FILTER_EASE = 'cubic-bezier(0.33, 1, 0.68, 1)'
 
+/**
+ * The hero copy, identical on /jobs and on every /jobs/[professionSlug].
+ *
+ * Constants rather than props on purpose. The profession pages are meant to BE
+ * the main board with one filter pre-selected, and they briefly each carried
+ * their own headline ("Product Manager jobs", "Live UK Product Manager
+ * vacancies…"). Holding the strings here means the two cannot drift apart
+ * again: there is no prop to pass, so there is nothing to pass differently.
+ *
+ * What stays bespoke per profession is everything the visitor does not see in
+ * the layout — <title>, meta description, canonical, Open Graph and the
+ * CollectionPage/BreadcrumbList names. Those live in each page's
+ * generateMetadata and structured data, not here.
+ */
+const HEADING = 'Job Board'
+const TAGLINE = 'Handpicked and updated daily'
+const SUBHEADING =
+  'Discover the top entry-level and graduate jobs in the UK. Every vacancy is hand-picked and ready for you to directly apply.'
+
 interface JobBoardClientProps {
   jobs: Job[]
   professions: string[]
   sources: Record<string, JobSourceAttribution>
-  /** Set on /jobs/[professionSlug] — pins the profession and hides its filter. */
+  /**
+   * Set on /jobs/[professionSlug] — the profession that page is for.
+   *
+   * It seeds the profession filter so the board arrives already narrowed, and
+   * that is now ALL it does to the controls: the filter bar renders the same
+   * three chips here as it does on /jobs, with this one showing as selected.
+   * It still suppresses filter persistence below, which is a storage decision
+   * rather than a visual one.
+   */
   initialProfession?: string
-  heading: string
-  subheading: string
-  /** Short line in Ignite pink under the title, matching the course hero. */
-  tagline?: string
 }
 
 export default function JobBoardClient({
@@ -69,9 +92,6 @@ export default function JobBoardClient({
   professions,
   sources,
   initialProfession,
-  heading,
-  subheading,
-  tagline = 'Handpicked and updated daily',
 }: JobBoardClientProps) {
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>(
     initialProfession ? [initialProfession] : []
@@ -298,8 +318,14 @@ export default function JobBoardClient({
   }, [focusJobId, matchedJobs])
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  /* Clears the profession too, including the one a profession page arrived
+     with. It is an ordinary selected filter now — a visible chip that Reset
+     visibly refuses to clear would read as a broken control. Note this can
+     leave /jobs/product-manager showing every profession; the heading and the
+     URL are about what the page IS, and the filters are the visitor's to move.
+     Nothing about the served HTML or its canonical changes. */
   const handleResetAll = () => {
-    if (!initialProfession) changeProfessions([])
+    changeProfessions([])
     changeSeniorities([])
     changeWorkTypes([])
     changeSearch('')
@@ -341,23 +367,21 @@ export default function JobBoardClient({
                   className="text-[2rem] md:text-[40px] font-semibold text-white mb-[23px] leading-tight"
                   style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.02em' }}
                 >
-                  {heading}
+                  {HEADING}
                 </h1>
 
-                {tagline && (
-                  <p
-                    className="text-xl text-[#EF0B72] font-semibold leading-normal max-w-[560px]"
-                    style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.01em', marginBottom: '8px' }}
-                  >
-                    {tagline}
-                  </p>
-                )}
+                <p
+                  className="text-xl text-[#EF0B72] font-semibold leading-normal max-w-[560px]"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.01em', marginBottom: '8px' }}
+                >
+                  {TAGLINE}
+                </p>
 
                 <p
                   className="text-white text-[1.1rem] md:text-lg leading-normal md:leading-relaxed font-light max-w-[560px]"
                   style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.02em' }}
                 >
-                  {subheading}
+                  {SUBHEADING}
                 </p>
               </div>
 
@@ -403,7 +427,6 @@ export default function JobBoardClient({
                   onWorkTypesChange={changeWorkTypes}
                   onSearchChange={changeSearch}
                   onResetAll={handleResetAll}
-                  hideProfession={Boolean(initialProfession)}
                   resultCount={matchedJobs.length}
                 />
               </div>

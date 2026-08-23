@@ -128,16 +128,16 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const CARD_HEIGHT = 59    // py-3 (24px) + 35px icon content
   const CARD_GAP = 12       // space-y-3
   const COLUMN_GAP = 12     // gap-3 on mobile (matches card gap)
-  const FIXED_OVERHEAD = 280 // padding-top(36) + logo(88) + logo-mb(29) + h1-mt(-12) + h1(34) + header-mb(7) + search(48) + search-mb(32) + padding-bottom(16) + buffer(2)
+  const FIXED_OVERHEAD = 249 // padding-top(28.8) + logo(70.4) + logo-mb(23) + h1-mt(-12) + h1(34) + header-mb(7) + search(48) + search-mb(32) + padding-bottom(16) + buffer(2)
 
   const computeMobileHeight = (spec: Course[], skill: Course[], subj: Course[]) => {
     const total = spec.length + skill.length + subj.length
     const cols = [spec, skill, subj].filter(c => c.length > 0).length
-    if (total === 0) return 285
-    if (total === 1) return 360
-    if (total === 2) return 430
-    if (total === 3) return 500
-    if (total === 4) return 570
+    if (total === 0) return 254
+    if (total === 1) return 329
+    if (total === 2) return 399
+    if (total === 3) return 469
+    if (total === 4) return 539
     return FIXED_OVERHEAD + total * CARD_HEIGHT + Math.max(0, total - cols) * CARD_GAP + Math.max(0, cols - 1) * COLUMN_GAP
   }
 
@@ -164,17 +164,16 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         }}
       >
       <div
-        className="relative w-full h-full flex flex-col max-w-[1267px] mx-auto px-6"
+        className="relative w-full h-full flex flex-col max-w-[1267px] mx-auto px-6 pt-[28.8px] md:pt-[2.25rem]"
         style={{
-          paddingTop: '2.25rem',
           paddingBottom: isExpanded ? '4rem' : '1rem',
           overflow: isExpanded ? 'visible' : 'hidden'
         }}
       >
         {/* Header with Logo */}
         <div className="text-center mb-[7px]">
-          <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
-            <div className="w-[88px] h-[88px] md:w-[80px] md:h-[80px] mx-auto relative">
+          <Link href="/" className="inline-block mb-[23.04px] md:mb-[28.8px]">
+            <div className="w-[70.4px] h-[70.4px] md:w-[80px] md:h-[80px] mx-auto relative">
               {/* Static first-frame placeholder — visible instantly, hidden once Lottie renders */}
               {!lottieReady && (
                 <svg
@@ -206,7 +205,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
             </div>
           </Link>
           <h1
-            className="text-[1.7rem] md:text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
+            className="text-[clamp(1rem,6.5vw,1.7rem)] md:text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] whitespace-nowrap hero-text"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
             What do you want to learn?

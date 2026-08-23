@@ -19,8 +19,11 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
       <div className="bg-black relative" data-course-hero>
         <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center pt-[25px] md:pt-[60px]">
           <div className="w-full" style={{ maxWidth: '762px' }}>
-            {/* Matches CourseCurriculum's grid so the hero shares its left edge */}
-            <div className="lg:-mx-24 text-left">
+            {/* Matches CourseCurriculum's grid so the hero shares its left edge.
+                Below md the stack centres instead — tag, title, tagline,
+                description and the Trustpilot lockup all take their alignment
+                from here, since each is either inline-level or full-width. */}
+            <div className="lg:-mx-24 text-center md:text-left">
               {/* Category Tag */}
               <Link
                 href="/courses"
@@ -40,17 +43,22 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                 {course.title}
               </h1>
 
-              {/* Tagline */}
+              {/* Tagline. text-balance so a centred two-line tagline breaks
+                  into even lines rather than a long first line over a short
+                  second — only below md, where the centring makes a ragged
+                  break obvious; desktop keeps the default greedy wrap. */}
               <p
-                className="text-xl text-[#EF0B72] font-semibold leading-normal max-w-[508px]"
+                className="text-xl text-[#EF0B72] font-semibold leading-normal max-w-[508px] mx-auto md:mx-0 text-balance md:text-wrap"
                 style={{ letterSpacing: '-0.01em', marginBottom: '8px' }}
               >
                 {getCourseTagline(course)}
               </p>
 
-              {/* Description */}
+              {/* Description. text-balance for the same reason as the tagline
+                  above — it runs to three lines on a phone, where a greedy
+                  wrap leaves a short orphan last line under two full ones. */}
               <p
-                className="text-white text-[1.1rem] md:text-lg leading-normal md:leading-relaxed font-light course-description max-w-[508px] mb-10 md:mb-[30px]"
+                className="text-white text-[1.1rem] md:text-lg leading-normal md:leading-relaxed font-light course-description max-w-[508px] mx-auto md:mx-0 text-balance md:text-wrap mb-[36px] md:mb-[30px]"
                 style={{ letterSpacing: '-0.02em' }}
               >
                 {getFirstSentence(course.description)}
@@ -65,10 +73,12 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
               <div
                 /* inline-flex retained deliberately: the lg gap below depends
                    on this element sitting in an inline line box. Below lg the
-                   margin is the gap to the inline CTA; at lg the gap is the
-                   band's padding plus whatever of this margin exceeds the
-                   line-leading. */
-                className="inline-flex items-center gap-2.5 mb-[63px] lg:mb-[31px]"
+                   margin is the gap to the inline CTA — phones run it ~24%
+                   tighter than tablets; at lg the gap is the band's padding
+                   plus whatever of this margin exceeds the line-leading.
+                   The space *above* is not set here: it is the description's
+                   bottom margin. */
+                className="inline-flex items-center gap-2.5 mb-[48.2px] md:mb-[63px] lg:mb-[31px]"
               >
                 <Image
                   src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/trustpilot-logo-white.svg"

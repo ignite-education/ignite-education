@@ -293,14 +293,30 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
     }
   }
 
+  // One fade for the whole card. The CTA slot's contents and the share row
+  // below it are hidden until the auth check resolves, then come in together —
+  // by which point the slot is already at its final height, so nothing is seen
+  // moving into place.
+  //
+  // A keyframe animation rather than an opacity transition: both branches mount
+  // at the moment auth resolves, and a transition on a freshly inserted node is
+  // skipped whenever the browser never resolved its opacity:0 start state, which
+  // left the buttons snapping in rather than fading. An animation runs off its
+  // own name changing, so it fires regardless of what was painted before it.
+  const reveal = {
+    opacity: showButton ? 1 : 0,
+    animation: showButton ? 'fadeInPlace 0.45s ease-out both' : undefined,
+    pointerEvents: (showButton ? 'auto' : 'none') as 'auto' | 'none',
+  }
+
   return (
     /* onDark sets currentColor for the share icon; the rail instead draws it as
        two clipped layers, so it needs no inherited colour. */
     <div className={`w-full${onDark ? ' text-white' : ''}`}>
       {/* 144px is the signed-out layout's exact height: two 40px buttons + 8px
-          gap + 16px + 24px caption + 16px. Reserved only while signed out or
-          while auth is still resolving, so the share row below holds still
-          through both.
+          gap + 16px + 24px caption + 16px. Reserved while auth is still
+          resolving so the page below this card does not jump when the answer
+          lands, and held afterwards while signed out.
 
           Signed in, the slot takes its natural height instead — that branch is
           116px, and pinning it to 144 left 28px of dead space between the
@@ -309,26 +325,19 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
           are what keep the row still through the save toggle, which is the only
           thing that changes size once signed in.
 
-          So a signed-in visitor sees the row settle up by 28px once, when the
-          auth check returns. Transitioned rather than snapped, and it lands
-          while the button is still fading in, so it reads as the card arriving.
-          Signed out — the common case on a public course page — nothing moves at
-          all, which is why the unknown state reserves the taller of the two.
+          So the slot loses 28px when a signed-in visitor's check returns. That
+          is a snap, not a transition, and it happens while the card is still at
+          opacity 0 — the share row is already at its final position by the time
+          it fades in, rather than being seen sliding up to it.
 
           The end value is 0 rather than 116px so this cannot drift out of step
           with the layout above it; height is max(min-height, content), so the
-          content stops the collapse at its own height whatever that becomes. It
-          does mean the visible motion finishes early in the 300ms, once
-          min-height passes below the content — the duration is an upper bound on
-          the travel, not its length. */}
-      <div
-        data-cta-slot
-        style={{ minHeight: user ? '0px' : '144px', transition: 'min-height 300ms ease' }}
-      >
+          content stops the collapse at its own height whatever that becomes. */}
+      <div data-cta-slot style={{ minHeight: user ? '0px' : '144px' }}>
         {!authLoaded ? (
           <div className="w-[80%] mx-auto mb-4" />
         ) : !user ? (
-          <>
+          <div style={reveal}>
             {/* Sign-in buttons */}
             <div className="space-y-2 w-[85%] mx-auto mb-4">
               {/* Continue with Google button */}
@@ -361,9 +370,9 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
             <p className={`text-center ${bodyTextColor} text-base font-normal mb-4`} style={{ letterSpacing: '-0.03em' }}>
               {isComingSoon ? 'Sign in to join the course waitlist' : 'Sign in to start the course'}
             </p>
-          </>
+          </div>
         ) : (
-          <>
+          <div style={reveal}>
             {/* Save to Account Button for authenticated users */}
             <div className="w-[80%] mx-auto mb-4">
               <div style={{ minHeight: '40px' }}>
@@ -383,8 +392,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
                     paddingTop: '0.575rem',
                     paddingBottom: '0.575rem',
                     borderRadius: '8px',
-                    transition: 'opacity 0.5s ease, box-shadow 0.35s ease-in-out, background-color 0.3s ease',
-                    opacity: checkingStatus ? 0 : (isSaving ? 1 : (showButton ? 1 : 0)),
+                    transition: 'box-shadow 0.35s ease-in-out, background-color 0.3s ease',
                   }}
                 >
                   {isSaving ? (
@@ -427,8 +435,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
                      2-line saved copy. Reserving both stops that swap pushing
                      the share row down. */
                   minHeight: '3em',
-                  opacity: showButton ? 1 : 0,
-                  transition: 'opacity 0.5s ease',
                 }}
               >
                 {(() => {
@@ -443,17 +449,20 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
                 })()}
               </p>
             </div>
-          </>
+          </div>
         )}
       </div>
 
-      {/* Share Buttons Row */}
-      <ShareButtons
-        url={`https://ignite.education/courses/${courseSlug}`}
-        title={brandTitle(courseTitle)}
-        shareText={`Check out this course: ${courseTitle || 'Course'} on Ignite Education`}
-        clip={clipText}
-      />
+      {/* Share Buttons Row. Always occupies its space so the page below never
+          shifts, but only becomes visible with the rest of the card. */}
+      <div style={reveal}>
+        <ShareButtons
+          url={`https://ignite.education/courses/${courseSlug}`}
+          title={brandTitle(courseTitle)}
+          shareText={`Check out this course: ${courseTitle || 'Course'} on Ignite Education`}
+          clip={clipText}
+        />
+      </div>
     </div>
   )
 }

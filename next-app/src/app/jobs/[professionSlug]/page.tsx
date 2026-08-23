@@ -2,8 +2,12 @@ import { Metadata } from 'next'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import JobBoardClient from '../JobBoardClient'
+import JobsFAQSection from '../JobsFAQSection'
+import ProfessionLinks from '@/components/jobs/ProfessionLinks'
 import { getJobs, getSourceAttribution, getProfessionsWithJobs } from '@/data/jobsData'
-import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from '@/lib/professionUtils'
+import { getProfessionBySlug, getAllProfessionSlugs } from '@/lib/professionUtils'
+import { getRecentPosts } from '@/lib/blogData'
+import { SITE_FAQS } from '@/lib/faqs'
 import { OG_DEFAULTS, ORG_ID, SITE_URL, brandTitle, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 300
@@ -17,6 +21,13 @@ const BASE_URL = SITE_URL
  * that answer the query people actually type ("entry level ux designer jobs
  * uk"). The per-job pages that would normally carry that weight do not exist
  * here by design.
+ *
+ * Titles and headings use the SINGULAR profession name throughout, which is
+ * both the grammatical form and the searched one: "Product Manager Jobs", not
+ * "Product Managers Jobs". Note that pluraliseProfession() is deliberately not
+ * imported here any more — it is still correct on /prompts, where the plural
+ * names an audience ("AI Prompt Toolkit for Product Managers") rather than
+ * modifying a noun.
  */
 export async function generateStaticParams() {
   const slugs = await getAllProfessionSlugs()
@@ -33,8 +44,7 @@ export async function generateMetadata({
   if (!profession) return {}
 
   const name = profession.title || profession.name
-  const plural = pluraliseProfession(name)
-  const title = `${plural} Jobs in the UK`
+  const title = `${name} Jobs in the UK`
   const description = `Current UK ${name} vacancies by experience level — entry level, mid and senior. Reviewed by hand and linked straight to the employer.`
 
   // Professions with no live listings are noindexed. A thin, empty page is an
@@ -74,19 +84,19 @@ export default async function ProfessionJobsPage({
   // Existence is already guaranteed by the sibling layout.
   const profession = await getProfessionBySlug(professionSlug)
   const name = profession!.title || profession!.name
-  const plural = pluraliseProfession(name)
 
-  const [jobs, sources, professionsWithJobs] = await Promise.all([
+  const [jobs, sources, professionsWithJobs, recentPosts] = await Promise.all([
     getJobs({ market: 'gb', profession: name }),
     getSourceAttribution(),
     getProfessionsWithJobs('gb'),
+    getRecentPosts(5),
   ])
 
   const structuredData = [
     {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      name: `${plural} Jobs`,
+      name: `${name} Jobs`,
       description: `Current UK ${name} vacancies by experience level.`,
       url: `${BASE_URL}/jobs/${professionSlug}`,
       publisher: { '@id': ORG_ID },
@@ -97,7 +107,7 @@ export default async function ProfessionJobsPage({
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
         { '@type': 'ListItem', position: 2, name: 'Job Board', item: `${BASE_URL}/jobs` },
-        { '@type': 'ListItem', position: 3, name: `${plural} Jobs`, item: `${BASE_URL}/jobs/${professionSlug}` },
+        { '@type': 'ListItem', position: 3, name: `${name} Jobs`, item: `${BASE_URL}/jobs/${professionSlug}` },
       ],
     },
   ]
@@ -112,19 +122,34 @@ export default async function ProfessionJobsPage({
             <Navbar variant="black" />
           </div>
 
+            {/* initialProfession is the ONLY thing that differs from /jobs.
+                The hero copy is JobBoardClient's own — see the constants there
+                — so this page renders the main board's headline verbatim, with
+                the profession chip arriving selected. Everything bespoke to the
+                role is metadata: the title, description, canonical and the
+                structured data above. */}
             <JobBoardClient
               jobs={jobs}
               professions={professionsWithJobs}
               sources={sources}
               initialProfession={name}
-              heading={`${plural} jobs`}
-              tagline={jobs.length > 0 ? 'Handpicked and updated daily' : 'Coming to the board soon'}
-              subheading={
-                jobs.length > 0
-                  ? `Live UK ${name} vacancies, filtered by experience level and linked straight to the employer.`
-                  : `We're adding ${name} roles to the board now. In the meantime, browse everything else we have open.`
-              }
             />
+
+            {/* The same row /jobs renders, minus this page's own profession and
+                plus a link back up to the full board. Kept on both pages
+                because it is the crawlable path between them — the profession
+                chip above is client-side state and produces no URL. */}
+            <ProfessionLinks
+              professions={professionsWithJobs}
+              currentProfession={name}
+              heading="Browse jobs by profession"
+            />
+
+            {/* Parity with /jobs, which has rendered this since launch. Without
+                it a profession page carries strictly less unique text than the
+                parent it competes with for the same queries — the two would
+                differ only by an h1 and a subheading. */}
+            <JobsFAQSection faqs={SITE_FAQS} posts={recentPosts} />
         </div>
         <Footer />
       </div>

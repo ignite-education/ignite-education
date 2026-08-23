@@ -453,14 +453,6 @@ body {
   .auth-section-merch-title {
     font-size: 2rem !important;
   }
-  .auth-section-merch-grid {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-  }
-  .auth-section-merch-grid img {
-    transform: scale(1.15);
-    transform-origin: center;
-  }
 }
 
 /* Enrollment rail: ink that follows the band behind it.

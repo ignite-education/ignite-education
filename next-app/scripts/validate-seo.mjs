@@ -17,7 +17,9 @@ const BASE_URL = process.argv.includes('--base-url')
 const PAGES = [
   {
     path: '/welcome',
-    expectedTitle: /welcome/i,
+    // The page is titled for the query, not the route — "Welcome" carried no
+    // query surface on the page the apex root redirects to.
+    expectedTitle: /free online courses/i,
     expectedTypes: ['WebSite', 'ItemList', 'FAQPage', 'WebPage'],
     requireKeywords: true,
   },

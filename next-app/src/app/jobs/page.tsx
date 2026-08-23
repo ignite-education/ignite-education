@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import JobBoardClient from './JobBoardClient'
 import JobsFAQSection from './JobsFAQSection'
+import ProfessionLinks from '@/components/jobs/ProfessionLinks'
 import { getJobs, getSourceAttribution, getProfessionsWithJobs } from '@/data/jobsData'
 import { getRecentPosts } from '@/lib/blogData'
 import { SITE_FAQS } from '@/lib/faqs'
@@ -94,9 +95,16 @@ export default async function JobBoardPage() {
               jobs={jobs}
               professions={professionsWithJobs}
               sources={sources}
-              heading="Job Board"
-              tagline="Handpicked and updated daily"
-              subheading="Discover the top entry-level and graduate jobs in the UK. Every vacancy is hand-picked and ready for you to directly apply."
+            />
+
+            {/* The only crawlable path into /jobs/[professionSlug]. The
+                profession filter above is client-side state and produces no
+                URL, so before this row those pages were reachable from the
+                sitemap and llms.txt alone — indexed in principle, rarely
+                crawled and carrying no internal link equity in practice. */}
+            <ProfessionLinks
+              professions={professionsWithJobs}
+              heading="Browse jobs by profession"
             />
 
             <JobsFAQSection faqs={SITE_FAQS} posts={recentPosts} />
