@@ -16,7 +16,7 @@
     {
       "source": "/",
       "destination": "/welcome",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/ai.txt",

@@ -26,8 +26,15 @@ const supabase = createClient(
 
 // Route-specific metadata for SEO
 const routeMetadata = {
+  // This document is the SPA shell. The apex root 301s to /welcome, so it is
+  // only ever reached via the catch-all rewrite on an unmatched path — where it
+  // returns a soft 200. Title and canonical therefore mirror the Next.js
+  // /welcome page rather than asserting a second, competing homepage: it
+  // previously carried a different title and self-canonicalled at "/", a URL
+  // that redirects away.
   '/': {
-    title: 'Ignite Education | Free Online Courses in Tech & Professional Skills',
+    title: 'Free Online Courses, Built by Experts | Ignite',
+    canonical: 'https://ignite.education/welcome',
     description: 'Learn Product Management, Data Analysis, UX Design, Cyber Security and more with free, expert-led courses. AI-powered learning with real-world projects.',
     keywords: 'free online courses, product management course, data analyst course, cyber security training, UX design course, AI-powered learning, tech skills, career development',
   },
@@ -81,7 +88,9 @@ const getBlogMetadata = (post) => ({
  */
 function injectMetaTags(html, meta, route) {
   const baseUrl = 'https://ignite.education';
-  const canonicalUrl = `${baseUrl}${route === '/' ? '' : route}`;
+  // A route may pin its own canonical when the URL it is served at is not the
+  // URL it should be indexed as (see '/' above).
+  const canonicalUrl = meta.canonical || `${baseUrl}${route === '/' ? '' : route}`;
 
   // Replace title
   html = html.replace(

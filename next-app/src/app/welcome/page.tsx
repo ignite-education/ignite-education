@@ -90,7 +90,10 @@ function generateStructuredData(coursesByType: { specialism: Array<{ name: strin
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Welcome to Ignite Education",
+      // Mirrors the <title> exactly. This lagged behind as 'Welcome to Ignite
+      // Education' after the title changed, leaving the page declaring two
+      // different names for itself — keep the two in step.
+      "name": brandTitle(TITLE),
       "description": "Transform your career with free, expert-led courses in Product Management, Cyber Security, Data Analysis, and more.",
       "url": "https://ignite.education/welcome",
       "speakable": {

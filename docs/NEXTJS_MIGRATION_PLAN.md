@@ -400,7 +400,7 @@ Internal: Next.js deployment (proxied via Vercel rewrites — not accessed direc
 - [x] Route testing: all public pages return 200, protected routes serve Vite SPA
 - [x] Auth callback handles missing code gracefully (307 → /sign-in?error=auth)
 - [x] Certificate 404 for invalid IDs
-- [x] Root / redirects to /welcome (307)
+- [x] Root / redirects to /welcome (301 — permanent, so Google consolidates on /welcome)
 - [ ] Sign up flow: /welcome → enrollment → /progress (manual)
 - [ ] Sign in flow: /sign-in → /progress (manual)
 - [ ] OAuth flows: Google, LinkedIn (manual)

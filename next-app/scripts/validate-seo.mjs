@@ -479,7 +479,7 @@ async function validateSitemap() {
 
   // A sitemap must not list URLs that redirect or are noindexed.
   if (locs.includes('https://ignite.education/')) {
-    fail(`Lists the bare "/" URL, which 307s to /welcome — never sitemap a redirect`);
+    fail(`Lists the bare "/" URL, which 301s to /welcome — never sitemap a redirect`);
   } else {
     pass(`Does not list the redirecting "/" URL`);
   }
