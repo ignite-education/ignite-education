@@ -277,7 +277,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
       <div className="max-w-[1330px] mx-auto px-6">
         {/* Header with Lottie logo */}
         <div className={`text-center ${pageTitle ? 'mb-[15px]' : 'mb-[7px]'}`}>
-          <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
+          <Link href="/welcome" className="inline-block" style={{ marginBottom: '28.8px' }}>
             {lottieData ? (
               <Lottie
                 lottieRef={lottieRef}

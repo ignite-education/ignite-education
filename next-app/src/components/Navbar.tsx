@@ -77,11 +77,18 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
   return (
     <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-[#E5E5E7]/70 backdrop-blur-md' : ''}>
       <div className={`px-6 md:px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
-        {/* Logo - links to home (hidden on pages with centered logo) */}
+        {/* Logo - links to home (hidden on pages with centered logo).
+            Targets /welcome, not "/": the apex root permanently redirects there,
+            and every public page carries this Navbar, so pointing it at "/" had
+            the whole site nominating a redirecting URL as the homepage — which
+            fought the 308 and kept Google indexing "/".
+            The alt is "Ignite Education home" rather than the bare brand name
+            because an image's alt is the anchor text of the link wrapping it, and
+            Google was echoing that exact string back as the SERP title. */}
         {hideLogo ? (
           <div className="w-[35px] md:w-[99px]" />
         ) : (
-          <Link href="/" className="inline-block">
+          <Link href="/welcome" className="inline-block">
             {/* Mobile: animated square icon — Lottie canvas is 600x600 with ~15% internal padding, so we overflow-clip it */}
             <div className="md:hidden w-[33px] h-[33px] overflow-hidden">
               <Lottie
@@ -99,7 +106,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
                   {/* Black logo - clips from top, shows bottom portion */}
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
-                    alt="Ignite Education"
+                    alt="Ignite Education home"
                     className="logo-layer"
                     style={{
                       position: 'absolute',
@@ -130,7 +137,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
                   {/* White logo - clips from top, shows bottom portion */}
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
-                    alt="Ignite Education"
+                    alt="Ignite Education home"
                     className="logo-layer"
                     style={{
                       position: 'absolute',

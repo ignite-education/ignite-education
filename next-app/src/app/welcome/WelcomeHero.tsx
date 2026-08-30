@@ -172,7 +172,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
       >
         {/* Header with Logo */}
         <div className="text-center mb-[7px]">
-          <Link href="/" className="inline-block mb-[23.04px] md:mb-[28.8px]">
+          <Link href="/welcome" className="inline-block mb-[23.04px] md:mb-[28.8px]">
             <div className="w-[70.4px] h-[70.4px] md:w-[80px] md:h-[80px] mx-auto relative">
               {/* Static first-frame placeholder — visible instantly, hidden once Lottie renders */}
               {!lottieReady && (

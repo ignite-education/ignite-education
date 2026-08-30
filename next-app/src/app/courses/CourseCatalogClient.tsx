@@ -189,7 +189,7 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false, o
         {/* Header with Lottie logo */}
         <div className="text-center mb-[7px]">
           {!hideLogo && (
-            <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
+            <Link href="/welcome" className="inline-block" style={{ marginBottom: '28.8px' }}>
               {lottieData ? (
                 <Lottie
                   lottieRef={lottieRef}
