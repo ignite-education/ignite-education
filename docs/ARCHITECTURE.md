@@ -222,7 +222,7 @@ Two non-obvious failure modes this configuration prevents:
 | **Flashcards** | `/api/generate-flashcards`, `/api/lesson-scores/global/:courseId` | None |
 | **Narration (live)** | `/api/admin/generate-lesson-audio`, `/api/admin/generate-blog-audio`, `/api/admin/lesson-audio-status/:courseId/:module/:lesson` | None |
 | **Text-to-Speech (unused)** | `/api/text-to-speech`, `/api/text-to-speech-timestamps`, `/api/lesson-audio/:courseId/:module/:lesson` | None |
-| **Office Hours** | `/api/office-hours/start`, `/api/office-hours/join`, `/api/office-hours/queue/*` | Auth / Teacher+Admin |
+| **Office Hours** | `/api/office-hours/start`, `/api/office-hours/join`, `/api/office-hours/queue/*`, `/api/office-hours/schedule/recurring/*` | Auth / Teacher+Admin |
 | **Payments** | `/api/webhook/stripe`, `/api/create-checkout-session` | Stripe signature / Auth |
 | **Certificates** | `/api/certificate/generate`, `/api/certificate/:id`, `/api/certificate/verify/:number` | Varies |
 | **Email** | `/api/send-email`, `/api/email-preferences/*`, `/api/unsubscribe` | Varies |
@@ -566,6 +566,9 @@ Key tables (non-exhaustive):
 - `reddit_cache` — cached Reddit posts/comments
 - `sign_in_history` — login audit log
 - `office_hours_sessions`, `office_hours_queue` — live session state
+- `office_hours_schedule` — one-off coach availability slots
+- `office_hours_recurring` + `office_hours_recurring_exceptions` — repeating
+  availability rules and their per-date cancellations (see below)
 - `email_preferences` — per-user email subscription settings
 - `release_notes` — product changelog
 - `notifications` — Progress Hub notification feed (see below)
@@ -595,6 +598,31 @@ Supabase RPCs:
 - `refresh_community_stats()` — nightly community metrics
 - `refresh_achievement_percentile_stats()` — nightly percentile calculations
 - `prune_notifications()` — nightly deletion of aged-out/expired notifications
+
+### Recurring office hours
+
+Migration: `migrations/add_recurring_office_hours.sql` (hand-applied in the Supabase
+SQL editor).
+
+Coaches can declare a repeating availability rule ("every Thursday, 17:00-18:00")
+instead of adding one dated slot at a time. A rule stores weekdays, a wall-clock
+start/end time, an IANA `timezone`, an `interval_weeks` cadence, and an optional
+`ends_on`.
+
+**Occurrences are expanded on read, never materialised.** `server/office-hours/recurrence.js`
+turns rules into concrete UTC instants and merges them with one-off
+`office_hours_schedule` rows; `loadOfficeHoursSchedule()` in `server.js` is the single
+entry point used by the coach schedule endpoint, the public
+`/api/office-hours/status/:courseId`, and the lobby's session-detail lookup. This means
+editing a rule takes effect everywhere immediately and there is nothing to backfill or
+keep in sync.
+
+Two consequences worth knowing:
+- Because times are anchored to a zone rather than a fixed UTC offset, 17:00 stays 17:00
+  across a DST change.
+- A generated occurrence's `id` is synthetic — `<ruleId>:<YYYY-MM-DD>` — and carries
+  `recurring: true`. It is not a row, so "cancel just this one" writes an
+  `office_hours_recurring_exceptions` row rather than deleting anything.
 
 ### Notifications
 

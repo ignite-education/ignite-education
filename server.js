@@ -16,6 +16,7 @@ import { summariseListings } from './server/jobs/lib/summarise.js';
 import { discoverBoards } from './server/jobs/lib/discover.js';
 import { getAdapter } from './server/jobs/sources/index.js';
 import { matchesMarket } from './server/jobs/lib/normalise.js';
+import { buildSchedule, describeRule, todayInZone } from './server/office-hours/recurrence.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -3253,6 +3254,34 @@ app.post('/api/office-hours/leave', verifyAuth, async (req, res) => {
   }
 });
 
+// Load one-off slots + recurring rules for a coach or course and merge them into a
+// single upcoming-sessions list. Recurring rules are expanded on read (never
+// materialised), so `id` on a generated occurrence is `<ruleId>:<YYYY-MM-DD>`.
+const loadOfficeHoursSchedule = async ({ courseId, coachId, from = new Date(), horizonWeeks = 8 }) => {
+  const scope = (query) => (coachId ? query.eq('coach_id', coachId) : query.eq('course_id', courseId));
+
+  const [{ data: slots }, { data: rules }] = await Promise.all([
+    scope(supabase.from('office_hours_schedule').select('id, starts_at, ends_at'))
+      .gte('ends_at', from.toISOString())
+      .order('starts_at', { ascending: true }),
+    scope(supabase.from('office_hours_recurring').select('*')),
+  ]);
+
+  let exceptions = [];
+  if (rules?.length) {
+    const { data } = await supabase
+      .from('office_hours_recurring_exceptions')
+      .select('recurrence_id, occurrence_date')
+      .in('recurrence_id', rules.map(r => r.id));
+    exceptions = data || [];
+  }
+
+  return {
+    rules: rules || [],
+    schedule: buildSchedule({ rules: rules || [], slots: slots || [], exceptions, from, horizonWeeks }),
+  };
+};
+
 // GET /api/office-hours/status/:courseId — Check if any coach is live
 app.get('/api/office-hours/status/:courseId', async (req, res) => {
   try {
@@ -3279,16 +3308,10 @@ app.get('/api/office-hours/status/:courseId', async (req, res) => {
       coach: s.coaches,
     }));
 
-    // Also fetch upcoming scheduled sessions
-    const { data: upcoming } = await supabase
-      .from('office_hours_schedule')
-      .select('id, starts_at, ends_at')
-      .eq('course_id', courseId)
-      .gte('ends_at', new Date().toISOString())
-      .order('starts_at', { ascending: true })
-      .limit(5);
+    // Also fetch upcoming sessions — one-off slots plus expanded recurring rules
+    const { schedule } = await loadOfficeHoursSchedule({ courseId });
 
-    res.json({ live: liveSessions.length > 0, sessions: liveSessions, upcoming: upcoming || [] });
+    res.json({ live: liveSessions.length > 0, sessions: liveSessions, upcoming: schedule.slice(0, 5) });
   } catch (error) {
     console.error('Error in office hours status:', error);
     res.status(500).json({ error: 'Failed to fetch status' });
@@ -3313,21 +3336,13 @@ app.get('/api/office-hours/session/:sessionId', async (req, res) => {
       return res.status(404).json({ error: 'Session not found' });
     }
 
-    // Find matching schedule entry for end time
+    // Find the slot (one-off or recurring occurrence) covering right now, for the end time
     let endTime = null;
     if (session.course_id) {
-      const { data: schedule } = await supabase
-        .from('office_hours_schedule')
-        .select('ends_at')
-        .eq('course_id', session.course_id)
-        .lte('starts_at', new Date().toISOString())
-        .gte('ends_at', new Date().toISOString())
-        .order('starts_at', { ascending: false })
-        .limit(1);
-
-      if (schedule?.length > 0) {
-        endTime = schedule[0].ends_at;
-      }
+      const now = new Date();
+      const { schedule } = await loadOfficeHoursSchedule({ courseId: session.course_id, horizonWeeks: 1 });
+      const current = schedule.find(s => new Date(s.starts_at) <= now && new Date(s.ends_at) >= now);
+      if (current) endTime = current.ends_at;
     }
 
     res.json({
@@ -3472,7 +3487,7 @@ app.delete('/api/office-hours/schedule/:id', verifyTeacherOrAdmin, async (req, r
   }
 });
 
-// GET /api/office-hours/schedule — Coach's upcoming scheduled slots
+// GET /api/office-hours/schedule — Coach's upcoming slots (one-off + expanded recurring)
 app.get('/api/office-hours/schedule', verifyTeacherOrAdmin, async (req, res) => {
   try {
     const { data: coach } = await supabase
@@ -3485,22 +3500,187 @@ app.get('/api/office-hours/schedule', verifyTeacherOrAdmin, async (req, res) => 
       return res.status(403).json({ error: 'Not a registered coach' });
     }
 
-    const { data: slots, error } = await supabase
-      .from('office_hours_schedule')
-      .select('id, starts_at, ends_at')
-      .eq('coach_id', coach.id)
-      .gte('ends_at', new Date().toISOString())
-      .order('starts_at', { ascending: true });
+    const { rules, schedule } = await loadOfficeHoursSchedule({ coachId: coach.id });
 
-    if (error) {
-      console.error('Error fetching schedule:', error);
-      return res.status(500).json({ error: 'Failed to fetch schedule' });
-    }
-
-    res.json({ slots: slots || [] });
+    res.json({
+      slots: schedule,
+      recurring: rules.map(rule => ({ ...rule, summary: describeRule(rule) })),
+    });
   } catch (error) {
     console.error('Error fetching schedule:', error);
     res.status(500).json({ error: 'Failed to fetch schedule' });
+  }
+});
+
+// POST /api/office-hours/schedule/recurring — Create a repeating availability rule
+app.post('/api/office-hours/schedule/recurring', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { weekdays, startTime, endTime, timezone, intervalWeeks = 1, startsOn, endsOn } = req.body;
+
+    const days = [...new Set((Array.isArray(weekdays) ? weekdays : []).map(Number))]
+      .filter(d => Number.isInteger(d) && d >= 0 && d <= 6)
+      .sort((a, b) => a - b);
+
+    if (days.length === 0) {
+      return res.status(400).json({ error: 'Pick at least one day of the week' });
+    }
+    if (!startTime || !endTime) {
+      return res.status(400).json({ error: 'startTime and endTime are required' });
+    }
+    if (endTime <= startTime) {
+      return res.status(400).json({ error: 'End time must be after start time' });
+    }
+
+    const interval = Number(intervalWeeks) || 1;
+    if (interval < 1 || interval > 8) {
+      return res.status(400).json({ error: 'Repeat interval must be between 1 and 8 weeks' });
+    }
+
+    const zone = timezone || 'Europe/London';
+    let firstDay;
+    try {
+      firstDay = startsOn || todayInZone(zone);
+    } catch {
+      return res.status(400).json({ error: 'Invalid timezone' });
+    }
+    if (endsOn && endsOn < firstDay) {
+      return res.status(400).json({ error: 'End date must be on or after the start date' });
+    }
+
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id, course_id')
+      .eq('user_id', req.user.id)
+      .eq('is_active', true)
+      .single();
+
+    if (!coach) {
+      return res.status(403).json({ error: 'Not a registered coach' });
+    }
+
+    const { data: rule, error } = await supabase
+      .from('office_hours_recurring')
+      .insert({
+        coach_id: coach.id,
+        course_id: coach.course_id,
+        weekdays: days,
+        start_time: startTime,
+        end_time: endTime,
+        timezone: zone,
+        interval_weeks: interval,
+        starts_on: firstDay,
+        ends_on: endsOn || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating recurring office hours:', error);
+      return res.status(500).json({ error: 'Failed to create recurring schedule' });
+    }
+
+    const { rules, schedule } = await loadOfficeHoursSchedule({ coachId: coach.id });
+
+    res.json({
+      rule: { ...rule, summary: describeRule(rule) },
+      slots: schedule,
+      recurring: rules.map(r => ({ ...r, summary: describeRule(r) })),
+    });
+  } catch (error) {
+    console.error('Error creating recurring office hours:', error);
+    res.status(500).json({ error: 'Failed to create recurring schedule' });
+  }
+});
+
+// DELETE /api/office-hours/schedule/recurring/:id — Remove an entire repeating series
+app.delete('/api/office-hours/schedule/recurring/:id', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!coach) {
+      return res.status(403).json({ error: 'Not a registered coach' });
+    }
+
+    const { error } = await supabase
+      .from('office_hours_recurring')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('coach_id', coach.id);
+
+    if (error) {
+      console.error('Error deleting recurring schedule:', error);
+      return res.status(500).json({ error: 'Failed to delete' });
+    }
+
+    const { rules, schedule } = await loadOfficeHoursSchedule({ coachId: coach.id });
+
+    res.json({
+      success: true,
+      slots: schedule,
+      recurring: rules.map(r => ({ ...r, summary: describeRule(r) })),
+    });
+  } catch (error) {
+    console.error('Error deleting recurring schedule:', error);
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
+// DELETE /api/office-hours/schedule/recurring/:id/:date — Skip one occurrence of a series
+app.delete('/api/office-hours/schedule/recurring/:id/:date', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { id, date } = req.params;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ error: 'Occurrence date must be YYYY-MM-DD' });
+    }
+
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!coach) {
+      return res.status(403).json({ error: 'Not a registered coach' });
+    }
+
+    // Confirm the rule belongs to this coach before recording a cancellation against it
+    const { data: rule } = await supabase
+      .from('office_hours_recurring')
+      .select('id')
+      .eq('id', id)
+      .eq('coach_id', coach.id)
+      .single();
+
+    if (!rule) {
+      return res.status(404).json({ error: 'Recurring schedule not found' });
+    }
+
+    const { error } = await supabase
+      .from('office_hours_recurring_exceptions')
+      .upsert(
+        { recurrence_id: id, occurrence_date: date },
+        { onConflict: 'recurrence_id,occurrence_date' },
+      );
+
+    if (error) {
+      console.error('Error skipping occurrence:', error);
+      return res.status(500).json({ error: 'Failed to cancel that session' });
+    }
+
+    const { rules, schedule } = await loadOfficeHoursSchedule({ coachId: coach.id });
+
+    res.json({
+      success: true,
+      slots: schedule,
+      recurring: rules.map(r => ({ ...r, summary: describeRule(r) })),
+    });
+  } catch (error) {
+    console.error('Error skipping occurrence:', error);
+    res.status(500).json({ error: 'Failed to cancel that session' });
   }
 });
 

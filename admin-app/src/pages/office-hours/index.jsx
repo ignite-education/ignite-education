@@ -37,10 +37,17 @@ const OfficeHours = () => {
   const [ending, setEnding] = useState(false);
 
   // Schedule form state
+  const [scheduleMode, setScheduleMode] = useState('once');
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleStartTime, setScheduleStartTime] = useState('');
   const [scheduleEndTime, setScheduleEndTime] = useState('');
   const [addingSlot, setAddingSlot] = useState(false);
+
+  // Recurring form state
+  const [recurringRules, setRecurringRules] = useState([]);
+  const [recurringDays, setRecurringDays] = useState([]);
+  const [recurringInterval, setRecurringInterval] = useState(1);
+  const [recurringUntil, setRecurringUntil] = useState('');
 
   const getAuthToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -89,6 +96,7 @@ const OfficeHours = () => {
         if (scheduleRes.ok) {
           const data = await scheduleRes.json();
           setScheduledSlots(data.slots || []);
+          setRecurringRules(data.recurring || []);
         }
       } catch (err) {
         console.error('Error fetching office hours data:', err);
@@ -330,6 +338,98 @@ const OfficeHours = () => {
     }
   };
 
+  const handleToggleDay = (day) => {
+    setRecurringDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day].sort((a, b) => a - b)
+    );
+  };
+
+  const handleAddRecurring = async () => {
+    if (recurringDays.length === 0) {
+      setError('Pick at least one day of the week');
+      return;
+    }
+    if (!scheduleStartTime || !scheduleEndTime) {
+      setError('Please fill in a start and end time');
+      return;
+    }
+    if (scheduleEndTime <= scheduleStartTime) {
+      setError('End time must be after start time');
+      return;
+    }
+    setAddingSlot(true);
+    setError('');
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API_URL}/api/office-hours/schedule/recurring`, {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          weekdays: recurringDays,
+          startTime: scheduleStartTime,
+          endTime: scheduleEndTime,
+          intervalWeeks: recurringInterval,
+          endsOn: recurringUntil || null,
+          // Anchor the wall-clock times to the coach's own zone so they survive DST
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Failed to create the repeating schedule');
+        return;
+      }
+      const data = await res.json();
+      setScheduledSlots(data.slots || []);
+      setRecurringRules(data.recurring || []);
+      setRecurringDays([]);
+      setRecurringUntil('');
+      setScheduleStartTime('');
+      setScheduleEndTime('');
+    } catch (err) {
+      console.error('Error creating recurring schedule:', err);
+      setError('Failed to create the repeating schedule. Please try again.');
+    } finally {
+      setAddingSlot(false);
+    }
+  };
+
+  const handleDeleteSeries = async (ruleId) => {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API_URL}/api/office-hours/schedule/recurring/${ruleId}`, {
+        method: 'DELETE', headers,
+      });
+      if (!res.ok) {
+        setError('Failed to remove the repeating schedule');
+        return;
+      }
+      const data = await res.json();
+      setScheduledSlots(data.slots || []);
+      setRecurringRules(data.recurring || []);
+    } catch (err) {
+      console.error('Error deleting recurring schedule:', err);
+    }
+  };
+
+  const handleSkipOccurrence = async (ruleId, occurrenceDate) => {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(
+        `${API_URL}/api/office-hours/schedule/recurring/${ruleId}/${occurrenceDate}`,
+        { method: 'DELETE', headers }
+      );
+      if (!res.ok) {
+        setError('Failed to cancel that session');
+        return;
+      }
+      const data = await res.json();
+      setScheduledSlots(data.slots || []);
+      setRecurringRules(data.recurring || []);
+    } catch (err) {
+      console.error('Error cancelling occurrence:', err);
+    }
+  };
+
   // --- Helpers ---
   const formatDuration = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -409,14 +509,26 @@ const OfficeHours = () => {
       <div className="mb-8">
         <ScheduleManager
           scheduledSlots={scheduledSlots}
+          recurringRules={recurringRules}
+          scheduleMode={scheduleMode}
+          onModeChange={setScheduleMode}
           scheduleDate={scheduleDate}
           scheduleStartTime={scheduleStartTime}
           scheduleEndTime={scheduleEndTime}
           onDateChange={setScheduleDate}
           onStartTimeChange={setScheduleStartTime}
           onEndTimeChange={setScheduleEndTime}
+          recurringDays={recurringDays}
+          recurringInterval={recurringInterval}
+          recurringUntil={recurringUntil}
+          onToggleDay={handleToggleDay}
+          onIntervalChange={setRecurringInterval}
+          onUntilChange={setRecurringUntil}
           onAddSlot={handleAddSlot}
+          onAddRecurring={handleAddRecurring}
           onDeleteSlot={handleDeleteSlot}
+          onDeleteSeries={handleDeleteSeries}
+          onSkipOccurrence={handleSkipOccurrence}
           addingSlot={addingSlot}
           todayStr={todayStr}
         />
