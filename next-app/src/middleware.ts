@@ -17,7 +17,12 @@ function isPublicMetadataRoute(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  if (isPublicMetadataRoute(request.nextUrl.pathname)) {
+  const { pathname } = request.nextUrl
+
+  // "/" only ever permanentRedirects to /welcome (app/page.tsx) — and on the apex
+  // it never even reaches Next, because vercel.json redirects it first. Skipping
+  // the session round-trip here matches the matcher's existing `welcome` bail.
+  if (pathname === '/' || isPublicMetadataRoute(pathname)) {
     return NextResponse.next()
   }
   return await updateSession(request)

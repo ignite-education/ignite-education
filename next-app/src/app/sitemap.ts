@@ -25,7 +25,7 @@ export const revalidate = 3600
  *     until someone deployed the *Vite* app. ISR picks it up within the hour.
  *
  * Deliberately excluded:
- *  - `/`            — 301s to /welcome; never list a redirecting URL.
+ *  - `/`            — 308s to /welcome; never list a redirecting URL.
  *  - `/sign-in`, `/reset-password`, `/certificate/*` — noindexed.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

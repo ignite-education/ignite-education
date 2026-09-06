@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense, useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
@@ -42,11 +42,13 @@ function App() {
         <AuthProvider>
           <Suspense fallback={<SuspenseLoadingSignal />}>
           <Routes>
-            <Route path="/" element={
-              <ProtectedRoute>
-                <ProgressHubV2 />
-              </ProtectedRoute>
-            } />
+            {/* "/" is not a page of this app. In production the apex 308s it to
+                /welcome before the SPA is ever reached, so rendering the hub here
+                only ever created a second URL for /progress — and a second
+                homepage candidate for Google to pick over /welcome. Kept as a
+                redirect because `vite dev` has no vercel.json, so "/" is still
+                the local entry point. */}
+            <Route path="/" element={<Navigate to="/progress" replace />} />
             <Route path="/progress" element={
               <ProtectedRoute>
                 <ProgressHubV2 />

@@ -8,6 +8,12 @@
   },
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.ignite.education" }],
+      "destination": "https://ignite.education/welcome",
+      "permanent": true
+    },
+    {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "www.ignite.education" }],
       "destination": "https://ignite.education/$1",

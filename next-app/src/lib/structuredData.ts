@@ -6,6 +6,18 @@ import { SITE_URL, ORG_ID, DEFAULT_OG_IMAGE } from '@/lib/siteConfig'
 const BASE_URL = SITE_URL
 
 /**
+ * The canonical homepage — deliberately NOT `SITE_URL`.
+ *
+ * The bare root 308s to /welcome, and every breadcrumb below used to nominate it
+ * as position 1. That put a link to a redirecting URL on every indexable page,
+ * contradicting /welcome's self-canonical and the sitemap; combined with the
+ * root redirect being a *temporary* 307 until 2026-08-25, it let Google pick `/`
+ * as the homepage canonical and drop /welcome out of Search Console entirely.
+ * Breadcrumbs are a signal Google actively consumes — never point one at a redirect.
+ */
+const HOME_URL = `${SITE_URL}/welcome`
+
+/**
  * Reference to the single Organization node declared once in
  * components/SiteJsonLd.tsx (rendered from the root layout).
  *
@@ -112,7 +124,7 @@ export function generateBreadcrumbStructuredData(courseTitle: string, courseSlug
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     'itemListElement': [
-      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': HOME_URL },
       { '@type': 'ListItem', 'position': 2, 'name': 'Courses', 'item': `${BASE_URL}/courses` },
       { '@type': 'ListItem', 'position': 3, 'name': courseTitle, 'item': `${BASE_URL}/courses/${courseSlug}` },
     ],
@@ -190,7 +202,7 @@ export function generateBlogBreadcrumbStructuredData(postTitle: string, postSlug
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     'itemListElement': [
-      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': HOME_URL },
       { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${BASE_URL}/blog` },
       { '@type': 'ListItem', 'position': 3, 'name': postTitle, 'item': `${BASE_URL}/blog/${postSlug}` },
     ],
@@ -205,7 +217,7 @@ export function generateStaticPageBreadcrumb(pageName: string, pagePath: string)
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     'itemListElement': [
-      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': HOME_URL },
       { '@type': 'ListItem', 'position': 2, 'name': pageName, 'item': `${BASE_URL}${pagePath}` },
     ],
   }
@@ -278,7 +290,7 @@ export function generateProfileBreadcrumbStructuredData(displayName: string, use
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     'itemListElement': [
-      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': HOME_URL },
       { '@type': 'ListItem', 'position': 2, 'name': displayName, 'item': `${BASE_URL}/${username}` },
     ],
   }
@@ -295,7 +307,7 @@ export function generateCertificateBreadcrumbStructuredData(
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     'itemListElement': [
-      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': HOME_URL },
       { '@type': 'ListItem', 'position': 2, 'name': `${userName}'s Certificate`, 'item': `${BASE_URL}/certificate/${certificateId}` },
     ],
   }

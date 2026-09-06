@@ -12,7 +12,7 @@ import TestimonialsSection from './TestimonialsSection'
 import MerchSection from './MerchSection'
 import FAQSection from './FAQSection'
 import WelcomeScrollManager from './WelcomeScrollManager'
-import { OG_DEFAULTS, brandTitle, ogImages } from '@/lib/siteConfig'
+import { OG_DEFAULTS, SITE_URL, SITE_ID, ORG_ID, brandTitle, ogImages } from '@/lib/siteConfig'
 import { SITE_FAQS } from '@/lib/faqs'
 
 export const revalidate = 3600 // Revalidate at most once per hour
@@ -69,7 +69,10 @@ function generateStructuredData(coursesByType: { specialism: Array<{ name: strin
           "name": course.title || course.name,
           "description": course.description || `Learn ${course.title || course.name} from industry experts`,
           "url": `https://ignite.education/courses/${course.name?.toLowerCase().replace(/\s+/g, '-')}`,
-          "provider": { "@type": "Organization", "name": "Ignite Education" }
+          // Reference the single Organization from SiteJsonLd.tsx rather than
+          // redeclaring it — an inline node here made the site's most important
+          // page publish a second, unlinked organisation entity.
+          "provider": { "@id": ORG_ID }
         }
       }))
     },
@@ -90,12 +93,17 @@ function generateStructuredData(coursesByType: { specialism: Array<{ name: strin
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
+      // Anchored and tied to the site-wide WebSite node from SiteJsonLd.tsx, so
+      // Google resolves /welcome as *the* page of this site rather than as a
+      // free-floating WebPage competing with the bare root.
+      "@id": `${SITE_URL}/welcome/#webpage`,
+      "isPartOf": { "@id": SITE_ID },
       // Mirrors the <title> exactly. This lagged behind as 'Welcome to Ignite
       // Education' after the title changed, leaving the page declaring two
       // different names for itself — keep the two in step.
       "name": brandTitle(TITLE),
       "description": "Transform your career with free, expert-led courses in Product Management, Cyber Security, Data Analysis, and more.",
-      "url": "https://ignite.education/welcome",
+      "url": `${SITE_URL}/welcome`,
       "speakable": {
         "@type": "SpeakableSpecification",
         "cssSelector": [".hero-text", "h1", ".course-description", ".testimonial-text"]

@@ -11,12 +11,19 @@ const SEO = ({
   keywords,
   image,
   url,
+  canonical,
   type = 'website',
   structuredData
 }) => {
   const location = useLocation();
   const baseUrl = 'https://ignite.education';
   const fullUrl = url || `${baseUrl}${location.pathname}`;
+  // Self-canonicalling on the current router path is only safe while every SPA
+  // route is robots-disallowed. A public SPA route that renders at a path Next.js
+  // also owns would otherwise assert a second canonical for the same content —
+  // the failure mode that let Google pick "/" over /welcome. Pass `canonical`
+  // explicitly on any route that is not its own canonical URL.
+  const canonicalUrl = canonical || fullUrl;
   const ogImage = image || `${baseUrl}/og-image.png`;
 
   useEffect(() => {
@@ -63,14 +70,14 @@ const SEO = ({
     updateMetaTag('robots', 'index, follow');
     updateMetaTag('author', 'Ignite');
 
-    // Update canonical URL
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
+    // Update canonical URL (named ...El so it doesn't shadow the `canonical` prop)
+    let canonicalEl = document.querySelector('link[rel="canonical"]');
+    if (!canonicalEl) {
+      canonicalEl = document.createElement('link');
+      canonicalEl.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalEl);
     }
-    canonical.setAttribute('href', fullUrl);
+    canonicalEl.setAttribute('href', canonicalUrl);
 
     // Add structured data if provided (supports single object or array of objects)
     if (structuredData) {
@@ -96,7 +103,7 @@ const SEO = ({
     return () => {
       // Don't remove tags on unmount - they should persist for navigation
     };
-  }, [title, description, keywords, fullUrl, ogImage, type, structuredData]);
+  }, [title, description, keywords, fullUrl, canonicalUrl, ogImage, type, structuredData]);
 
   return null;
 };

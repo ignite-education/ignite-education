@@ -28,15 +28,17 @@ const supabase = createClient(
 );
 
 // Route-specific metadata for SEO
+//
+// WARNING: this script runs under `build:local` only, never the deployed `build`,
+// and its dist/ output must NEVER be deployed. Vercel checks the filesystem before
+// rewrites, so a prerendered file here SHADOWS the Next.js page that owns the same
+// path — serving a stale title and a self-canonical at HTTP 200, with no error to
+// alert anyone. Every remaining route below (/privacy, /terms, /courses/*, /blog/*)
+// is Next.js-owned and carries that risk.
+//
+// `/` and `/welcome` were removed outright: emitting them re-created the competing
+// homepage that cost /welcome its Search Console traffic in Aug 2026.
 const routeMetadata = {
-  '/': {
-    title: 'Ignite Education | Free Online Courses in Tech & Professional Skills',
-    description: 'Learn Product Management, Data Analysis, UX Design, Cyber Security and more with free, expert-led courses. AI-powered learning with real-world projects.',
-  },
-  '/welcome': {
-    title: 'Welcome to Ignite | Start Your Free Learning Journey',
-    description: 'Discover free online courses in Product Management, Data Analysis, UX Design, and more. Expert-led lessons with AI-powered feedback.',
-  },
   '/privacy': {
     title: 'Privacy Policy | Ignite Education',
     description: 'Learn how Ignite Education protects your privacy and handles your data in compliance with GDPR and UK data protection laws.',
@@ -61,9 +63,8 @@ const getBlogMetadata = (post) => ({
 });
 
 async function getRoutesToPrerender() {
+  // No '/' or '/welcome' — see the warning on routeMetadata above.
   const routes = [
-    '/',
-    '/welcome',
     '/privacy',
     '/terms',
   ];

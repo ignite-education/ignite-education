@@ -18,6 +18,14 @@ import {
  * BlogPosting.publisher, Person.memberOf, …) references `{ '@id': ORG_ID }`
  * rather than redeclaring it. Search engines and LLMs then resolve one entity
  * instead of seven near-identical ones.
+ *
+ * NOTE — `url: SITE_URL` on both nodes is correct and must stay the bare root,
+ * even though the root 308s to /welcome. These are *entity* URLs (the
+ * organisation; the website), not page canonicals: Google does not use them for
+ * canonical selection, and pointing them at /welcome would say the WebSite *is*
+ * that page and risks disturbing the knowledge-panel entity. Signals that do
+ * nominate a *page* — canonicals, sitemap entries, breadcrumb `item`s — must all
+ * say /welcome. See HOME_URL in lib/structuredData.ts.
  */
 export default function SiteJsonLd() {
   const graph = {

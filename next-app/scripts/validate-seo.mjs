@@ -12,6 +12,20 @@ const BASE_URL = process.argv.includes('--base-url')
   ? process.argv[process.argv.indexOf('--base-url') + 1]
   : 'https://ignite.education';
 
+/**
+ * The apex, regardless of which origin is being probed. JSON-LD is built from
+ * SITE_URL in lib/siteConfig.ts, so it always carries apex URLs even when this
+ * script runs against next.ignite.education.
+ */
+const APEX_URL = 'https://ignite.education';
+const HOME_URL = `${APEX_URL}/welcome`;
+
+/** True for the bare root, which 308s to /welcome and is never a page URL. */
+function isBareRoot(value) {
+  const url = typeof value === 'string' ? value : value?.['@id'];
+  return url === APEX_URL || url === `${APEX_URL}/`;
+}
+
 // ─── Page Definitions ────────────────────────────────────────────────────────
 
 const PAGES = [
@@ -427,6 +441,32 @@ async function validatePage(page) {
         warn(`JSON-LD @context is "${schema['@context']}" (expected "https://schema.org")`);
       }
     }
+
+    // No *page-level* signal may nominate the bare root. The root 308s to
+    // /welcome, and pointing a breadcrumb or a WebPage.url at it re-creates the
+    // duplicate homepage that cost /welcome its Search Console traffic in Aug
+    // 2026. (Organization.url / WebSite.url in SiteJsonLd.tsx are exempt: those
+    // are entity URLs, not page URLs, and are correct as the bare root.)
+    const rootOffenders = [];
+    for (const node of jsonLd.filter((j) => !j._parseError)) {
+      if (node['@type'] === 'BreadcrumbList') {
+        const first = (node.itemListElement || []).find((i) => i.position === 1);
+        if (first && isBareRoot(first.item)) {
+          rootOffenders.push(`BreadcrumbList position 1 ("${first.name}")`);
+        }
+      }
+      if (node['@type'] === 'WebPage' && isBareRoot(node.url)) {
+        rootOffenders.push('WebPage.url');
+      }
+    }
+    if (rootOffenders.length > 0) {
+      fail(
+        `Nominates the redirecting root as a page: ${rootOffenders.join(', ')} — ` +
+          `use HOME_URL (${HOME_URL}) from lib/structuredData.ts`
+      );
+    } else {
+      pass(`No JSON-LD page node points at the redirecting root`);
+    }
   } else if (page.expectedTypes.length > 0) {
     fail(`No JSON-LD found (expected: ${page.expectedTypes.join(', ')})`);
   } else {
@@ -478,19 +518,39 @@ async function validateSitemap() {
   const locs = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
 
   // A sitemap must not list URLs that redirect or are noindexed.
-  if (locs.includes('https://ignite.education/')) {
-    fail(`Lists the bare "/" URL, which 301s to /welcome — never sitemap a redirect`);
+  if (locs.some(isBareRoot)) {
+    fail(`Lists the bare "/" URL, which 308s to /welcome — never sitemap a redirect`);
   } else {
     pass(`Does not list the redirecting "/" URL`);
   }
 
-  const KNOWN_TOP_LEVEL = new Set(['welcome', 'courses', 'blog', 'prompts', 'privacy', 'terms', 'release-notes']);
+  // A sitemap must not list noindexed URLs. This used to assume every
+  // single-segment path outside a hardcoded set was a *noindexed* profile, and
+  // failed 23 times per run once profiles were deliberately indexed (195890f2)
+  // and /jobs shipped (812c70bc). Probe one instead of assuming.
+  const KNOWN_TOP_LEVEL = new Set([
+    'welcome', 'courses', 'blog', 'prompts', 'jobs', 'privacy', 'terms', 'release-notes',
+  ]);
   const profileUrls = locs.filter((l) => {
     const path = l.replace(/^https?:\/\/[^/]+\//, '');
     return path && !path.includes('/') && !KNOWN_TOP_LEVEL.has(path);
   });
   if (profileUrls.length) {
-    fail(`Lists ${profileUrls.length} noindexed profile URL(s), e.g. ${profileUrls[0]}`);
+    const sample = profileUrls[0];
+    try {
+      const profileRes = await fetch(sample, { redirect: 'follow' });
+      const robotsMeta = extractTag(
+        await profileRes.text(),
+        /<meta[^>]+name="robots"[^>]+content="([^"]+)"/i
+      );
+      if (robotsMeta && /noindex/i.test(robotsMeta)) {
+        fail(`Lists ${profileUrls.length} noindexed profile URL(s), e.g. ${sample} ("${robotsMeta}")`);
+      } else {
+        pass(`${profileUrls.length} profile URL(s) listed and indexable (sampled ${sample})`);
+      }
+    } catch (e) {
+      warn(`Could not probe profile URL ${sample}: ${e.message}`);
+    }
   } else {
     pass(`Contains no noindexed profile URLs`);
   }
@@ -503,6 +563,62 @@ async function validateSitemap() {
   }
 
   pass(`${locs.length} URLs in sitemap`);
+}
+
+// ─── Root Redirect Validation ────────────────────────────────────────────────
+
+/**
+ * The single check that would have caught the Aug 2026 traffic loss.
+ *
+ * `/` was a *temporary* (307) redirect to /welcome for six months. A temporary
+ * redirect tells Google to keep the SOURCE url indexed, so `/` and `/welcome`
+ * sat as competing homepage candidates until Google picked `/` — at which point
+ * /welcome's clicks and impressions went to zero in Search Console. Every hop to
+ * the canonical homepage must be permanent, and there must be exactly one hop.
+ */
+async function validateRootRedirect() {
+  section('Root redirect (/ → /welcome)');
+
+  async function checkHop(from, expectedLocation) {
+    let res;
+    try {
+      res = await fetch(from, { redirect: 'manual' });
+    } catch (e) {
+      fail(`${from} — fetch failed: ${e.message}`);
+      return;
+    }
+
+    // 308/301 are both permanent. 307/302 are NOT and are the actual bug.
+    if (res.status === 308 || res.status === 301) {
+      pass(`${from} → HTTP ${res.status} (permanent)`);
+    } else if (res.status === 307 || res.status === 302) {
+      fail(
+        `${from} → HTTP ${res.status} (TEMPORARY). Google keeps the source URL ` +
+          `indexed, creating a duplicate homepage. Set "permanent": true in vercel.json.`
+      );
+      return;
+    } else {
+      fail(`${from} → HTTP ${res.status} (expected a permanent redirect)`);
+      return;
+    }
+
+    const location = res.headers.get('location');
+    const resolved = location ? new URL(location, from).href : null;
+    if (resolved === expectedLocation) {
+      pass(`  Location: ${location}`);
+    } else {
+      fail(`  Location is "${resolved}" (expected "${expectedLocation}") — one hop only`);
+    }
+  }
+
+  await checkHop(`${BASE_URL}/`, `${BASE_URL}/welcome`);
+
+  // www must reach the canonical homepage in ONE hop, not via the apex root.
+  if (BASE_URL === APEX_URL) {
+    await checkHop('https://www.ignite.education/', HOME_URL);
+  } else {
+    warn('www hop skipped — apex-only check');
+  }
 }
 
 // ─── Robots.txt Validation ───────────────────────────────────────────────────
@@ -690,7 +806,8 @@ async function main() {
     await validatePage(page);
   }
 
-  // Sitemap, robots, 404
+  // Redirects, sitemap, robots, 404
+  await validateRootRedirect();
   await validateSitemap();
   await validateRobots();
   await validate404();
