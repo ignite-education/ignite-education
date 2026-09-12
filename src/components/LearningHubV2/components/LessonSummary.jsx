@@ -12,7 +12,7 @@ const TypedCursor = () => (
   <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />
 );
 
-const SectionResult = ({ heading, scoreLine, score, enabled, onComplete }) => {
+const QuestionResult = ({ heading, scoreLine, score, enabled, onComplete }) => {
   const [headingDone, setHeadingDone] = useState(false);
 
   const { revealedText: headingRevealed, isComplete: headingComplete } = useTypewriter(heading, {
@@ -52,20 +52,25 @@ const SectionResult = ({ heading, scoreLine, score, enabled, onComplete }) => {
   );
 };
 
-const LessonSummary = ({ sectionScores, scoredQuestionHeadings, lessonTitle, firstName, onEndLesson }) => {
-  const validScores = scoredQuestionHeadings
-    ? sectionScores.filter(s => s.section_number in scoredQuestionHeadings)
-    : sectionScores;
+/**
+ * The marked checkpoint, question by question.
+ *
+ * `checkpoint` is the best completed attempt — either handed straight over when the
+ * student has just passed, or read back from the server on a resumed session. It is
+ * null only when the lesson had no question bank and the checkpoint was skipped, in
+ * which case there is nothing to score and the screen is just a sign-off.
+ */
+const LessonSummary = ({ checkpoint, lessonTitle, firstName, onEndLesson }) => {
+  const results = (checkpoint?.results || []).filter(r => r.score != null);
+  const percentage = checkpoint?.percentage ?? 0;
 
-  const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
-  const maxScore = validScores.length * 10;
-  const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
-
-  const congratsText = `Congratulations${firstName ? ` ${firstName}` : ''}, you scored ${percentage}% on ${lessonTitle}.`;
+  const congratsText = results.length > 0
+    ? `Congratulations${firstName ? ` ${firstName}` : ''}, you scored ${percentage}% on ${lessonTitle}.`
+    : `Nicely done${firstName ? ` ${firstName}` : ''}, that's the end of ${lessonTitle}.`;
 
   const [congratsDone, setCongratsDone] = useState(false);
-  // Track which sections have finished typing (index-based)
-  const [completedSections, setCompletedSections] = useState(0);
+  // Track which questions have finished typing (index-based)
+  const [completedResults, setCompletedResults] = useState(0);
 
   const { revealedText, isComplete } = useTypewriter(congratsText, {
     speed: 55,
@@ -80,28 +85,27 @@ const LessonSummary = ({ sectionScores, scoredQuestionHeadings, lessonTitle, fir
         {!isComplete && <TypedCursor />}
       </p>
 
-      {validScores.map((sectionScore, i) => {
-        const heading = scoredQuestionHeadings?.[sectionScore.section_number] || `Section ${sectionScore.section_number}`;
-        const feedbackSentence = getFirstSentence(sectionScore.feedback);
-        let scoreLine = `You scored ${sectionScore.score}/10${feedbackSentence ? ` and ${feedbackSentence.charAt(0).toLowerCase()}${feedbackSentence.slice(1)}` : '.'}`;
+      {results.map((result, i) => {
+        const feedbackSentence = getFirstSentence(result.feedback);
+        let scoreLine = `You scored ${result.score}/10${feedbackSentence ? ` and ${feedbackSentence.charAt(0).toLowerCase()}${feedbackSentence.slice(1)}` : '.'}`;
         if (scoreLine.length > 150) scoreLine = scoreLine.slice(0, 147) + '...';
 
-        // First section enabled after congrats, subsequent after previous completes
-        const sectionEnabled = congratsDone && i <= completedSections;
+        // First question enabled after congrats, subsequent after previous completes
+        const enabled = congratsDone && i <= completedResults;
 
         return (
-          <SectionResult
-            key={sectionScore.section_number}
-            heading={heading}
+          <QuestionResult
+            key={i}
+            heading={result.questionText || `Question ${i + 1}`}
             scoreLine={scoreLine}
-            score={sectionScore.score}
-            enabled={sectionEnabled}
-            onComplete={() => setCompletedSections(prev => prev + 1)}
+            score={result.score}
+            enabled={enabled}
+            onComplete={() => setCompletedResults(prev => prev + 1)}
           />
         );
       })}
 
-      {congratsDone && completedSections >= validScores.length && (
+      {congratsDone && completedResults >= results.length && (
         <button
           onClick={onEndLesson}
           className="px-4 py-1.5 text-white transition-colors cursor-pointer"

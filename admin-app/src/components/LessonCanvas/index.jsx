@@ -170,7 +170,6 @@ const LessonCanvas = ({
           const hasBody = screen.some(
             (s) =>
               s.content_type === 'paragraph' ||
-              s.content_type === 'scored_question' ||
               s.content_type === 'box_match'
           );
           if (!hasBody) warnings.push('No body text on this screen');

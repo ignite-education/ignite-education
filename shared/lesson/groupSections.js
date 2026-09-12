@@ -12,8 +12,12 @@ import { MEDIA_TYPES } from './blockTypes.js';
  * Group sections into screens.
  *
  * - A heading always starts a new screen.
- * - Each paragraph or scored_question gets its OWN screen.
+ * - Each paragraph gets its OWN screen.
  * - Media, lists and bulletlists attach to the current screen.
+ *
+ * `scored_question` used to take a screen of its own here too. Grading moved to a
+ * single end-of-lesson checkpoint and the type is retired, so any row still
+ * carrying it renders nothing and must not be given a blank screen to sit on.
  *
  * @param {Array} sections - flat, ordered section rows
  * @returns {Array<Array>} one inner array per student screen
@@ -21,13 +25,12 @@ import { MEDIA_TYPES } from './blockTypes.js';
 export const groupSectionsByHeading = (sections) => {
   const groups = [];
   let currentGroup = [];
-  let hasContentInGroup = false; // seen a paragraph/scored_question in this group?
+  let hasContentInGroup = false; // seen a paragraph in this group?
 
   (sections || []).forEach((section) => {
     const level = section.content?.level || 2;
     const isHeading = section.content_type === 'heading' && (level === 2 || level === 3);
     const isParagraph = section.content_type === 'paragraph';
-    const isScoredQuestion = section.content_type === 'scored_question';
 
     if (isHeading) {
       if (currentGroup.length > 0) {
@@ -36,7 +39,7 @@ export const groupSectionsByHeading = (sections) => {
         hasContentInGroup = false;
       }
       currentGroup.push(section);
-    } else if (isParagraph || isScoredQuestion) {
+    } else if (isParagraph) {
       if (hasContentInGroup) {
         groups.push(currentGroup);
         currentGroup = [];

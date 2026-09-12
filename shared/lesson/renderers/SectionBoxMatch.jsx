@@ -169,7 +169,7 @@ const SectionBoxMatch = ({
 
   // Completion is reported exactly once. An under-authored block reports
   // immediately and never gates — the alternative is a lesson no student can
-  // finish, which is how `scored_question` treats an empty question pool.
+  // finish.
   const reportedRef = useRef(false);
   useEffect(() => {
     // `isActive` gates the report the same way every other renderer's does —

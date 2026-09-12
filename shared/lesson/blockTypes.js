@@ -4,9 +4,9 @@
  * Before this file the type set was duplicated across five places — the admin
  * `addBlock`/`addBlockAt` pair, the admin toolbar buttons, `renderBlockEditor`,
  * the admin preview modal, and the student `ContentRenderer` — which is how
- * `svg` and `scored_question` ended up renderable by students but invisible in
- * the admin preview. Add a type here and in `renderers/ContentRenderer.jsx`,
- * nowhere else.
+ * `svg` and the since-retired `scored_question` ended up renderable by students
+ * but invisible in the admin preview. Add a type here and in
+ * `renderers/ContentRenderer.jsx`, nowhere else.
  *
  * NOTE: `lessons.content_type` is a free-form TEXT column with no CHECK
  * constraint, so the database will happily accept anything. This file is the
@@ -25,13 +25,16 @@ export const BLOCK_TYPES = [
   'image',
   'youtube',
   'svg',
-  'scored_question',
   'box_match',
 ];
 
 /**
  * Types offered in the admin insert menu. `list` is deliberately absent: it is
  * legacy, still readable from old rows, but has never had an editor UI.
+ *
+ * `scored_question` is gone entirely. Grading moved to a single checkpoint at the
+ * end of each lesson, drawn from the `lesson_questions` bank, so a quiz is no
+ * longer something you author into the body of a lesson.
  */
 export const CREATABLE_BLOCK_TYPES = [
   'heading',
@@ -40,7 +43,6 @@ export const CREATABLE_BLOCK_TYPES = [
   'image',
   'youtube',
   'svg',
-  'scored_question',
   'box_match',
 ];
 
@@ -53,9 +55,11 @@ export const BLOCK_LABELS = {
   image: 'Image',
   youtube: 'Video',
   svg: 'SVG icon',
-  scored_question: 'Quiz',
   box_match: 'Matching',
 };
+
+/** Types that stop a student advancing until they are cleared. */
+export const GATE_BLOCK_TYPES = ['box_match'];
 
 export const isMediaType = (type) => MEDIA_TYPES.includes(type);
 
@@ -68,10 +72,8 @@ export const BOX_MATCH_MIN_PAIRS = 2;
 /**
  * The pairs a `box_match` block will actually render.
  *
- * Blank rows are dropped rather than rendered empty, mirroring how the player
- * filters a `scored_question`'s unauthored questions before deciding whether the
- * block is a gate at all. Both halves must be written — a name with no
- * description has nothing to match against.
+ * Blank rows are dropped rather than rendered empty. Both halves must be written
+ * — a name with no description has nothing to match against.
  */
 export const boxMatchPairs = (content) =>
   (content?.pairs || [])
@@ -106,8 +108,6 @@ export const defaultContentFor = (type) => {
         description: '',
         animated: 'once',
       };
-    case 'scored_question':
-      return { questions: ['', '', ''], difficulties: ['easy', 'medium', 'medium'] };
     case 'box_match':
       // Two blank pairs — the minimum that renders. The author adds up to
       // BOX_MATCH_MAX_PAIRS more; blanks are dropped by `boxMatchPairs`.

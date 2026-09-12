@@ -858,23 +858,36 @@ app.get('/api/lesson-scores/global/:courseId', async (req, res) => {
     }
 
     const { data, error } = await supabase
-      .from('section_question_scores')
-      .select('module_number, lesson_number, score')
-      .eq('course_id', courseId);
+      .from('lesson_checkpoint_attempts')
+      .select('user_id, module_number, lesson_number, total_score, question_count')
+      .eq('course_id', courseId)
+      .not('completed_at', 'is', null);
 
     if (error) throw error;
 
-    const buckets = {};
+    // One figure per user per lesson — their best attempt — so a student who
+    // retook a checkpoint five times doesn't weigh five times as much in the
+    // average everyone else is compared against.
+    const best = {};
     for (const row of data || []) {
-      const key = `${row.module_number}-${row.lesson_number}`;
-      if (!buckets[key]) buckets[key] = { sum: 0, count: 0 };
-      buckets[key].sum += row.score;
-      buckets[key].count++;
+      if (!row.question_count) continue;
+      const key = `${row.user_id}|${row.module_number}-${row.lesson_number}`;
+      const ratio = row.total_score / (row.question_count * 10);
+      if (!best[key] || ratio > best[key].ratio) {
+        best[key] = { ratio, lesson: `${row.module_number}-${row.lesson_number}` };
+      }
+    }
+
+    const buckets = {};
+    for (const { ratio, lesson } of Object.values(best)) {
+      if (!buckets[lesson]) buckets[lesson] = { sum: 0, count: 0 };
+      buckets[lesson].sum += ratio;
+      buckets[lesson].count++;
     }
 
     const scores = {};
     for (const [key, v] of Object.entries(buckets)) {
-      scores[key] = Math.round((v.sum / (v.count * 10)) * 1000) / 10; // one decimal %
+      scores[key] = Math.round((v.sum / v.count) * 1000) / 10; // one decimal %
     }
 
     globalScoresCache[courseId] = { data: scores, timestamp: Date.now() };
@@ -1085,6 +1098,27 @@ Respond in JSON format:
 // KNOWLEDGE CHECK QUESTION BANK - Pre-generated questions stored in database
 // ============================================================================
 
+/**
+ * Flatten a lesson's rows into the plain text the question bank is generated from.
+ *
+ * Shared with the lesson checkpoint grader on purpose: an answer is marked against
+ * exactly the text its question was written from, so a question can never be graded
+ * against material the generator never saw.
+ *
+ * Only `paragraph` and `heading` carry text — video- or image-heavy lessons will
+ * therefore produce thin questions, which is a content problem rather than a code one.
+ */
+const buildLessonText = (sections) => (sections || [])
+  .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
+  .map(s => {
+    if (s.content_type === 'heading') {
+      return s.content?.text || s.title || '';
+    }
+    return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
+  })
+  .filter(text => text.trim().length > 0)
+  .join('\n\n');
+
 // Generate and store knowledge check questions for a lesson (admin endpoint)
 app.post('/api/admin/generate-lesson-questions', async (req, res) => {
   try {
@@ -1108,16 +1142,7 @@ app.post('/api/admin/generate-lesson-questions', async (req, res) => {
 
     // 2. Extract lesson text for question generation
     const lessonName = sections[0]?.lesson_name || `Module ${moduleNumber}, Lesson ${lessonNumber}`;
-    const lessonText = sections
-      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
-      .map(s => {
-        if (s.content_type === 'heading') {
-          return s.content?.text || s.title || '';
-        }
-        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
-      })
-      .filter(text => text.trim().length > 0)
-      .join('\n\n');
+    const lessonText = buildLessonText(sections);
 
     if (!lessonText.trim()) {
       return res.status(400).json({ success: false, error: 'No text content found in lesson' });
@@ -1434,16 +1459,7 @@ app.post('/api/admin/generate-single-question', async (req, res) => {
     }
 
     const lessonName = sections[0]?.lesson_name || 'Unknown Lesson';
-    const lessonText = sections
-      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
-      .map(s => {
-        if (s.content_type === 'heading') {
-          return s.content?.text || s.title || '';
-        }
-        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
-      })
-      .filter(text => text.trim().length > 0)
-      .join('\n\n');
+    const lessonText = buildLessonText(sections);
 
     if (!lessonText.trim()) {
       return res.status(400).json({
@@ -1887,40 +1903,6 @@ app.post('/api/admin/generate-svg', async (req, res) => {
   }
 });
 
-// Generate section question — a comprehension question users must answer before continuing
-app.post('/api/generate-section-question', async (req, res) => {
-  try {
-    const { sectionContent } = req.body;
-
-    const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 200,
-      system: `You generate comprehension questions for educational content. Given a section of lesson content, create ONE open-ended question that tests whether the student understood the key concepts.
-
-Section Content:
-${sectionContent}
-
-Rules:
-- The question should be answerable from the section content
-- Ask about understanding, not recall of specific facts
-- Keep it conversational and natural
-- 1-2 sentences max
-- Do NOT start with "Based on what you just read" or similar meta-references
-- Focus on the most important concept in the section
-
-Respond with ONLY the question text, nothing else.`,
-      messages: [{ role: 'user', content: 'Generate a section comprehension question.' }],
-    });
-
-    const question = message.content[0].text.trim();
-
-    res.json({ success: true, question });
-  } catch (error) {
-    console.error('Error generating section question:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 // Generate 3 section questions — student is randomly presented one
 app.post('/api/generate-section-questions', async (req, res) => {
   try {
@@ -2021,21 +2003,10 @@ Respond with ONLY the question text, nothing else.`,
 });
 
 // Score a student's answer to a scored question (returns score 0-10 + feedback)
-app.post('/api/score-answer', async (req, res) => {
-  try {
-    const { question, answer, sectionContent } = req.body;
+const gradeAnswerPrompt = ({ question, answer, lessonContent }) => `You are evaluating a student's answer to a comprehension question about educational content.
 
-    if (!question || !answer) {
-      return res.status(400).json({ success: false, error: 'Question and answer are required' });
-    }
-
-    const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 400,
-      system: `You are evaluating a student's answer to a comprehension question about educational content.
-
-Section Content:
-${sectionContent || '(no context provided)'}
+Lesson Content:
+${lessonContent || '(no context provided)'}
 
 Question: ${question}
 Student's Answer: ${answer}
@@ -2054,91 +2025,370 @@ Important: If the student addresses the core idea of the question, even without 
 Feedback rules:
 - Keep feedback to 1-2 sentences
 - If score >= 5: Confirm what they got right and add a small insight
-- If score < 5: Briefly note what's missing and give a small hint to help them think about their answer differently. Always end with an invitation to try again (e.g. "Have another go.", "Give it another try."). Do NOT direct the user to revisit, look at, re-read, or go back to the curriculum content (e.g. avoid "have a look at the section on...", "look again at...", "review the section", "go back to the content", "try reading through the content again"). The user should re-attempt based on your hint alone. Do not reference the section content directly (e.g. avoid "the section outlines", "the section clearly outlines", "the text clearly states", "the material covers")
+- If score < 5: Briefly note what's missing and give a small hint to help them think about their answer differently. Do NOT direct the user to revisit, look at, re-read, or go back to the curriculum content (e.g. avoid "have a look at the section on...", "look again at...", "review the lesson", "go back to the content", "try reading through the content again"). Do not reference the lesson content directly (e.g. avoid "the lesson outlines", "the section clearly outlines", "the text clearly states", "the material covers")
 - Use British English
 - Do NOT use exclamation marks
 - Do NOT use em dashes (—) or hyphens (-) as bullet points or list markers. Write feedback as plain flowing sentences, never as a list
 - Do NOT use em dashes (—) within sentences — use commas, full stops, or semicolons instead
 - Tone must be direct, helpful, and conversational. Never be condescending or patronising. Avoid phrases like "clearly outlines", "you haven't attempted", "you failed to". Instead be matter-of-fact and supportive
-- Always address the student directly in second person ("you", "your") — never use third person ("the student", "they")`,
+- Always address the student directly in second person ("you", "your") — never use third person ("the student", "they")`;
+
+/**
+ * Grade one free-text answer 0-10 against the lesson it came from.
+ *
+ * Internal only. This was POST /api/score-answer, which took the question, the
+ * answer *and* the content to mark against straight from an unauthenticated
+ * request body. Passing the checkpoint now writes lesson_completions, which fires
+ * qualify_referral_on_lesson() and grants a paid week — so nothing the browser
+ * sends is trusted any more. The checkpoint routes look the question and the
+ * lesson text up server-side and call this.
+ *
+ * An unparseable response is retried once and then throws. It used to fall back to
+ * a hardcoded score of 5, which was a silent pass at exactly the pass mark.
+ */
+async function gradeAnswer({ question, answer, lessonContent }) {
+  let lastRaw = '';
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 400,
+      system: gradeAnswerPrompt({ question, answer, lessonContent }),
       messages: [{ role: 'user', content: 'Evaluate the student answer.' }],
     });
 
-    let raw = message.content[0].text.trim();
     // Strip markdown code fences if the model wraps the JSON in them
-    raw = raw.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+    lastRaw = message.content[0].text.trim()
+      .replace(/^```(?:json)?\s*\n?/, '')
+      .replace(/\n?```\s*$/, '')
+      .trim();
+
     try {
-      const parsed = JSON.parse(raw);
-      res.json({ success: true, score: parsed.score, feedback: parsed.feedback });
-    } catch (parseErr) {
-      console.error('Failed to parse score-answer response:', raw);
-      res.json({ success: true, score: 5, feedback: raw });
+      const parsed = JSON.parse(lastRaw);
+      const score = Number(parsed.score);
+      if (!Number.isFinite(score)) throw new Error('score was not a number');
+      return {
+        score: Math.max(0, Math.min(10, Math.round(score))),
+        feedback: String(parsed.feedback || '').trim(),
+      };
+    } catch {
+      console.error(`gradeAnswer: unparseable response (attempt ${attempt}/2):`, lastRaw);
     }
-  } catch (error) {
-    console.error('Error scoring answer:', error);
-    res.status(500).json({ success: false, error: error.message });
   }
-});
 
-// Save section question score (best-score upsert)
-app.post('/api/section-question-score', async (req, res) => {
+  throw new Error('Grader returned an unparseable response');
+}
+
+// ── Lesson checkpoint ───────────────────────────────────────────────────────
+//
+// One graded checkpoint at the end of each lesson: CHECKPOINT_QUESTION_COUNT
+// questions drawn from the `lesson_questions` bank, each graded 0-10, averaged
+// and gated at CHECKPOINT_PASS_RATIO. Passing is what completes the lesson.
+//
+// The whole flow is server-side because completing a lesson has monetary value:
+// lesson_completions carries an AFTER INSERT trigger that qualifies a referral
+// and grants the referrer a paid week. The browser never names a question, never
+// supplies a score, and never writes the completion.
+
+const CHECKPOINT_QUESTION_COUNT = 3;
+const CHECKPOINT_PASS_RATIO = 0.5;
+
+/** Verify a bearer token and attach the user. Any signed-in user, no role check. */
+const verifyUser = async (req, res, next) => {
   try {
-    const { userId, courseId, moduleNumber, lessonNumber, sectionNumber, score, questionText, answerText, feedback } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Missing authorization token' });
+    }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('verifyUser failed:', error);
+    res.status(500).json({ success: false, error: 'Authentication failed' });
+  }
+};
 
-    if (!userId || !courseId || moduleNumber == null || lessonNumber == null || sectionNumber == null || score == null) {
+/**
+ * Choose the questions for one checkpoint attempt from the lesson's bank.
+ *
+ * Difficulty follows the shape /api/knowledge-check/question already uses — the
+ * second question is the easy one, the rest medium — falling back to any
+ * difficulty once the target is exhausted.
+ *
+ * `exclude` holds the question ids this user has already been asked in earlier
+ * attempts, so a retake serves fresh questions. If that would leave too few to
+ * fill a checkpoint, the full bank is reused rather than running short: asking a
+ * repeat is better than letting someone pass on one question.
+ */
+async function pickLessonQuestions({ courseId, moduleNumber, lessonNumber, exclude = [], count = CHECKPOINT_QUESTION_COUNT }) {
+  const { data, error } = await supabase
+    .from('lesson_questions')
+    .select('id, question_text, difficulty')
+    .eq('course_id', courseId)
+    .eq('module_number', moduleNumber)
+    .eq('lesson_number', lessonNumber);
+
+  if (error) throw error;
+
+  const bank = data || [];
+  let pool = bank.filter(q => !exclude.includes(q.id));
+  if (pool.length < count) pool = bank;
+
+  const picked = [];
+  while (picked.length < count && pool.length > 0) {
+    const target = picked.length === 1 ? 'easy' : 'medium';
+    let candidates = pool.filter(q => q.difficulty === target);
+    if (candidates.length === 0) candidates = pool;
+
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    picked.push(chosen);
+    pool = pool.filter(q => q.id !== chosen.id);
+  }
+
+  return picked;
+}
+
+/** The lesson text a checkpoint answer is marked against. */
+async function loadLessonContent(courseId, moduleNumber, lessonNumber) {
+  const { data, error } = await supabase
+    .from('lessons')
+    .select('content_type, content, title')
+    .eq('course_id', courseId)
+    .eq('module_number', moduleNumber)
+    .eq('lesson_number', lessonNumber)
+    .order('section_number', { ascending: true });
+
+  if (error) throw error;
+  return buildLessonText(data);
+}
+
+// Begin a checkpoint attempt. Returns the first question only — the rest are held
+// server-side on the attempt row so the client can't look ahead or swap them.
+app.post('/api/lesson-checkpoint/start', verifyUser, async (req, res) => {
+  try {
+    const { courseId, moduleNumber, lessonNumber } = req.body;
+    const userId = req.user.id;
+
+    if (!courseId || moduleNumber == null || lessonNumber == null) {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
     }
 
-    // Check for existing score
-    const { data: existing } = await supabase
-      .from('section_question_scores')
-      .select('id, score')
+    const { data: priorAttempts, error: priorError } = await supabase
+      .from('lesson_checkpoint_attempts')
+      .select('id, answers, attempt_number, completed_at')
       .eq('user_id', userId)
       .eq('course_id', courseId)
       .eq('module_number', moduleNumber)
       .eq('lesson_number', lessonNumber)
-      .eq('section_number', sectionNumber)
+      .order('attempt_number', { ascending: true });
+
+    if (priorError) throw priorError;
+
+    const prior = priorAttempts || [];
+
+    // Resume an attempt the student abandoned mid-way rather than starting a new
+    // one, so a refresh doesn't silently reshuffle the questions under them.
+    const inFlight = prior.find(a => !a.completed_at);
+    if (inFlight) {
+      const answers = inFlight.answers || [];
+      const nextIndex = answers.findIndex(a => a.score == null);
+      if (nextIndex !== -1) {
+        return res.json({
+          success: true,
+          attemptId: inFlight.id,
+          questionNumber: nextIndex + 1,
+          totalQuestions: answers.length,
+          question: answers[nextIndex].question_text,
+          answered: answers.filter(a => a.score != null).map(a => ({
+            questionText: a.question_text,
+            answerText: a.answer_text,
+            score: a.score,
+            feedback: a.feedback,
+          })),
+        });
+      }
+    }
+
+    const askedIds = prior.flatMap(a => (a.answers || []).map(x => x.question_id)).filter(Boolean);
+    const questions = await pickLessonQuestions({
+      courseId, moduleNumber, lessonNumber, exclude: askedIds,
+    });
+
+    // The bank is generated per lesson in admin and 11 lessons had none at the time
+    // this shipped. Let the student through rather than trapping them behind
+    // missing content — the client completes the lesson instead.
+    if (questions.length < CHECKPOINT_QUESTION_COUNT) {
+      console.warn(`⚠️ Lesson checkpoint skipped: ${courseId} M${moduleNumber}L${lessonNumber} has ${questions.length} banked question(s), needs ${CHECKPOINT_QUESTION_COUNT}`);
+      return res.json({ success: true, needsGeneration: true });
+    }
+
+    const { data: attempt, error: insertError } = await supabase
+      .from('lesson_checkpoint_attempts')
+      .insert({
+        user_id: userId,
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        attempt_number: prior.length + 1,
+        question_count: questions.length,
+        answers: questions.map(q => ({
+          question_id: q.id,
+          question_text: q.question_text,
+          answer_text: null,
+          score: null,
+          feedback: null,
+        })),
+      })
+      .select('id')
       .single();
 
-    if (existing && existing.score >= score) {
-      // Existing score is equal or higher — keep it
-      return res.json({ success: true, bestScore: existing.score });
-    }
+    if (insertError) throw insertError;
 
-    if (existing) {
-      // New score is higher — update
-      const { error } = await supabase
-        .from('section_question_scores')
-        .update({
-          score,
-          question_text: questionText || null,
-          answer_text: answerText || null,
-          feedback: feedback || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existing.id);
-      if (error) throw error;
-    } else {
-      // No existing score — insert
-      const { error } = await supabase
-        .from('section_question_scores')
-        .insert({
-          user_id: userId,
-          course_id: courseId,
-          module_number: moduleNumber,
-          lesson_number: lessonNumber,
-          section_number: sectionNumber,
-          score,
-          question_text: questionText || null,
-          answer_text: answerText || null,
-          feedback: feedback || null,
-        });
-      if (error) throw error;
-    }
-
-    res.json({ success: true, bestScore: score });
+    res.json({
+      success: true,
+      attemptId: attempt.id,
+      questionNumber: 1,
+      totalQuestions: questions.length,
+      question: questions[0].question_text,
+      answered: [],
+    });
   } catch (error) {
-    console.error('Error saving section question score:', error);
+    console.error('Error starting lesson checkpoint:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Answer the current question. Grades it, and on the last one settles the attempt
+// and — if passed — completes the lesson.
+app.post('/api/lesson-checkpoint/answer', verifyUser, async (req, res) => {
+  try {
+    const { attemptId, answerText } = req.body;
+    const userId = req.user.id;
+
+    if (!attemptId || !answerText?.trim()) {
+      return res.status(400).json({ success: false, error: 'Missing attemptId or answer' });
+    }
+
+    const { data: attempt, error: loadError } = await supabase
+      .from('lesson_checkpoint_attempts')
+      .select('*')
+      .eq('id', attemptId)
+      .single();
+
+    if (loadError || !attempt) {
+      return res.status(404).json({ success: false, error: 'Attempt not found' });
+    }
+    if (attempt.user_id !== userId) {
+      return res.status(403).json({ success: false, error: 'Not your attempt' });
+    }
+    if (attempt.completed_at) {
+      return res.status(409).json({ success: false, error: 'Attempt already completed' });
+    }
+
+    const answers = attempt.answers || [];
+    const index = answers.findIndex(a => a.score == null);
+    if (index === -1) {
+      return res.status(409).json({ success: false, error: 'No question outstanding' });
+    }
+
+    // The question comes off the attempt row, never off the request.
+    const lessonContent = await loadLessonContent(
+      attempt.course_id, attempt.module_number, attempt.lesson_number
+    );
+    const { score, feedback } = await gradeAnswer({
+      question: answers[index].question_text,
+      answer: answerText.trim(),
+      lessonContent,
+    });
+
+    answers[index] = {
+      ...answers[index],
+      answer_text: answerText.trim(),
+      score,
+      feedback,
+    };
+
+    const isLast = index === answers.length - 1;
+
+    if (!isLast) {
+      const { error: updateError } = await supabase
+        .from('lesson_checkpoint_attempts')
+        .update({ answers })
+        .eq('id', attempt.id);
+      if (updateError) throw updateError;
+
+      return res.json({
+        success: true,
+        score,
+        feedback,
+        questionNumber: index + 2,
+        totalQuestions: answers.length,
+        nextQuestion: answers[index + 1].question_text,
+      });
+    }
+
+    const totalScore = answers.reduce((sum, a) => sum + (a.score || 0), 0);
+    const passed = totalScore >= answers.length * 10 * CHECKPOINT_PASS_RATIO;
+
+    const { error: finaliseError } = await supabase
+      .from('lesson_checkpoint_attempts')
+      .update({
+        answers,
+        total_score: totalScore,
+        question_count: answers.length,
+        passed,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', attempt.id);
+    if (finaliseError) throw finaliseError;
+
+    // Passing is the only thing that completes a lesson. Same upsert shape the
+    // client used to do, so qualify_referral_on_lesson() still fires once.
+    if (passed) {
+      const { error: completionError } = await supabase
+        .from('lesson_completions')
+        .upsert({
+          user_id: attempt.user_id,
+          course_id: attempt.course_id,
+          module_number: attempt.module_number,
+          lesson_number: attempt.lesson_number,
+          completed_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,course_id,module_number,lesson_number' });
+
+      if (completionError) {
+        console.error('Checkpoint passed but completion write failed:', completionError);
+        throw completionError;
+      }
+
+      await supabase
+        .from('users')
+        .update({ last_active_at: new Date().toISOString() })
+        .eq('id', attempt.user_id);
+    }
+
+    res.json({
+      success: true,
+      score,
+      feedback,
+      complete: true,
+      passed,
+      totalScore,
+      questionCount: answers.length,
+      percentage: Math.round((totalScore / (answers.length * 10)) * 100),
+      results: answers.map(a => ({
+        questionText: a.question_text,
+        answerText: a.answer_text,
+        score: a.score,
+        feedback: a.feedback,
+      })),
+    });
+  } catch (error) {
+    console.error('Error answering lesson checkpoint:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -5360,7 +5610,7 @@ app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
 
     // Delete from tables that won't cascade (no FK or no ON DELETE CASCADE)
     const nonCascadingTables = [
-      { table: 'section_question_scores', column: 'user_id', isText: true },
+      { table: 'lesson_checkpoint_attempts', column: 'user_id', isText: true },
       { table: 'question_results', column: 'user_id', isText: true },
       { table: 'section_feedback', column: 'user_id' },
       { table: 'chat_feedback', column: 'user_id' },
@@ -5446,7 +5696,7 @@ app.delete('/api/delete-account', verifyAuth, async (req, res) => {
 
     // Delete from tables that won't cascade (no FK or no ON DELETE CASCADE)
     const nonCascadingTables = [
-      { table: 'section_question_scores', column: 'user_id', isText: true },
+      { table: 'lesson_checkpoint_attempts', column: 'user_id', isText: true },
       { table: 'question_results', column: 'user_id', isText: true },
       { table: 'section_feedback', column: 'user_id' },
       { table: 'chat_feedback', column: 'user_id' },

@@ -51,8 +51,9 @@ const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onCom
         />
       );
 
-    // Scored questions are handled by LearningHubV2 directly (blank screen flow)
-    // Auto-complete triggers handleSectionComplete to enter scored question mode
+    // Retired: grading moved to a single checkpoint at the end of each lesson.
+    // Kept as a no-op so a stale row in an unmigrated environment renders nothing
+    // rather than falling through to the unknown-type path.
     case 'scored_question':
       return null;
 

@@ -5,10 +5,7 @@ import Courses from '../components/Courses';
 import LessonCanvas from '../components/LessonCanvas';
 import { useAuth } from '../contexts/AuthContext';
 import { toRow } from '@shared/lesson/blockAdapter';
-import { createBlock, BLOCK_LABELS, BOX_MATCH_MAX_PAIRS, BOX_MATCH_MIN_PAIRS, boxMatchPairs } from '@shared/lesson/blockTypes';
-
-// Block types that stop a student advancing until they've done something.
-const GATE_BLOCK_TYPES = ['scored_question', 'box_match'];
+import { createBlock, BLOCK_LABELS, GATE_BLOCK_TYPES, BOX_MATCH_MAX_PAIRS, BOX_MATCH_MIN_PAIRS, boxMatchPairs } from '@shared/lesson/blockTypes';
 import { createLessonBackup, getLessonBackups, restoreLessonFromBackup, getSectionFeedbackStats } from '../lib/api';
 
 // API URL for backend calls
@@ -1003,70 +1000,6 @@ const CurriculumUpload = () => {
       }
       return '';
     }).filter(Boolean).join('\n\n');
-  };
-
-  // Generate all 3 scored questions from preceding H2 content
-  const generateScoredQuestions = async (blockIndex) => {
-    const sectionContent = getContentBeforeBlock(blockIndex);
-    console.log('[ScoredQ] Section content for block', blockIndex, ':', sectionContent?.slice(0, 200));
-    if (!sectionContent) {
-      alert('No section content found above this block. Make sure there is text content between the H2 heading and this question block.');
-      return;
-    }
-
-    const difficulties = contentBlocks[blockIndex]?.content?.difficulties || ['easy', 'medium', 'medium'];
-
-    try {
-      const response = await fetch(`${API_URL}/api/generate-section-questions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sectionContent, difficulties })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setContentBlocks(prev => prev.map((b, i) =>
-          i === blockIndex ? { ...b, content: { ...b.content, questions: data.questions } } : b
-        ));
-      } else {
-        alert('Failed to generate questions: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error generating scored questions:', error);
-      alert('Error generating questions. Make sure the backend server is running.');
-    }
-  };
-
-  // Regenerate a single scored question
-  const regenerateSingleScoredQuestion = async (blockIndex, qIdx) => {
-    const sectionContent = getContentBeforeBlock(blockIndex);
-    if (!sectionContent) return;
-
-    const existingQuestions = contentBlocks[blockIndex]?.content?.questions || [];
-    const difficulty = contentBlocks[blockIndex]?.content?.difficulties?.[qIdx] || 'medium';
-
-    try {
-      const response = await fetch(`${API_URL}/api/generate-single-section-question`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sectionContent, existingQuestions: existingQuestions.filter(Boolean), difficulty })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setContentBlocks(prev => prev.map((b, i) => {
-          if (i !== blockIndex) return b;
-          const newQuestions = [...(b.content?.questions || ['', '', ''])];
-          newQuestions[qIdx] = data.question;
-          return { ...b, content: { ...b.content, questions: newQuestions } };
-        }));
-      } else {
-        alert('Failed to generate question: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error generating scored question:', error);
-      alert('Error generating question. Make sure the backend server is running.');
-    }
   };
 
   // Generate all 3 section questions at once
@@ -2548,80 +2481,6 @@ ${svgStyleGuide}`;
           </div>
         );
 
-      case 'scored_question': {
-        const questions = block.content?.questions || ['', '', ''];
-        const difficulties = block.content?.difficulties || ['easy', 'medium', 'medium'];
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-600">Student must score 5/10 to proceed. Questions are drawn from this pool on retry.</p>
-              <button
-                onClick={() => generateScoredQuestions(index)}
-                className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs font-medium transition"
-              >
-                Auto-generate All
-              </button>
-            </div>
-            {questions.map((q, qIdx) => (
-              <div key={qIdx} className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500 w-4 shrink-0">{qIdx + 1}.</span>
-                  <div className="flex gap-1">
-                    {['easy', 'medium', 'hard'].map(diff => (
-                      <button
-                        key={diff}
-                        onClick={() => {
-                          const newDifficulties = [...difficulties];
-                          newDifficulties[qIdx] = diff;
-                          setContentBlocks(prev => prev.map((b, i) =>
-                            i === index ? { ...b, content: { ...b.content, difficulties: newDifficulties } } : b
-                          ));
-                        }}
-                        className={`px-2 py-0.5 text-xs rounded-full capitalize transition ${
-                          difficulties[qIdx] === diff
-                            ? diff === 'easy' ? 'bg-green-900 text-green-300 border border-green-600'
-                              : diff === 'hard' ? 'bg-red-900 text-red-300 border border-red-600'
-                              : 'bg-yellow-900 text-yellow-300 border border-yellow-600'
-                            : 'bg-white text-gray-500 border border-gray-200 hover:text-gray-700'
-                        }`}
-                      >
-                        {diff}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex gap-2 items-start pl-6">
-                  <div className="flex-1">
-                    <textarea
-                      value={q}
-                      onChange={(e) => {
-                        const newQuestions = [...questions];
-                        newQuestions[qIdx] = e.target.value;
-                        setContentBlocks(prev => prev.map((b, i) =>
-                          i === index ? { ...b, content: { ...b.content, questions: newQuestions } } : b
-                        ));
-                      }}
-                      maxLength={130}
-                      placeholder={`Question ${qIdx + 1}`}
-                      rows={2}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-pink-500 focus:outline-none text-sm resize-none"
-                    />
-                    <span className={`text-xs ${q.length > 120 ? 'text-red-600' : 'text-gray-600'}`}>{q.length}/130</span>
-                  </div>
-                  <button
-                    onClick={() => regenerateSingleScoredQuestion(index, qIdx)}
-                    className="p-2 bg-gray-100 hover:bg-gray-300 text-gray-700 rounded-lg transition shrink-0"
-                    title="Regenerate this question"
-                  >
-                    <RotateCcw size={14} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      }
-
       case 'box_match': {
         const pairs = block.content?.pairs || [];
         const complete = boxMatchPairs(block.content).length;
@@ -2771,15 +2630,7 @@ ${svgStyleGuide}`;
                         <Icon size={13} /> {label}
                       </button>
                     ))}
-                    {/* Both gates get the pink treatment — they are the two
-                        block types that stop a student advancing. */}
-                    <button
-                      onClick={() => addBlock('scored_question')}
-                      title="Add a scored question — a full-screen gate students must pass"
-                      className="px-2.5 py-1.5 bg-pink-500/15 border border-pink-500/40 rounded-md hover:bg-pink-500/25 text-xs text-pink-300 flex items-center gap-1.5 whitespace-nowrap transition"
-                    >
-                      <HelpCircle size={13} /> Quiz
-                    </button>
+                    {/* Gates get the pink treatment — they stop a student advancing. */}
                     <button
                       onClick={() => addBlock('box_match')}
                       title="Add a matching exercise — students drag names onto descriptions before they can continue"
@@ -2991,13 +2842,6 @@ ${svgStyleGuide}`;
                             title="Insert SVG Icon Above"
                           >
                             + SVG
-                          </button>
-                          <button
-                            onClick={() => addBlockAt('scored_question', index)}
-                            className="px-2 py-1 text-xs bg-pink-700 hover:bg-pink-600 text-white rounded transition"
-                            title="Insert Scored Question Above"
-                          >
-                            + Quiz
                           </button>
                           <button
                             onClick={() => addBlockAt('box_match', index)}

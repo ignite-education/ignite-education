@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Type, Pilcrow, List as ListIcon, Image as ImageIcon, Youtube, Pen, HelpCircle, ArrowLeftRight } from 'lucide-react';
-import { CREATABLE_BLOCK_TYPES, BLOCK_LABELS } from '@shared/lesson/blockTypes';
+import { Plus, Type, Pilcrow, List as ListIcon, Image as ImageIcon, Youtube, Pen, ArrowLeftRight } from 'lucide-react';
+import { CREATABLE_BLOCK_TYPES, BLOCK_LABELS, GATE_BLOCK_TYPES } from '@shared/lesson/blockTypes';
 
 /**
  * Insert a block at a specific point on the canvas.
  *
  * The toolbar only appends to the end of the lesson, which meant the only way to
- * put a quiz under a particular paragraph was to add it at the bottom and press
+ * put a block under a particular paragraph was to add it at the bottom and press
  * Move up until it arrived.
  *
  * Zero height by design. The canvas's invariant is that every edit affordance is
@@ -23,12 +23,8 @@ const ICONS = {
   image: ImageIcon,
   youtube: Youtube,
   svg: Pen,
-  scored_question: HelpCircle,
   box_match: ArrowLeftRight,
 };
-
-// Both gates are tinted so they read as interruptions, matching the toolbar.
-const GATE_TYPES = ['scored_question', 'box_match'];
 
 const InsertPoint = ({ onInsert, label = 'Insert a block here' }) => {
   const [hovered, setHovered] = useState(false);
@@ -103,7 +99,7 @@ const InsertPoint = ({ onInsert, label = 'Insert a block here' }) => {
           >
             {CREATABLE_BLOCK_TYPES.map((type) => {
               const Icon = ICONS[type] || Pilcrow;
-              const isGate = GATE_TYPES.includes(type);
+              const isGate = GATE_BLOCK_TYPES.includes(type);
               return (
                 <button
                   key={type}

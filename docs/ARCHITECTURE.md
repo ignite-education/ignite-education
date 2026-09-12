@@ -58,17 +58,39 @@ shared/lesson/
 
 ### Progression gates
 
-Two block types stop a student advancing, and they gate by opposite mechanisms:
+One block type stops a student advancing mid-lesson: `box_match` (Matching). It renders
+inline under the paragraph it follows via `renderers/SectionBoxMatch.jsx`, gates by
+withholding `onComplete()` until every pair is matched (so no player branch is needed), and
+is authored in `LessonCanvas/MatchCard.jsx`. It is not scored.
 
-| | `scored_question` (Quiz) | `box_match` (Matching) |
-|---|---|---|
-| Screen | its own, full-screen takeover | inline, under the paragraph it follows |
-| Renderer | none — `ContentRenderer` returns `null` and `LearningHubV2` owns the flow | `renderers/SectionBoxMatch.jsx` |
-| How it gates | player intercepts in `handleSectionComplete` and returns `prev` | renderer withholds `onComplete()` until solved — no player branch needed |
-| Released by | passing 5/10 on a Claude-graded answer | matching every pair |
-| Admin authoring | `LessonCanvas/QuizCard.jsx` (read-only) | `LessonCanvas/MatchCard.jsx` (editable) |
+`scored_question` (Quiz) used to be the second gate — its own full-screen takeover, released
+by passing 5/10 on a Claude-graded answer. It is **retired**; see
+[Lesson checkpoint](#lesson-checkpoint) below. `ContentRenderer` still returns `null` for the
+type so a stale row in an unmigrated environment renders nothing.
 
-Both must appear in `LearningHubV2`'s `groupHasGate`. That flag flows into `useNarration`, where `groupAudioMode = audioReady && !groupHasGate` — in audio mode every section on a screen renders at once and completion comes from `revealComplete` rather than `completedSections`, which walks straight past either gate. The cost is that a screen holding a gate is never narrated.
+It must appear in `LearningHubV2`'s `groupHasGate`. That flag flows into `useNarration`, where `groupAudioMode = audioReady && !groupHasGate` — in audio mode every section on a screen renders at once and completion comes from `revealComplete` rather than `completedSections`, which walks straight past the gate. The cost is that a screen holding a gate is never narrated.
+
+### Lesson checkpoint
+
+Every lesson ends with one graded checkpoint: **three questions, each marked 0–10 by Claude, averaged, and gated at 50%**. Passing it is what completes the lesson. Below 50% the student retakes with questions they haven't seen, and no completion row is written.
+
+Questions come from `lesson_questions`, the pre-generated per-lesson bank (10 per lesson) that already existed for the v1 player, with its admin generate/edit/delete API and SHA-256 content-hash staleness detection. `buildLessonText` in `server.js` is shared between the generator and the grader, so an answer is always marked against exactly the text its question was written from.
+
+| | |
+|---|---|
+| Screen | `LearningHubV2/components/LessonCheckpoint.jsx` — intro and counter only |
+| State | `LearningHubV2/hooks/useLessonCheckpoint.js` |
+| Questions & feedback | the player's existing chat furniture; a checkpoint is a conversation |
+| Endpoints | `POST /api/lesson-checkpoint/start`, `POST /api/lesson-checkpoint/answer` |
+| Storage | `lesson_checkpoint_attempts` — full attempt history, best-of derived on read |
+
+**The flow runs server-side, and that is load-bearing.** `lesson_completions` carries an `AFTER INSERT` trigger (`qualify_referral_on_lesson`) that grants a referrer a paid week, so lesson completion has monetary value. The browser never names a question, never supplies a score and no longer writes the completion — `/api/lesson-checkpoint/answer` reads the next question off the attempt row, grades it, and upserts the completion itself when the average clears the bar. `handleEndLesson` now only resets progress and navigates.
+
+`user_progress.current_section` carries two sentinels past the last screen: `allGroups.length` means "at the checkpoint", `allGroups.length + 1` means "passed, on the summary".
+
+A lesson whose bank holds fewer than three questions returns `{ needsGeneration: true }` and the player falls through to the summary and completes the lesson. Blocking a paying student behind content an admin hasn't generated is the worse failure.
+
+This replaced per-section scoring in `section_question_scores`, which was keyed on `section_number` — a positional index that `CurriculumUpload` renumbers on every save. Every score row in production had already drifted off the block it belonged to.
 
 `box_match` is a positional reorder, not a drop-onto-target: the names are static down the left, and the student drags the description boxes on the right until each sits in the row opposite its name. It behaves as a sortable list — lifting a box and dropping it three rows down shifts the rows between it up by one, rather than swapping the two endpoints. A row that comes out correct locks and can no longer be moved or targeted, so "is this row correct" is derived from the arrangement rather than tracked separately, and locked rows are pinned out of the shuffle so a solved pairing is never disturbed. Because the pairing has to read *across* a row, the layout is a list of rows — a name cell beside a description cell — not two independently stacked columns, which would drift apart as soon as one description wrapped to a different number of lines.
 
@@ -217,8 +239,9 @@ Two non-obvious failure modes this configuration prevents:
 
 | Group | Example endpoints | Auth |
 |-------|-------------------|------|
-| **AI Chat & Tutoring** | `/api/chat`, `/api/score-answer`, `/api/generate-user-question` | None (API key server-side) |
-| **Knowledge Checks** | `/api/knowledge-check/question`, `/api/knowledge-check/evaluate` | None |
+| **AI Chat & Tutoring** | `/api/chat`, `/api/generate-user-question` | None (API key server-side) |
+| **Lesson checkpoint** | `/api/lesson-checkpoint/start`, `/api/lesson-checkpoint/answer` | **Bearer token** — grading and lesson completion both happen here |
+| **Knowledge Checks (v1 only)** | `/api/knowledge-check/question`, `/api/knowledge-check/evaluate` | None |
 | **Flashcards** | `/api/generate-flashcards`, `/api/lesson-scores/global/:courseId` | None |
 | **Narration (live)** | `/api/admin/generate-lesson-audio`, `/api/admin/generate-blog-audio`, `/api/admin/lesson-audio-status/:courseId/:module/:lesson` | None |
 | **Text-to-Speech (unused)** | `/api/text-to-speech`, `/api/text-to-speech-timestamps`, `/api/lesson-audio/:courseId/:module/:lesson` | None |
@@ -598,7 +621,11 @@ Key tables (non-exhaustive):
 - `users` — profiles, roles, metadata. **Not** subscription status: Stripe state lives in
   `auth.users.raw_user_meta_data` and grants live in `insider_grants` (see below)
 - `courses`, `modules`, `lessons` — curriculum structure
-- `user_progress` — lesson completion tracking
+- `user_progress` — resume position within a lesson (see the checkpoint sentinels above)
+- `lesson_completions` — which lessons a user has finished; written server-side only, on a
+  checkpoint pass, and carries the referral-qualifying trigger
+- `lesson_questions` — the per-lesson question bank the checkpoint draws from
+- `lesson_checkpoint_attempts` — every checkpoint attempt, with its marked answers
 - `certificates` — course completion certificates
 - `blog_posts` — blog content
 - `lesson_audio` — cached TTS audio with timestamps

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAnimation } from '../../contexts/AnimationContext';
-import { markLessonComplete, saveUserProgress, getUserProgress, saveSectionQuestionScore, submitSectionFeedback, getSectionFeedback, submitChatFeedback, getLessonSectionScores } from '../../lib/api';
+import { saveUserProgress, getUserProgress, submitSectionFeedback, getSectionFeedback, submitChatFeedback, getLessonCheckpointResult } from '../../lib/api';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import useLessonData from './hooks/useLessonData';
 import useLessonNavigation from './hooks/useLessonNavigation';
@@ -18,78 +18,10 @@ import ChatInput from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';
 import ThumbsFeedback from './components/ThumbsFeedback';
 import LessonSummary from './components/LessonSummary';
+import LessonCheckpoint from './components/LessonCheckpoint';
 import useChat from './hooks/useChat';
-import useTypewriter from '@shared/lesson/hooks/useTypewriter';
+import useLessonCheckpoint from './hooks/useLessonCheckpoint';
 import Footer from '../Footer';
-
-// Auto-retry: triggers retry after a 1.5s pause so the user can read the feedback
-const AutoRetry = ({ onRetry }) => {
-  useEffect(() => {
-    const timer = setTimeout(onRetry, 1500);
-    return () => clearTimeout(timer);
-  }, [onRetry]);
-  return null;
-};
-
-// Typewriter text with cursor — used for revisit message after second scored-question failure
-const TypewriterMessage = ({ text, onComplete, speed = 45, delay = 1000 }) => {
-  const { revealedText, isComplete } = useTypewriter(text, { speed, delay, enabled: !!text, onComplete });
-  if (!revealedText && !isComplete) {
-    return (
-      <span
-        data-scroll-anchor
-        className="inline-block"
-        style={{ width: 8, height: 8, backgroundColor: '#8200EA', borderRadius: 1, verticalAlign: 'middle', position: 'relative', top: '-1px', animation: 'purplePulse 1.2s ease-in-out infinite' }}
-      />
-    );
-  }
-  if (!revealedText) return null;
-  return (
-    <span>
-      {revealedText}
-      {!isComplete && (
-        <span
-          data-scroll-anchor
-          className="inline-block ml-1.5"
-          style={{ width: 8, height: 8, backgroundColor: '#8200EA', borderRadius: 1, verticalAlign: 'middle', position: 'relative', top: '-1px' }}
-        />
-      )}
-    </span>
-  );
-};
-
-// Revisit message after second scored-question failure — types out then shows Continue button
-const RevisitMessage = ({ sectionName, onRevisit }) => {
-  const [typingDone, setTypingDone] = useState(false);
-  const [showButton, setShowButton] = useState(false);
-  useEffect(() => {
-    if (typingDone) {
-      const timer = setTimeout(() => setShowButton(true), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [typingDone]);
-  const text = `Your answer doesn't quite cover what we covered in ${sectionName || 'this section'}. To continue in the lesson, we'll need to revisit the content in this section first. Ask me any questions along the way, and we'll try again afterwards.`;
-  return (
-    <div>
-      <p className="text-base font-light leading-relaxed text-black mb-3" style={{ letterSpacing: '-0.01em' }}>
-        <TypewriterMessage text={text} onComplete={() => setTypingDone(true)} />
-      </p>
-      {typingDone && (
-        <div className="flex items-center gap-2" style={{ opacity: showButton ? 1 : 0, transition: 'opacity 0.25s ease-in' }}>
-          <button
-            onClick={onRevisit}
-            className="px-4 py-1.5 text-white transition-colors cursor-pointer"
-            style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
-          >
-            Continue
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
 
 // `groupSectionsByHeading` and the media-resolution rules now live in
 // `@shared/lesson/groupSections` so the admin editor's canvas can draw its
@@ -118,23 +50,18 @@ const LearningHubV2 = () => {
   const [readAloudMuted, setReadAloudMuted] = useState(false);
   // Hover state for the read-aloud button — animates the mute slash in on hover.
   const [muteHover, setMuteHover] = useState(false);
-  // Scored question flow state
-  const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
-  const [scoredIntroPhase, setScoredIntroPhase] = useState(true); // true = intro, false = question
-  const [scoredIntroFading, setScoredIntroFading] = useState(false);
-  const [scoredQuestionPool, setScoredQuestionPool] = useState([]);
-  const [scoredQuestionIndex, setScoredQuestionIndex] = useState(0);
-  const [scoredAttemptCount, setScoredAttemptCount] = useState(0);
-  const scoredAttemptCountRef = useRef(0);
-  const [scoredResult, setScoredResult] = useState(null);
-  const [scoredSectionContent, setScoredSectionContent] = useState('');
-  const [scoredSectionNumber, setScoredSectionNumber] = useState(null);
+  // End-of-lesson checkpoint. `showCheckpoint` is the screen; the grading state
+  // itself lives in useLessonCheckpoint, and the server owns the questions.
+  const [showCheckpoint, setShowCheckpoint] = useState(false);
+  const [checkpointIntroPhase, setCheckpointIntroPhase] = useState(true);
+  const [checkpointIntroFading, setCheckpointIntroFading] = useState(false);
+  const [checkpointAnswered, setCheckpointAnswered] = useState(false);
   const [suggestedQuestionDismissed, setSuggestedQuestionDismissed] = useState(false);
   const [sectionFeedback, setSectionFeedback] = useState({});
   const [chatFeedbackRating, setChatFeedbackRating] = useState(null);
-  const [scoredFeedbackRating, setScoredFeedbackRating] = useState(null);
+  const [checkpointFeedbackRating, setCheckpointFeedbackRating] = useState(null);
   const [showLessonSummary, setShowLessonSummary] = useState(false);
-  const [lessonSectionScores, setLessonSectionScores] = useState([]);
+  const [lessonCheckpointResult, setLessonCheckpointResult] = useState(null);
   const [savedProgressSection, setSavedProgressSection] = useState(null);
   const contentScrollRef = useRef(null);
   const contentInnerRef = useRef(null);
@@ -176,8 +103,8 @@ const LearningHubV2 = () => {
     chatRemainingLine,
     typingMessageIndex,
     sendMessage,
-    sendScoredMessage,
-    addMessagePair,
+    sendGradedMessage,
+    pushAssistantMessage,
     resetChat,
   } = useChat();
 
@@ -279,22 +206,6 @@ const LearningHubV2 = () => {
   const isLastGroup = currentGroupIndex >= totalGroups - 1;
   const activeGroupAll = allGroups[currentGroupIndex] || [];
 
-  // Map scored_question section_numbers to their parent H2 heading text
-  const scoredQuestionHeadings = useMemo(() => {
-    const map = {};
-    let currentH2 = '';
-    const allSections = allGroups.flat();
-    allSections.forEach(s => {
-      if (s.content_type === 'heading' && (s.content?.level || 2) === 2) {
-        currentH2 = s.content?.text || s.title || '';
-      }
-      if (s.content_type === 'scored_question') {
-        map[s.section_number] = currentH2;
-      }
-    });
-    return map;
-  }, [allGroups]);
-
   // Text sections for left column (typing animation)
   const activeGroup = useMemo(() => {
     return activeGroupAll.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube' && s.content_type !== 'svg');
@@ -317,9 +228,17 @@ const LearningHubV2 = () => {
     return activeGroup[0]?.section_number ?? null;
   }, [activeGroup]);
 
-  // Effective media: empty during scored questions, otherwise the active group's media
-  const effectiveMedia = showingScoredQuestion || showLessonSummary ? [] : activeGroupMedia;
-  const effectiveMediaKey = showingScoredQuestion || showLessonSummary ? '' : activeGroupMedia.map(s => s.id).join('|');
+  // The graded checkpoint that closes the lesson. Questions, marks and whether the
+  // lesson completes are all decided server-side; this only drives the screen.
+  const checkpoint = useLessonCheckpoint({
+    courseId: userCourseId,
+    moduleNumber: currentModule,
+    lessonNumber: currentLesson,
+  });
+
+  // Effective media: empty during the checkpoint, otherwise the active group's media
+  const effectiveMedia = showCheckpoint || showLessonSummary ? [] : activeGroupMedia;
+  const effectiveMediaKey = showCheckpoint || showLessonSummary ? '' : activeGroupMedia.map(s => s.id).join('|');
 
   // Media crossfade: fade out old media, then fade in new media (250ms each)
   const [displayedMedia, setDisplayedMedia] = useState(effectiveMedia);
@@ -383,20 +302,6 @@ const LearningHubV2 = () => {
     prevSuggestedQuestionRef.current = suggestedQuestion;
   }, [suggestedQuestion]);
 
-  // Build lesson context from sections up to a given index (for scored question evaluation)
-  const buildGroupContentUpTo = useCallback((sectionIndex) => {
-    if (!activeGroup || activeGroup.length === 0) return '';
-    return activeGroup
-      .slice(0, sectionIndex)
-      .filter(s => s.content_type === 'heading' || s.content_type === 'paragraph' || s.content_type === 'list' || s.content_type === 'bulletlist')
-      .map(s => {
-        const text = typeof s.content === 'string' ? s.content : s.content?.text || s.content_text || '';
-        if (s.content_type === 'heading') return `## ${text}`;
-        return text;
-      })
-      .join('\n\n');
-  }, [activeGroup]);
-
   // Build lesson context for AI chat — only visible section group (headings + body text)
   const buildLessonContext = useCallback(() => {
     if (!activeGroup || activeGroup.length === 0) return '';
@@ -418,73 +323,27 @@ const LearningHubV2 = () => {
     : '';
 
   const handleChatSubmit = useCallback(async (text) => {
-    // Scored intro phase — treat any input as "yes, proceed"
-    if (showingScoredQuestion && scoredIntroPhase && scoredIntroDoneRef.current) {
+    // Checkpoint intro — any input means "yes, let's start"
+    if (showCheckpoint && checkpointIntroPhase && checkpointIntroDoneRef.current) {
       setChatInput('');
       savedRangeRef.current = null;
       window.getSelection()?.removeAllRanges();
-      setScoredIntroFading(true);
-      setTimeout(() => {
-        setScoredIntroPhase(false);
-        setScoredIntroFading(false);
-        userScrolledUpRef.current = false;
-      }, 200);
+      beginCheckpointQuestionsRef.current?.();
       return;
     }
-    // Scored question mode — use /api/score-answer instead of regular chat
-    if (showingScoredQuestion && !scoredIntroPhase) {
+
+    // Checkpoint answer — graded server-side, which also decides whether the
+    // lesson completes. Nothing here knows the mark until the reply comes back.
+    if (showCheckpoint && !checkpointIntroPhase) {
       const userMessage = text.trim();
-      if (!userMessage) return;
+      if (!userMessage || checkpoint.phase !== 'question') return;
       setChatInput('');
       savedRangeRef.current = null;
       window.getSelection()?.removeAllRanges();
+      setCheckpointFeedbackRating(null);
 
-      // Admin bypass: typing "skip" auto-passes with 10/10
-      if (userMessage.toLowerCase() === 'skip' && user?.role === 'admin') {
-        const bypassFeedback = 'Admin bypass — question skipped.';
-        addMessagePair(userMessage, bypassFeedback);
-        setScoredResult({ score: 10, feedback: bypassFeedback, passed: true });
-        saveSectionQuestionScore({
-          userId: user?.id,
-          courseId: userCourseId,
-          moduleNumber: currentModule,
-          lessonNumber: currentLesson,
-          sectionNumber: scoredSectionNumber,
-          score: 10,
-          questionText: scoredQuestionPool[scoredQuestionIndex],
-          answerText: 'skip',
-          feedback: bypassFeedback,
-        }).catch(() => {});
-        return;
-      }
-
-      // Second attempt — skip API feedback, go straight to revisit message
-      if (scoredAttemptCountRef.current >= 1) {
-        addMessagePair(userMessage, '');
-        setScoredResult({ score: 0, feedback: '', passed: false });
-        return;
-      }
-
-      const result = await sendScoredMessage(
-        userMessage,
-        scoredQuestionPool[scoredQuestionIndex],
-        scoredSectionContent
-      );
-      if (result) {
-        setScoredResult({ score: result.score, feedback: result.feedback, passed: result.score >= 5 });
-        // Persist score (best-score upsert on server)
-        saveSectionQuestionScore({
-          userId: user?.id,
-          courseId: userCourseId,
-          moduleNumber: currentModule,
-          lessonNumber: currentLesson,
-          sectionNumber: scoredSectionNumber,
-          score: result.score,
-          questionText: scoredQuestionPool[scoredQuestionIndex],
-          answerText: userMessage,
-          feedback: result.feedback,
-        }).catch(() => {});
-      }
+      await sendGradedMessage(userMessage, checkpoint.grade);
+      setCheckpointAnswered(true);
       return;
     }
 
@@ -507,7 +366,7 @@ const LearningHubV2 = () => {
     setChatFeedbackRating(null);
     savedRangeRef.current = null;
     window.getSelection()?.removeAllRanges();
-  }, [buildLessonContext, sendMessage, sendScoredMessage, addMessagePair, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredIntroPhase, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent, user?.id, user?.role, userCourseId, currentModule, currentLesson, scoredSectionNumber]);
+  }, [buildLessonContext, sendMessage, sendGradedMessage, pendingUserQuestion, chatMessages.length, showCheckpoint, checkpointIntroPhase, checkpoint.phase, checkpoint.grade, user?.role]);
 
   // Find parent H2 and H3 headings to persist across paragraph-only screens
 
@@ -522,53 +381,26 @@ const LearningHubV2 = () => {
   const persistentH3 = activeHeadings.h3;
 
 
-  // Get the group index of the current H2 (for revisiting after failed scored question)
-  const currentH2GroupIndex = useMemo(() => {
-    if (!allGroups.length) return 0;
-    const h2InGroup = activeGroup.find(
-      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
-    );
-    if (h2InGroup) return currentGroupIndex;
-    // Walk backwards to find the parent H2's group
-    for (let i = currentGroupIndex - 1; i >= 0; i--) {
-      const group = allGroups[i];
-      if (!group) continue;
-      for (let j = group.length - 1; j >= 0; j--) {
-        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
-          return i;
-        }
-      }
-    }
-    return 0;
-  }, [allGroups, currentGroupIndex, activeGroup]);
+  // The checkpoint intro finishing is what arms the "any input starts it" path, and
+  // handleChatSubmit is a stale-closure risk there, so it reads a ref.
+  const checkpointIntroDoneRef = useRef(false);
+  const [checkpointIntroDone, setCheckpointIntroDone] = useState(false);
+  const handleCheckpointIntroDone = useCallback(() => {
+    checkpointIntroDoneRef.current = true;
+    setCheckpointIntroDone(true);
+  }, []);
 
-  // Get H2 section name for scored question intro
-  const currentH2Name = useMemo(() => {
-    if (persistentH2) return persistentH2.content?.text || persistentH2.title || '';
-    return '';
-  }, [persistentH2]);
-
-  // Scored question intro text — persists across both phases so it stays visible when question appears
-  const scoredIntroFullText = showingScoredQuestion
-    ? `${firstName ? `${firstName}, I` : 'I'}'ll now ask you a question based on the content in ${currentH2Name || 'this section'} that we've reviewed together. You'll need to answer it correctly to continue. Therefore, ensure your answer is thorough and you answer the question asked.\nReady to proceed?`
-    : '';
-  // Only animate during intro phase; once past intro, text is rendered statically
-  const scoredIntroAnimateText = scoredIntroPhase ? scoredIntroFullText : '';
-  const { revealedText: scoredIntroRevealed, isComplete: scoredIntroDone } = useTypewriter(
-    scoredIntroAnimateText,
-    { speed: 38, delay: 1200, enabled: !!scoredIntroAnimateText }
-  );
-  const scoredIntroDoneRef = useRef(false);
-  scoredIntroDoneRef.current = scoredIntroDone;
-
-  // Scored question text with typewriter animation (after intro phase)
-  const scoredQuestionText = showingScoredQuestion && !scoredIntroPhase
-    ? (scoredQuestionPool[scoredQuestionIndex] || '')
-    : '';
-  const { revealedText: scoredQuestionRevealed, isComplete: scoredQuestionDone } = useTypewriter(
-    scoredQuestionText,
-    { speed: 45, delay: 1000, enabled: !!scoredQuestionText }
-  );
+  /** Tear the checkpoint screen down — on lesson change, replay, or after passing. */
+  const resetCheckpointScreen = useCallback(() => {
+    setShowCheckpoint(false);
+    setCheckpointIntroPhase(true);
+    setCheckpointIntroFading(false);
+    setCheckpointAnswered(false);
+    setCheckpointFeedbackRating(null);
+    checkpointIntroDoneRef.current = false;
+    setCheckpointIntroDone(false);
+    checkpoint.reset();
+  }, [checkpoint.reset]);
 
   // Sequential typing — track how many sections have finished animating
   const [completedSections, setCompletedSections] = useState(0);
@@ -577,14 +409,14 @@ const LearningHubV2 = () => {
   const completedSectionsRef = useRef(completedSections);
   completedSectionsRef.current = completedSections;
 
-  // A scored question (a full-screen interrupt) or a box-matching exercise forces
-  // the typewriter path. Both gate on `completedSections`, and audio mode reveals
-  // every section at once and derives completion from `revealComplete` instead —
-  // which would walk straight past the gate.
+  // A box-matching exercise forces the typewriter path: it gates on
+  // `completedSections`, and audio mode reveals every section at once and derives
+  // completion from `revealComplete` instead — which would walk straight past it.
   // Inline user questions still narrate — the question is shown after the group's
-  // narration finishes (see the deferred effect below).
+  // narration finishes (see the deferred effect below). The graded checkpoint is
+  // not a gate here at all; it comes after the last screen rather than inside one.
   const groupHasGate = useMemo(
-    () => activeGroup.some(s => s.content_type === 'scored_question' || s.content_type === 'box_match'),
+    () => activeGroup.some(s => s.content_type === 'box_match'),
     [activeGroup]
   );
 
@@ -707,40 +539,19 @@ const LearningHubV2 = () => {
     setShowButtons(false);
   }, [allTypingComplete, currentGroupIndex]);
 
-  // Delayed show for scored intro Continue button (matches nav button timing)
-  const [showScoredIntroButton, setShowScoredIntroButton] = useState(false);
+  // Delayed show for the checkpoint's "Begin" button (matches nav button timing)
+  const [showCheckpointIntroButton, setShowCheckpointIntroButton] = useState(false);
   useEffect(() => {
-    if (scoredIntroDone && scoredIntroPhase) {
-      const timer = setTimeout(() => setShowScoredIntroButton(true), 500);
+    if (checkpointIntroDone && checkpointIntroPhase) {
+      const timer = setTimeout(() => setShowCheckpointIntroButton(true), 500);
       return () => clearTimeout(timer);
     }
-    setShowScoredIntroButton(false);
-  }, [scoredIntroDone, scoredIntroPhase]);
+    setShowCheckpointIntroButton(false);
+  }, [checkpointIntroDone, checkpointIntroPhase]);
 
   const handleSectionComplete = useCallback(() => {
     setCompletedSections((prev) => {
       const section = activeGroupRef.current?.[prev];
-
-      // Scored question block — enter scored question flow
-      if (section?.content_type === 'scored_question') {
-        const questions = section.content?.questions?.filter(q => q?.trim()) || [];
-        if (questions.length === 0) return prev + 1; // skip if no questions
-
-        queueMicrotask(() => {
-          setShowingScoredQuestion(true);
-          setScoredIntroPhase(true);
-          setScoredQuestionPool(questions);
-          setScoredQuestionIndex(Math.floor(Math.random() * questions.length));
-          setScoredAttemptCount(0); scoredAttemptCountRef.current = 0;
-          setScoredResult(null);
-          setScoredFeedbackRating(null);
-          setScoredSectionContent(buildGroupContentUpTo(prev));
-          setScoredSectionNumber(section.section_number);
-          resetChat();
-          userScrolledUpRef.current = false;
-        });
-        return prev; // Don't advance — wait for pass
-      }
 
       // User question — gate progression until answered.
       // In audio mode, don't gate here; the deferred effect shows it after narration.
@@ -761,7 +572,7 @@ const LearningHubV2 = () => {
 
       return prev + 1;
     });
-  }, [buildGroupContentUpTo, resetChat]);
+  }, []);
 
   // Auto-scroll: continuously lerp toward bottom of content
   const userScrolledUpRef = useRef(false);
@@ -826,10 +637,9 @@ const LearningHubV2 = () => {
 
   // True while any on-screen typing animation is still running (body, question, or Claude response)
   const isAnyAnimationActive =
-    (completedSections < activeGroup.length && !pendingUserQuestion && !showingScoredQuestion)
+    (completedSections < activeGroup.length && !pendingUserQuestion && !showCheckpoint)
     || (!!pendingUserQuestion && !userQuestionTypingDone)
-    || (showingScoredQuestion && scoredIntroPhase && !scoredIntroDone)
-    || (showingScoredQuestion && !scoredIntroPhase && !!scoredQuestionText && !scoredQuestionDone)
+    || (showCheckpoint && checkpointIntroPhase && !checkpointIntroDone)
     || typingMessageIndex !== null;
 
   // User question answered — Claude has responded, show Continue button
@@ -886,9 +696,7 @@ const LearningHubV2 = () => {
   useEffect(() => {
     setCompletedSections(0);
     setPendingUserQuestion(null);
-    setShowingScoredQuestion(false);
-    setScoredResult(null);
-    setScoredSectionNumber(null);
+    resetCheckpointScreen();
     resetChat();
     setRestoringProgress(true);
 
@@ -916,7 +724,7 @@ const LearningHubV2 = () => {
       setCurrentGroupIndex(0);
       setRestoringProgress(false);
     }
-  }, [currentModule, currentLesson, user?.id, userCourseId]);
+  }, [currentModule, currentLesson, user?.id, userCourseId, resetChat, resetCheckpointScreen]);
 
   // Load existing section feedback for this lesson
   useEffect(() => {
@@ -927,17 +735,28 @@ const LearningHubV2 = () => {
     }
   }, [currentModule, currentLesson, user?.id, userCourseId]);
 
-  // When allGroups loads and saved progress is beyond the last group, show lesson summary
+  // Saved progress past the last screen means the student had reached the end of
+  // the lesson. Two sentinels sit out there, one past each other:
+  //   allGroups.length     — at the checkpoint, not yet passed
+  //   allGroups.length + 1 — checkpoint passed, on the summary
+  // A separate effect because sections load asynchronously, so allGroups.length is
+  // still 0 when the saved progress first resolves.
   useEffect(() => {
-    if (savedProgressSection != null && allGroups.length > 0 && savedProgressSection >= allGroups.length) {
-      setCurrentGroupIndex(allGroups.length - 1);
+    if (savedProgressSection == null || allGroups.length === 0) return;
+    if (savedProgressSection < allGroups.length) return;
+
+    setCurrentGroupIndex(allGroups.length - 1);
+    setSavedProgressSection(null);
+
+    if (savedProgressSection > allGroups.length) {
       if (user?.id && userCourseId) {
-        getLessonSectionScores(user.id, userCourseId, currentModule, currentLesson)
-          .then(setLessonSectionScores)
-          .catch(err => console.error('Error fetching section scores:', err));
+        getLessonCheckpointResult(user.id, userCourseId, currentModule, currentLesson)
+          .then(setLessonCheckpointResult)
+          .catch(err => console.error('Error fetching checkpoint result:', err));
       }
       setShowLessonSummary(true);
-      setSavedProgressSection(null);
+    } else {
+      showCheckpointScreenRef.current?.();
     }
   }, [savedProgressSection, allGroups.length, user?.id, userCourseId, currentModule, currentLesson]);
 
@@ -970,16 +789,16 @@ const LearningHubV2 = () => {
     });
   }, [chatFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentSectionNumber]);
 
-  const handleScoredFeedback = useCallback((rating, assistantMsg, userMsg) => {
-    const newRating = scoredFeedbackRating === rating ? null : rating;
-    setScoredFeedbackRating(newRating);
+  const handleCheckpointFeedback = useCallback((rating, assistantMsg, userMsg) => {
+    const newRating = checkpointFeedbackRating === rating ? null : rating;
+    setCheckpointFeedbackRating(newRating);
     submitChatFeedback({
       userId: user.id, courseId: userCourseId,
       moduleNumber: currentModule, lessonNumber: currentLesson,
       sectionNumber: currentSectionNumber,
       userMessage: userMsg, assistantMessage: assistantMsg, rating: newRating,
     });
-  }, [scoredFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentSectionNumber]);
+  }, [checkpointFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentSectionNumber]);
 
   // Handle Continue — advance to next group
   // Shared logic for transitioning between section groups with a fade-out
@@ -989,9 +808,7 @@ const LearningHubV2 = () => {
       setChatInput('');
       setCompletedSections(0);
       setPendingUserQuestion(null);
-      setShowingScoredQuestion(false);
-      setScoredResult(null);
-      setScoredSectionNumber(null);
+      resetCheckpointScreen();
       setCurrentGroupIndex((prev) => {
         const next = getNextIndex(prev);
         if (user?.id && userCourseId) {
@@ -1006,7 +823,7 @@ const LearningHubV2 = () => {
       });
       chatInputRef.current?.focus();
     }, 300);
-  }, [resetChat, user?.id, userCourseId, currentModule, currentLesson]);
+  }, [resetChat, resetCheckpointScreen, user?.id, userCourseId, currentModule, currentLesson]);
 
   const handleContinue = useCallback(() => {
     transitionToGroup((prev) => prev + 1);
@@ -1017,14 +834,15 @@ const LearningHubV2 = () => {
     transitionToGroup((prev) => Math.max(prev - 1, 0));
   }, [transitionToGroup]);
 
-  // End Lesson — mark complete, reset section progress, and navigate to progress hub
+  // End Lesson — reset section progress and navigate to the progress hub.
+  // The completion row itself was written server-side when the checkpoint passed;
+  // the browser no longer gets to decide that a lesson is finished.
   const handleEndLesson = useCallback(async () => {
     try {
-      await markLessonComplete(user?.id, userCourseId, currentModule, currentLesson);
       // Reset section progress so reopening this lesson starts fresh
       await saveUserProgress(user?.id, userCourseId, currentModule, currentLesson, 0);
     } catch (err) {
-      console.error('Error marking lesson complete:', err);
+      console.error('Error resetting lesson progress:', err);
     }
     // Signal the progress hub to celebrate the lesson badge with confetti — fires on
     // every completion, even when the lesson count is unchanged (e.g. re-completing).
@@ -1032,20 +850,66 @@ const LearningHubV2 = () => {
     navigate('/progress');
   }, [user?.id, userCourseId, currentModule, currentLesson, navigate]);
 
-  // Show lesson summary screen — fetch section scores and display summary
-  const showSummary = useCallback(async () => {
-    if (user?.id && userCourseId) {
+  // Show the lesson summary — the marked checkpoint, question by question.
+  const showSummary = useCallback(async (result) => {
+    if (result) {
+      setLessonCheckpointResult(result);
+    } else if (user?.id && userCourseId) {
       try {
-        const scores = await getLessonSectionScores(user.id, userCourseId, currentModule, currentLesson);
-        setLessonSectionScores(scores);
+        setLessonCheckpointResult(
+          await getLessonCheckpointResult(user.id, userCourseId, currentModule, currentLesson)
+        );
       } catch (err) {
-        console.error('Error fetching section scores:', err);
+        console.error('Error fetching checkpoint result:', err);
       }
-      // Save progress beyond last group so refresh goes straight to summary
+    }
+    if (user?.id && userCourseId) {
+      // One past the sentinel the checkpoint uses, so a refresh here lands on the
+      // summary rather than making the student sit the checkpoint again.
+      saveUserProgress(user.id, userCourseId, currentModule, currentLesson, allGroups.length + 1).catch(() => {});
+    }
+    resetCheckpointScreen();
+    setShowLessonSummary(true);
+  }, [user?.id, userCourseId, currentModule, currentLesson, allGroups.length, resetCheckpointScreen]);
+
+  /**
+   * Open the checkpoint. Replaces what used to be the direct jump to the summary,
+   * so finishing the last screen now means sitting the graded questions.
+   *
+   * A lesson with no question bank has nothing to grade, so it falls through to
+   * the summary and completes — better than trapping a paying student behind
+   * content an admin hasn't generated yet.
+   */
+  const showCheckpointScreen = useCallback(async () => {
+    resetChat();
+    setChatInput('');
+    setShowCheckpoint(true);
+    setCheckpointIntroPhase(true);
+    setCheckpointAnswered(false);
+    userScrolledUpRef.current = false;
+
+    if (user?.id && userCourseId) {
       saveUserProgress(user.id, userCourseId, currentModule, currentLesson, allGroups.length).catch(() => {});
     }
-    setShowLessonSummary(true);
-  }, [user?.id, userCourseId, currentModule, currentLesson, allGroups.length]);
+
+    const { status, question, answered } = await checkpoint.start();
+    if (status !== 'question') {
+      setShowCheckpoint(false);
+      await showSummary(null);
+      return;
+    }
+
+    // Resuming an attempt the student had already started — skip the intro and
+    // put them back on the question they were on, rather than offering to begin
+    // a checkpoint they are halfway through.
+    if (answered?.length > 0) {
+      setCheckpointIntroPhase(false);
+      pushAssistantMessage(question);
+    }
+  }, [resetChat, user?.id, userCourseId, currentModule, currentLesson, allGroups.length, checkpoint.start, showSummary, pushAssistantMessage]);
+  // Read by the resume effect above, which runs before this callback is in scope.
+  const showCheckpointScreenRef = useRef(showCheckpointScreen);
+  showCheckpointScreenRef.current = showCheckpointScreen;
 
   const handleUserQuestionContinue = useCallback(() => {
     setChatInput('');
@@ -1057,9 +921,9 @@ const LearningHubV2 = () => {
     const currentCompleted = completedSectionsRef.current;
 
     if (currentCompleted + 1 >= groupLen) {
-      // Last section in group — advance to next group or show summary
+      // Last section in group — advance to next group or sit the checkpoint
       if (isLastGroup) {
-        showSummary();
+        showCheckpointScreen();
       } else {
         setCompletedSections(0);
         setCurrentGroupIndex((prev) => {
@@ -1078,112 +942,72 @@ const LearningHubV2 = () => {
       // More sections remain — reveal the next one
       setCompletedSections((prev) => prev + 1);
     }
-  }, [resetChat, isLastGroup, showSummary, user?.id, userCourseId, currentModule, currentLesson]);
+  }, [resetChat, isLastGroup, showCheckpointScreen, user?.id, userCourseId, currentModule, currentLesson]);
   const handleUserQuestionContinueRef = useRef(handleUserQuestionContinue);
   handleUserQuestionContinueRef.current = handleUserQuestionContinue;
 
-  // Scored question intro → show the actual question underneath
-  const handleScoredIntroComplete = useCallback(() => {
-    setScoredIntroFading(true);
+  // Checkpoint intro → fade the "Ready to begin?" line and ask the first question.
+  const beginCheckpointQuestions = useCallback(() => {
+    setCheckpointIntroFading(true);
     setTimeout(() => {
-      setScoredIntroPhase(false);
-      setScoredIntroFading(false);
+      setCheckpointIntroPhase(false);
+      setCheckpointIntroFading(false);
       userScrolledUpRef.current = false;
+      if (checkpoint.question) pushAssistantMessage(checkpoint.question);
     }, 200);
-  }, []);
+  }, [checkpoint.question, pushAssistantMessage]);
+  const beginCheckpointQuestionsRef = useRef(beginCheckpointQuestions);
+  beginCheckpointQuestionsRef.current = beginCheckpointQuestions;
 
-  // Scored question — pass (advance past the block)
-  const handleScoredQuestionPass = useCallback(() => {
+  // Passed — move on to the summary, which shows the marked answers.
+  const handleCheckpointPass = useCallback(() => {
     setChatInput('');
-    setShowingScoredQuestion(false);
-    setScoredIntroPhase(true);
-    setScoredResult(null);
-    setScoredQuestionPool([]);
-    setScoredSectionNumber(null);
+    showSummary(checkpoint.result);
     resetChat();
+  }, [showSummary, checkpoint.result, resetChat]);
 
-    const groupLen = activeGroupRef.current?.length || 0;
-    const currentCompleted = completedSectionsRef.current;
-
-    if (currentCompleted + 1 >= groupLen) {
-      // Scored question was last section — advance to next group or show summary
-      if (isLastGroup) {
-        showSummary();
-      } else {
-        setCompletedSections(0);
-        setCurrentGroupIndex((prev) => {
-          const next = prev + 1;
-          if (user?.id && userCourseId) {
-            saveUserProgress(user.id, userCourseId, currentModule, currentLesson, next).catch(() => {});
-          }
-          return next;
-        });
-        requestAnimationFrame(() => {
-          contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-        chatInputRef.current?.focus();
-      }
-    } else {
-      setCompletedSections((prev) => prev + 1);
-    }
-  }, [resetChat, isLastGroup, showSummary, user?.id, userCourseId, currentModule, currentLesson]);
-
-  // Scored question — retry same question (auto-triggered after first failed attempt)
-  // Keep chat history so previous feedback stays visible; just clear scoredResult to allow re-submission
-  const handleScoredQuestionRetry = useCallback(() => {
-    setScoredAttemptCount((prev) => {
-      scoredAttemptCountRef.current = prev + 1;
-      return prev + 1;
-    });
-    setScoredResult(null);
+  // Failed — a fresh attempt, served questions this student hasn't seen.
+  const handleCheckpointRetake = useCallback(async () => {
+    setChatInput('');
+    resetChat();
+    setCheckpointAnswered(false);
+    setCheckpointFeedbackRating(null);
     userScrolledUpRef.current = false;
-  }, []);
 
-  // Scored question — revisit section (after second failed attempt)
-  const handleScoredQuestionRevisit = useCallback(() => {
-    setContentFading(true);
-    setTimeout(() => {
-      setChatInput('');
-      setCompletedSections(0);
-      setPendingUserQuestion(null);
-      setShowingScoredQuestion(false);
-      setScoredIntroPhase(true);
-      setScoredResult(null);
-      setScoredQuestionPool([]);
-      setScoredSectionNumber(null);
-      resetChat();
-      setCurrentGroupIndex(currentH2GroupIndex);
-      if (user?.id && userCourseId) {
-        saveUserProgress(user.id, userCourseId, currentModule, currentLesson, currentH2GroupIndex).catch(() => {});
-      }
-      setContentFading(false);
-      requestAnimationFrame(() => {
-        contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-      chatInputRef.current?.focus();
-    }, 300);
-  }, [resetChat, currentH2GroupIndex, user?.id, userCourseId, currentModule, currentLesson]);
+    const { status, question } = await checkpoint.retake();
+    if (status === 'question') {
+      // Straight back into the questions — the student has already read the intro.
+      setCheckpointIntroPhase(false);
+      pushAssistantMessage(question);
+    } else {
+      setShowCheckpoint(false);
+      await showSummary(null);
+    }
+  }, [resetChat, checkpoint.retake, showSummary, pushAssistantMessage]);
 
 
-  // Auto-focus chat input when scored question finishes typing
+  // Auto-focus the answer box once a checkpoint question has finished typing
   useEffect(() => {
-    if (showingScoredQuestion && !scoredIntroPhase && scoredQuestionDone) {
+    if (showCheckpoint && !checkpointIntroPhase && lastAssistantDone && !isTyping) {
       chatInputRef.current?.focus();
     }
-  }, [showingScoredQuestion, scoredIntroPhase, scoredQuestionDone]);
+  }, [showCheckpoint, checkpointIntroPhase, lastAssistantDone, isTyping]);
 
-  // Determine scored question button state
-  const scoredQuestionAnswered = showingScoredQuestion && scoredResult && lastAssistantDone && !isTyping;
+  // The checkpoint is settled and its last message has finished typing, so the
+  // outcome buttons can appear. Only meaningful once every question is answered.
+  const checkpointSettled =
+    showCheckpoint && checkpointAnswered && checkpoint.phase === 'result'
+    && !!checkpoint.result && lastAssistantDone && !isTyping;
 
-  // Delayed show for scored answer buttons (matches nav button timing)
-  const [showScoredAnswerButton, setShowScoredAnswerButton] = useState(false);
+  // Delayed show for the checkpoint outcome buttons (matches nav button timing)
+  const [showCheckpointResultButton, setShowCheckpointResultButton] = useState(false);
   useEffect(() => {
-    if (scoredQuestionAnswered) {
-      const timer = setTimeout(() => setShowScoredAnswerButton(true), 500);
+    if (checkpointSettled) {
+      const timer = setTimeout(() => setShowCheckpointResultButton(true), 500);
       return () => clearTimeout(timer);
     }
-    setShowScoredAnswerButton(false);
-  }, [scoredQuestionAnswered]);
+    setShowCheckpointResultButton(false);
+  }, [checkpointSettled]);
 
   const { showContent, isReady } = useFadeTransition(loading, { autoRefreshAfter: 30000 });
 
@@ -1316,9 +1140,8 @@ const LearningHubV2 = () => {
                   // Reset all section/typing state
                   setCompletedSections(0);
                   setPendingUserQuestion(null);
-                  setShowingScoredQuestion(false);
-                  setScoredResult(null);
-                  setScoredSectionNumber(null);
+                  setShowLessonSummary(false);
+                  resetCheckpointScreen();
                   resetChat();
                   setChatInput('');
                   setCurrentGroupIndex(0);
@@ -1373,14 +1196,14 @@ const LearningHubV2 = () => {
               style={{ paddingLeft: isMobile ? '20px' : '40px', paddingRight: isMobile ? '20px' : '70px' }}
             >
             {/* Persistent H2 — always rendered outside fade container so it never flickers */}
-            {!restoringProgress && !showLessonSummary && !showingScoredQuestion && persistentH2 && (
+            {!restoringProgress && !showLessonSummary && !showCheckpoint && persistentH2 && (
               <div key={persistentH2.id || persistentH2.content?.text} className="mb-3" style={{ marginTop: '10px' }}>
                 <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
                   {persistentH2.content?.text || persistentH2.title}
                 </h2>
               </div>
             )}
-            {!restoringProgress && !showLessonSummary && !showingScoredQuestion && persistentH3 && (
+            {!restoringProgress && !showLessonSummary && !showCheckpoint && persistentH3 && (
               <div key={persistentH3.id || persistentH3.content?.text}>
                 <h3 className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
                   {persistentH3.content?.text || persistentH3.title}
@@ -1391,120 +1214,24 @@ const LearningHubV2 = () => {
               {restoringProgress ? null : showLessonSummary ? (
                 <div style={{ paddingTop: 13 }}>
                   <LessonSummary
-                    sectionScores={lessonSectionScores}
-                    scoredQuestionHeadings={scoredQuestionHeadings}
+                    checkpoint={lessonCheckpointResult}
                     lessonTitle={lessonName}
                     firstName={firstName}
                     onEndLesson={handleEndLesson}
                   />
                 </div>
               ) : <>
-              {/* Scored question screen — intro text, then question types underneath */}
-              {showingScoredQuestion && scoredQuestionPool.length > 0 ? (
-                <div key={`scored-${scoredQuestionIndex}`}>
-                  {/* H2 heading persists at top */}
-                  {currentH2Name && (
-                    <div className="mb-3" style={{ marginTop: '10px' }}>
-                      <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
-                        {currentH2Name}
-                      </h2>
-                    </div>
-                  )}
-                  {/* Intro text */}
-                  <div
-                    className="text-base font-light leading-relaxed text-black"
-                    style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
-                  >
-                    {scoredIntroPhase ? (
-                      <>
-                        {(() => {
-                          const text = scoredIntroRevealed || '';
-                          const lines = text.split('\n');
-                          return lines.map((line, li) => (
-                            <p key={li} className={li > 0 ? 'mt-3' : ''} style={li > 0 && scoredIntroFading ? { opacity: 0, transition: 'opacity 0.2s ease-out' } : li > 0 ? { transition: 'opacity 0.2s ease-out' } : undefined}>
-                              {line}
-                              {li === lines.length - 1 && !scoredIntroDone && scoredIntroRevealed && (
-                                <span
-                                  data-scroll-anchor
-                                  className="inline-block ml-1.5"
-                                  style={{
-                                    width: 8,
-                                    height: 8,
-                                    backgroundColor: '#8200EA',
-                                    verticalAlign: 'middle',
-                                    position: 'relative',
-                                    top: '-1px',
-                                  }}
-                                />
-                              )}
-                            </p>
-                          ));
-                        })()}
-                        {!scoredIntroDone && !scoredIntroRevealed && (
-                          <p>
-                            <span
-                              data-scroll-anchor
-                              className="inline-block"
-                              style={{
-                                width: 8,
-                                height: 8,
-                                backgroundColor: '#8200EA',
-                                verticalAlign: 'middle',
-                                position: 'relative',
-                                top: '-1px',
-                                animation: 'purplePulse 1.2s ease-in-out infinite',
-                              }}
-                            />
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      /* Static intro text after intro phase — omit "Ready to proceed?" line */
-                      scoredIntroFullText.split('\n').filter(line => line.trim() !== 'Ready to proceed?').map((line, li) => (
-                        <p key={li} className={li > 0 ? 'mt-3' : ''}>{line}</p>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Question text — types where "Ready to proceed?" was after Continue is clicked */}
-                  {!scoredIntroPhase && (
-                    <p
-                      className="text-base font-medium leading-relaxed text-black mt-3"
-                      style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
-                    >
-                      {scoredQuestionRevealed}
-                      {!scoredQuestionDone && scoredQuestionRevealed && (
-                        <span
-                          data-scroll-anchor
-                          className="inline-block ml-1.5"
-                          style={{
-                            width: 8,
-                            height: 8,
-                            backgroundColor: '#8200EA',
-                            verticalAlign: 'middle',
-                            position: 'relative',
-                            top: '-1px',
-                          }}
-                        />
-                      )}
-                      {!scoredQuestionDone && !scoredQuestionRevealed && (
-                        <span
-                          data-scroll-anchor
-                          className="inline-block"
-                          style={{
-                            width: 8,
-                            height: 8,
-                            backgroundColor: '#8200EA',
-                            verticalAlign: 'middle',
-                            position: 'relative',
-                            top: '-1px',
-                            animation: 'purplePulse 1.2s ease-in-out infinite',
-                          }}
-                        />
-                      )}
-                    </p>
-                  )}
-                </div>
+              {/* Checkpoint screen — the intro and a counter; questions run in the chat */}
+              {showCheckpoint ? (
+                <LessonCheckpoint
+                  questionNumber={checkpoint.questionNumber}
+                  totalQuestions={checkpoint.totalQuestions}
+                  lessonTitle={lessonName}
+                  firstName={firstName}
+                  introPhase={checkpointIntroPhase}
+                  introFading={checkpointIntroFading}
+                  onIntroComplete={handleCheckpointIntroDone}
+                />
               ) : (
                 <>
                   {/* Render sections sequentially — each starts typing after the previous finishes */}
@@ -1553,7 +1280,7 @@ const LearningHubV2 = () => {
 
               {/* Inline media (mobile only) — on desktop this renders in the right column.
                   Uses the same displayedMedia + crossfade state so behavior matches. */}
-              {isMobile && !showingScoredQuestion && !showLessonSummary && displayedMedia.length > 0 && (
+              {isMobile && !showCheckpoint && !showLessonSummary && displayedMedia.length > 0 && (
                 <div
                   key={displayedMedia.map(s => s.id).join('|')}
                   className="mt-5"
@@ -1569,7 +1296,7 @@ const LearningHubV2 = () => {
               {/* Action area — buttons crossfade with chat messages at the same position */}
               <div className="mt-3 mb-4">
                 {/* Navigation buttons — hidden when chat is active */}
-                {allTypingComplete && !showingScoredQuestion && chatMessages.length === 0 && (
+                {allTypingComplete && !showCheckpoint && chatMessages.length === 0 && (
                   <div
                     className="flex items-center gap-2"
                     style={{
@@ -1579,13 +1306,13 @@ const LearningHubV2 = () => {
                   >
                     {isLastGroup ? (
                       <button
-                        onClick={showSummary}
+                        onClick={showCheckpointScreen}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
                         style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
                         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                       >
-                        End Lesson
+                        Finish Lesson
                       </button>
                     ) : (
                       <button
@@ -1654,11 +1381,6 @@ const LearningHubV2 = () => {
                 {chatMessages.length > 0 && (
                   <div>
                     {chatMessages
-                    .filter((msg, idx) => {
-                      // Hide the last assistant message on second scored-question failure (revisit text replaces it)
-                      if (scoredQuestionAnswered && !scoredResult?.passed && scoredAttemptCount >= 1 && msg.type === 'assistant' && idx === chatMessages.length - 1) return false;
-                      return true;
-                    })
                     .map((msg, idx) => (
                       <div
                         key={`${idx}-${msg.text?.substring(0, 20)}`}
@@ -1696,20 +1418,20 @@ const LearningHubV2 = () => {
                 )}
 
                 {/* Free-form chat done — Continue, back, thumbs below the response */}
-                {freeFormChatDone && !showingScoredQuestion && (
+                {freeFormChatDone && !showCheckpoint && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{ animation: 'chatFadeIn 0.25s ease-out' }}
                   >
                     {isLastGroup ? (
                       <button
-                        onClick={showSummary}
+                        onClick={showCheckpointScreen}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
                         style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
                         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                       >
-                        End Lesson
+                        Finish Lesson
                       </button>
                     ) : (
                       <button
@@ -1749,7 +1471,7 @@ const LearningHubV2 = () => {
                 )}
 
                 {/* User question answered — Continue button to advance to next section */}
-                {userQuestionAnswered && !showingScoredQuestion && (
+                {userQuestionAnswered && !showCheckpoint && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{ animation: 'chatFadeIn 0.25s ease-out' }}
@@ -1789,23 +1511,23 @@ const LearningHubV2 = () => {
                   </div>
                 )}
 
-                {/* Scored question intro phase — Continue to proceed to the question */}
-                {showingScoredQuestion && scoredIntroPhase && scoredIntroDone && (
+                {/* Checkpoint intro — Begin to start the graded questions */}
+                {showCheckpoint && checkpointIntroPhase && checkpointIntroDone && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{
-                      opacity: scoredIntroFading ? 0 : (showScoredIntroButton ? 1 : 0),
-                      transition: scoredIntroFading ? 'opacity 0.2s ease-out' : 'opacity 0.25s ease-in',
+                      opacity: checkpointIntroFading ? 0 : (showCheckpointIntroButton ? 1 : 0),
+                      transition: checkpointIntroFading ? 'opacity 0.2s ease-out' : 'opacity 0.25s ease-in',
                     }}
                   >
                     <button
-                      onClick={handleScoredIntroComplete}
+                      onClick={beginCheckpointQuestions}
                       className="px-4 py-1.5 text-white transition-colors cursor-pointer"
                       style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
                       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                     >
-                      Continue
+                      Begin
                     </button>
                     <button
                       onClick={handleBack}
@@ -1823,74 +1545,54 @@ const LearningHubV2 = () => {
                   </div>
                 )}
 
-                {/* Scored question answered — show Continue (passed), auto-retry (1st fail), or revisit (2nd fail) */}
-                {scoredQuestionAnswered && (
+                {/* Checkpoint settled — Continue on a pass, Retake on a fail */}
+                {checkpointSettled && (
                   <div
                     className="mt-3"
                     style={{
-                      opacity: showScoredAnswerButton ? 1 : 0,
+                      opacity: showCheckpointResultButton ? 1 : 0,
                       transition: 'opacity 0.25s ease-in',
                     }}
                   >
-                    {scoredResult.passed ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={handleScoredQuestionPass}
-                          className="px-4 py-1.5 text-white transition-colors cursor-pointer"
-                          style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
-                        >
-                          Continue
-                        </button>
-                        {(() => {
-                          const lastAssistant = [...chatMessages].reverse().find(m => m.type === 'assistant' && m.isComplete);
-                          const lastUser = lastAssistant ? chatMessages[chatMessages.indexOf(lastAssistant) - 1] : null;
-                          return lastAssistant ? (
-                            <ThumbsFeedback
-                              rating={scoredFeedbackRating}
-                              onRate={(rating) => handleScoredFeedback(rating, lastAssistant.text, lastUser?.text || '')}
-                            />
-                          ) : null;
-                        })()}
-                      </div>
-                    ) : scoredAttemptCount === 0 ? (
-                      // First failed attempt — auto-retry after a short pause, thumbs shown alongside
-                      <div className="flex items-center gap-2">
-                        <AutoRetry onRetry={handleScoredQuestionRetry} />
-                        {(() => {
-                          const lastAssistant = [...chatMessages].reverse().find(m => m.type === 'assistant' && m.isComplete);
-                          const lastUser = lastAssistant ? chatMessages[chatMessages.indexOf(lastAssistant) - 1] : null;
-                          return lastAssistant ? (
-                            <ThumbsFeedback
-                              rating={scoredFeedbackRating}
-                              onRate={(rating) => handleScoredFeedback(rating, lastAssistant.text, lastUser?.text || '')}
-                            />
-                          ) : null;
-                        })()}
-                      </div>
-                    ) : (
-                      // Second failed attempt — revisit section (typed out with animation)
-                      <RevisitMessage sectionName={currentH2Name} onRevisit={handleScoredQuestionRevisit} />
-                    )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={checkpoint.result.passed ? handleCheckpointPass : handleCheckpointRetake}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        {checkpoint.result.passed ? 'Continue' : 'Try again'}
+                      </button>
+                      {(() => {
+                        const lastAssistant = [...chatMessages].reverse().find(m => m.type === 'assistant' && m.isComplete);
+                        const lastUser = lastAssistant ? chatMessages[chatMessages.indexOf(lastAssistant) - 1] : null;
+                        return lastAssistant ? (
+                          <ThumbsFeedback
+                            rating={checkpointFeedbackRating}
+                            onRate={(rating) => handleCheckpointFeedback(rating, lastAssistant.text, lastUser?.text || '')}
+                          />
+                        ) : null;
+                      })()}
+                    </div>
                   </div>
                 )}
 
-                {/* Buttons reappear after assistant finishes typing (not during scored question flow or free-form/engagement chat) */}
-                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && !showingScoredQuestion && !freeFormChatDone && !userQuestionAnswered && (
+                {/* Buttons reappear after assistant finishes typing (not during the checkpoint or free-form/engagement chat) */}
+                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && !showCheckpoint && !freeFormChatDone && !userQuestionAnswered && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{ opacity: showPostChatButtons ? 1 : 0, transition: 'opacity 0.25s ease-in' }}
                   >
                     {isLastGroup ? (
                       <button
-                        onClick={showSummary}
+                        onClick={showCheckpointScreen}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
                         style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
                         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                       >
-                        End Lesson
+                        Finish Lesson
                       </button>
                     ) : (
                       <button
@@ -1923,7 +1625,7 @@ const LearningHubV2 = () => {
               </>}
             </div>
             {/* Bottom spacer — smaller when suggested question takes up space below */}
-            <div style={{ height: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary ? '8px' : '40px' }} />
+            <div style={{ height: suggestedQuestion && !suggestedQuestionDismissed && !showCheckpoint && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary ? '8px' : '40px' }} />
           </div>
           </div>
 
@@ -1945,10 +1647,10 @@ const LearningHubV2 = () => {
           <div className={`${isMobile ? 'px-5' : 'px-10'} pt-5 ${isMobile ? 'pb-2.5' : 'pb-5'} bg-white relative`} style={{ zIndex: 6 }}>
             <div
               style={{
-                opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,
+                opacity: suggestedQuestion && !suggestedQuestionDismissed && !showCheckpoint && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && !isAnyAnimationActive && ((allTypingComplete && showButtons) || userQuestionTypingDone) ? 'auto' : 'none',
-                height: !suggestedQuestion || suggestedQuestionDismissed || showingScoredQuestion || pendingUserQuestion || groupHasUserQuestion || showLessonSummary ? 0 : 'auto',
+                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showCheckpoint && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && !isAnyAnimationActive && ((allTypingComplete && showButtons) || userQuestionTypingDone) ? 'auto' : 'none',
+                height: !suggestedQuestion || suggestedQuestionDismissed || showCheckpoint || pendingUserQuestion || groupHasUserQuestion || showLessonSummary ? 0 : 'auto',
                 overflow: 'hidden',
               }}
             >

@@ -9,6 +9,14 @@ const useChat = () => {
   const [displayedText, setDisplayedText] = useState('');
   const [chatRemainingLine, setChatRemainingLine] = useState('');
 
+  // Assigned every render, so even a callback captured in an older closure reads
+  // the current list. `pushAssistantMessage` needs this: the checkpoint retake
+  // path calls `resetChat()`, awaits the server, then pushes — and a closure-
+  // captured `chatMessages.length` would still be the pre-reset length, sending
+  // the typewriter at an index that no longer exists.
+  const chatMessagesRef = useRef(chatMessages);
+  chatMessagesRef.current = chatMessages;
+
   // Typing animation effect
   useEffect(() => {
     if (typingMessageIndex === null) return;
@@ -130,8 +138,16 @@ const useChat = () => {
     }
   }, [chatMessages, typingMessageIndex]);
 
-  // Send a scored question answer — calls /api/score-answer, returns { score, feedback }
-  const sendScoredMessage = useCallback(async (text, question, sectionContent) => {
+  /**
+   * Post the student's answer, run `grade` on it, then type out the feedback.
+   *
+   * `grade` does the marking. For the lesson checkpoint that's a server round-trip
+   * that also decides whether the lesson completes, so this hook deliberately
+   * knows nothing about scoring — it owns the message list and the animation only.
+   *
+   * Resolves to whatever `grade` returned, or null if it threw.
+   */
+  const sendGradedMessage = useCallback(async (text, grade) => {
     const userMessage = text.trim();
     if (!userMessage) return null;
 
@@ -149,43 +165,19 @@ const useChat = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/score-answer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, answer: userMessage, sectionContent }),
-      });
-
-      const data = await response.json();
+      const result = await grade(userMessage);
       setIsTyping(false);
 
-      if (data.success) {
-        // Extract clean feedback — handle cases where API returns raw JSON or code-fenced JSON
-        let feedback = data.feedback || '';
-        let score = data.score;
-        // Strip markdown code fences
-        feedback = feedback.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
-        // If feedback looks like a JSON object, extract the feedback field from it
-        if (feedback.startsWith('{') && feedback.includes('"feedback"')) {
-          try {
-            const parsed = JSON.parse(feedback);
-            feedback = parsed.feedback || feedback;
-            if (parsed.score != null) score = parsed.score;
-          } catch (_) { /* use as-is */ }
-        }
-
-        const newMessageIndex = newMessages.length;
-        setChatMessages(prev => [...prev, {
-          type: 'assistant',
-          text: feedback,
-          isComplete: false,
-        }]);
-        setTypingMessageIndex(newMessageIndex);
-        return { score, feedback };
-      } else {
-        throw new Error(data.error || 'Failed to score answer');
-      }
+      const newMessageIndex = newMessages.length;
+      setChatMessages(prev => [...prev, {
+        type: 'assistant',
+        text: result?.feedback || '',
+        isComplete: false,
+      }]);
+      setTypingMessageIndex(newMessageIndex);
+      return result;
     } catch (error) {
-      console.error('Error scoring answer:', error);
+      console.error('Error grading answer:', error);
       setIsTyping(false);
       const newMessageIndex = newMessages.length;
       setChatMessages(prev => [...prev, {
@@ -206,13 +198,15 @@ const useChat = () => {
     setChatRemainingLine('');
   }, []);
 
-  // Add a user + assistant message pair directly (used for admin bypass)
-  const addMessagePair = useCallback((userText, assistantText) => {
-    setChatMessages(prev => [
-      ...prev,
-      { type: 'user', text: userText, isComplete: true },
-      { type: 'assistant', text: assistantText, isComplete: true },
-    ]);
+  /**
+   * Type out an assistant message the caller already has — the checkpoint's first
+   * question, which nobody prompted for, and so has no user turn before it.
+   */
+  const pushAssistantMessage = useCallback((text) => {
+    setIsTyping(false);
+    const newMessageIndex = chatMessagesRef.current.length;
+    setChatMessages(prev => [...prev, { type: 'assistant', text, isComplete: false }]);
+    setTypingMessageIndex(newMessageIndex);
   }, []);
 
   return {
@@ -222,8 +216,8 @@ const useChat = () => {
     chatRemainingLine,
     typingMessageIndex,
     sendMessage,
-    sendScoredMessage,
-    addMessagePair,
+    sendGradedMessage,
+    pushAssistantMessage,
     resetChat,
   };
 };

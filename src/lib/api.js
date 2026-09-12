@@ -713,57 +713,112 @@ export async function logQuestionResults(userId, courseId, quizModule, quizLesso
 }
 
 /**
- * Get aggregated per-lesson scores from section question best scores.
+ * Get aggregated per-lesson scores from lesson checkpoint attempts.
  * Returns { "module-lesson": { correct, total }, ... }
- * where correct = sum of best scores, total = count × 10 (max per section).
- * This gives (correct/total)*100 = average section score as a percentage.
+ * where correct = the best attempt's summed score and total = its question
+ * count × 10. (correct/total)*100 is the lesson percentage.
+ *
+ * The { correct, total } shape is deliberately the same one the old per-section
+ * scoring returned, so ProgressGraph and IntroSection need no changes.
  */
 export async function getLessonScores(userId, courseId) {
   const { data, error } = await supabase
-    .from('section_question_scores')
-    .select('module_number, lesson_number, score')
+    .from('lesson_checkpoint_attempts')
+    .select('module_number, lesson_number, total_score, question_count')
     .eq('user_id', userId)
-    .eq('course_id', courseId);
+    .eq('course_id', courseId)
+    .not('completed_at', 'is', null);
 
   if (error || !data) return {};
 
   const scores = {};
   for (const row of data) {
+    if (!row.question_count) continue;
     const key = `${row.module_number}-${row.lesson_number}`;
-    if (!scores[key]) scores[key] = { correct: 0, total: 0 };
-    scores[key].correct += row.score;
-    scores[key].total += 10;
+    const total = row.question_count * 10;
+    // Best attempt wins, compared by proportion so a checkpoint that asked
+    // fewer questions can't beat a better one that asked more.
+    const existing = scores[key];
+    if (!existing || row.total_score / total > existing.correct / existing.total) {
+      scores[key] = { correct: row.total_score, total };
+    }
   }
   return scores;
 }
 
 /**
- * Get per-section scores and feedback for a specific lesson.
- * Returns [{ section_number, score, feedback }, ...] ordered by section.
+ * Get the best completed checkpoint for a lesson — the per-question breakdown
+ * the lesson summary screen renders.
+ * Returns { totalScore, questionCount, percentage, passed, results: [...] } or null.
  */
-export async function getLessonSectionScores(userId, courseId, moduleNumber, lessonNumber) {
+export async function getLessonCheckpointResult(userId, courseId, moduleNumber, lessonNumber) {
   const { data, error } = await supabase
-    .from('section_question_scores')
-    .select('section_number, score, feedback')
+    .from('lesson_checkpoint_attempts')
+    .select('answers, total_score, question_count, passed')
     .eq('user_id', userId)
     .eq('course_id', courseId)
     .eq('module_number', moduleNumber)
     .eq('lesson_number', lessonNumber)
-    .order('section_number', { ascending: true });
+    .not('completed_at', 'is', null);
 
-  if (error || !data) return [];
-  return data;
+  if (error || !data?.length) return null;
+
+  const best = data.reduce((a, b) => {
+    const ratioA = a.question_count ? a.total_score / a.question_count : -1;
+    const ratioB = b.question_count ? b.total_score / b.question_count : -1;
+    return ratioB > ratioA ? b : a;
+  });
+
+  return {
+    totalScore: best.total_score,
+    questionCount: best.question_count,
+    percentage: Math.round((best.total_score / (best.question_count * 10)) * 100),
+    passed: best.passed,
+    results: (best.answers || []).map(a => ({
+      questionText: a.question_text,
+      answerText: a.answer_text,
+      score: a.score,
+      feedback: a.feedback,
+    })),
+  };
+}
+
+/** Bearer headers for the checkpoint routes, which grade and complete server-side. */
+async function authHeaders() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+  return {
+    'Authorization': `Bearer ${session.access_token}`,
+    'Content-Type': 'application/json',
+  };
 }
 
 /**
- * Save a section question score. Uses best-score logic on the server —
- * only the highest score per section is kept.
+ * Begin (or resume) a lesson checkpoint attempt.
+ * Returns { attemptId, question, questionNumber, totalQuestions, answered } — or
+ * { needsGeneration: true } when the lesson has no question bank, in which case
+ * the caller should let the student through.
  */
-export async function saveSectionQuestionScore({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, score, questionText, answerText, feedback }) {
-  const response = await fetch(`${API_URL}/api/section-question-score`, {
+export async function startLessonCheckpoint({ courseId, moduleNumber, lessonNumber }) {
+  const response = await fetch(`${API_URL}/api/lesson-checkpoint/start`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, score, questionText, answerText, feedback }),
+    headers: await authHeaders(),
+    body: JSON.stringify({ courseId, moduleNumber, lessonNumber }),
+  });
+  if (!response.ok) throw new Error(`Status ${response.status}`);
+  return response.json();
+}
+
+/**
+ * Submit the current question's answer. The server holds which question that is.
+ * Returns { score, feedback, nextQuestion } mid-checkpoint, or
+ * { complete: true, passed, percentage, results } on the last one.
+ */
+export async function answerLessonCheckpoint({ attemptId, answerText }) {
+  const response = await fetch(`${API_URL}/api/lesson-checkpoint/answer`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ attemptId, answerText }),
   });
   if (!response.ok) throw new Error(`Status ${response.status}`);
   return response.json();
