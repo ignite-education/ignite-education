@@ -273,11 +273,33 @@ lesson's audio is rebuilt.
 | Concern | Where |
 |---------|-------|
 | The voice | `NARRATION_VOICE_ID` in `server.js` — override with `ELEVENLABS_NARRATION_VOICE_ID` (set in the Render dashboard; `render.yaml` does not declare it) |
-| TTS settings | `NARRATION_TTS` — model and voice settings, shared by lessons and blog posts |
+| TTS settings | `NARRATION_TTS` — model and voice settings, shared by lessons and blog posts. **Keys must stay camelCase** (see below) |
+| Playback speed | `NARRATION_PLAYBACK_RATE` in `useNarration.js` (1.05x) — applied to the `Audio` element, not baked into the file |
 | Staleness | `narrationHash(text, voiceId)` covers text **and** voice **and** settings, so a voice change correctly marks existing audio out of date |
 | Cache busting | `narrationUrl()` appends `?v=<hash>`; the storage object is overwritten in place and served with `max-age=3600`, so a stable URL would pair a cached old MP3 with new word timings |
 | Rollout tracking | `lesson_audio.voice_id` records what each lesson holds — the backfill worklist is exact and resumable |
 | Bulk rebuild | `node scripts/renarrate-lessons.mjs --dry-run` (costs are per character; use `--limit` to stay inside a monthly quota) |
+
+**`NARRATION_TTS` must be camelCase.** The ElevenLabs SDK is Fern-generated: it
+accepts `modelId` / `outputFormat` / `voiceSettings` and serialises to snake_case
+itself, silently stripping keys it does not recognise. Written in snake_case the
+whole object was discarded and every request reached ElevenLabs as `{ text }`,
+leaving it on its own defaults plus the voice's dashboard settings. All four call
+sites spread the one constant so the mistake cannot recur in a copy. To verify a
+change actually leaves the process, run the body through the installed
+serialiser rather than trusting the object literal:
+
+```bash
+node -e "const s=require('@elevenlabs/elevenlabs-js/serialization');
+console.log(JSON.stringify(s.BodyTextToSpeechFullWithTimestamps.jsonOrThrow(
+  {text:'x', modelId:'eleven_multilingual_v2'},{unrecognizedObjectKeys:'strip'})))"
+```
+
+Speed is deliberately a **playback-rate** concern, not a TTS one. ElevenLabs'
+`voiceSettings.speed` would re-narrate the entire catalogue for a change the ear
+cannot distinguish at 1.05x, and word highlighting keys off `audio.currentTime`
+(media time), which `playbackRate` leaves untouched — so the reveal stays in
+sync with no timestamp rescaling.
 
 `ELEVENLABS_VOICE_ID` is legacy and only reaches the two unused
 `/api/text-to-speech*` endpoints. Voice Library voices need a paid ElevenLabs

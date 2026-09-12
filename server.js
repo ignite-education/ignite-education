@@ -60,14 +60,19 @@ const NARRATION_VOICE_ID =
 
 // Every knob that shapes the output. These are part of the audio's identity,
 // not incidental config — see narrationHash below.
+//
+// camelCase is load-bearing. The SDK is Fern-generated: it takes camelCase and
+// serialises to snake_case itself, stripping every key it does not recognise.
+// Written in snake_case these settings were silently dropped and each request
+// reached ElevenLabs as nothing but `{ text }`, leaving it on its own defaults.
 const NARRATION_TTS = {
-  model_id: 'eleven_multilingual_v2',
-  output_format: 'mp3_44100_128',
-  voice_settings: {
+  modelId: 'eleven_multilingual_v2',
+  outputFormat: 'mp3_44100_128',
+  voiceSettings: {
     stability: 0.5,
-    similarity_boost: 0.75,
+    similarityBoost: 0.75,
     style: 0.0,
-    use_speaker_boost: true
+    useSpeakerBoost: true
   }
 };
 
@@ -85,8 +90,8 @@ const narrationHash = (text, voiceId = NARRATION_VOICE_ID) =>
     .update([
       text,
       voiceId,
-      NARRATION_TTS.model_id,
-      JSON.stringify(NARRATION_TTS.voice_settings)
+      NARRATION_TTS.modelId,
+      JSON.stringify(NARRATION_TTS.voiceSettings)
     ].join('\u0000'))
     .digest('hex');
 
@@ -4043,14 +4048,7 @@ app.post('/api/text-to-speech', async (req, res) => {
     // Generate speech with ElevenLabs
     const audio = await elevenlabs.textToSpeech.convert(voiceId, {
       text: text,
-      model_id: 'eleven_multilingual_v2', // High quality model with emotional range
-      output_format: 'mp3_44100_128', // 44.1kHz, 128kbps - good balance of quality and size
-      voice_settings: {
-        stability: 0.5, // Balance between consistency and expressiveness
-        similarity_boost: 0.75, // Maintain voice characteristics
-        style: 0.0, // Neutral style
-        use_speaker_boost: true // Enhance voice clarity
-      }
+      ...NARRATION_TTS
     });
 
     // Set response headers for audio streaming
@@ -4142,14 +4140,7 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
     // Generate speech with timestamps using ElevenLabs
     const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
       text: text,
-      model_id: 'eleven_multilingual_v2', // High quality model with emotional range
-      output_format: 'mp3_44100_128', // 44.1kHz, 128kbps - good balance of quality and size
-      voice_settings: {
-        stability: 0.5, // Balance between consistency and expressiveness
-        similarity_boost: 0.75, // Maintain voice characteristics
-        style: 0.0, // Neutral style
-        use_speaker_boost: true // Enhance voice clarity
-      }
+      ...NARRATION_TTS
     });
 
     console.log('✅ Speech generated successfully with timestamps');

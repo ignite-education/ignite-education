@@ -2,6 +2,13 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
 
+// Narration plays slightly faster than it was recorded. Time-stretched in the
+// browser rather than baked into the audio: ElevenLabs' own `speed` setting
+// would mean re-narrating the whole catalogue, and word highlighting keys off
+// media time (`audio.currentTime`), which playbackRate leaves untouched — so
+// the reveal stays in sync for free. One knob; raise it if 1.05 still drags.
+const NARRATION_PLAYBACK_RATE = 1.05;
+
 /**
  * Hook for voice-driven narration in LearningHubV2.
  *
@@ -214,6 +221,8 @@ export default function useNarration({
 
     const audio = new Audio(audioData.audio_url);
     audioRef.current = audio;
+    audio.playbackRate = NARRATION_PLAYBACK_RATE;
+    audio.preservesPitch = true; // speed up the delivery, not the pitch
     audio.muted = mutedRef.current;
     audio.onended = () => finishGroupReveal(groupRange);
     audio.onerror = () => { stopNarration(); };
