@@ -4,7 +4,8 @@ import { Plus, Trash2, MoveUp, MoveDown, Save, Image as ImageIcon, Youtube, List
 import Courses from '../components/Courses';
 import LessonCanvas from '../components/LessonCanvas';
 import { useAuth } from '../contexts/AuthContext';
-import { toRow } from '@shared/lesson/blockAdapter';
+import { toRow, toSections } from '@shared/lesson/blockAdapter';
+import { groupSectionsByHeading, RIGHT_COLUMN_TYPES } from '@shared/lesson/groupSections';
 import { createBlock, BLOCK_LABELS, GATE_BLOCK_TYPES, BOX_MATCH_MAX_PAIRS, BOX_MATCH_MIN_PAIRS, boxMatchPairs } from '@shared/lesson/blockTypes';
 import { createLessonBackup, getLessonBackups, restoreLessonFromBackup, getSectionFeedbackStats } from '../lib/api';
 
@@ -1184,6 +1185,28 @@ const CurriculumUpload = () => {
         'This lesson has no content blocks. Saving will delete all existing content for this lesson. Continue?'
       );
       if (!confirmed) return;
+    }
+
+    // Media and the matching exercise share one right-hand panel slot, so a
+    // screen holding two of them would silently drop the second for students.
+    // Checked here rather than at each insert point because every authoring path
+    // — the canvas insert menu, the Blocks view buttons and the toolbar — funnels
+    // through this one save.
+    const overfilledScreens = groupSectionsByHeading(toSections(contentBlocks))
+      .map((screen, i) => ({
+        number: i + 1,
+        items: screen.filter((s) => RIGHT_COLUMN_TYPES.includes(s.content_type)),
+      }))
+      .filter((s) => s.items.length > 1);
+
+    if (overfilledScreens.length > 0) {
+      const detail = overfilledScreens
+        .map((s) => `Screen ${s.number}: ${s.items.map((i) => BLOCK_LABELS[i.content_type] || i.content_type).join(' + ')}`)
+        .join('\n');
+      alert(
+        `Only one item can show in the media panel per screen.\n\n${detail}\n\nRemove one from each screen before saving.`
+      );
+      return;
     }
 
     setIsUploading(true);

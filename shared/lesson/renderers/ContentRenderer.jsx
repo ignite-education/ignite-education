@@ -36,9 +36,11 @@ const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onCom
     case 'bulletlist':
       return <SectionList section={section} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} revealIndex={revealIndex} sentenceStart={sentenceStart} sentenceEnd={sentenceEnd} />;
 
-    // Unlike a scored question this stays inline in the text column, under
-    // whatever paragraph shares its screen. It gates progression by withholding
-    // onComplete until every pair is matched.
+    // The player no longer routes `box_match` here — the matching exercise moved
+    // to the right-hand panel alongside the media, so `LearningHubV2` renders it
+    // itself and gates on its own solved-ids rather than on this `onComplete`.
+    // Kept so any consumer that walks a lesson's blocks generically still gets a
+    // working exercise rather than a blank.
     case 'box_match':
       return (
         <SectionBoxMatch

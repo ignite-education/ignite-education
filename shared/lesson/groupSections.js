@@ -9,6 +9,15 @@
 import { MEDIA_TYPES } from './blockTypes.js';
 
 /**
+ * Everything that competes for the single right-hand panel slot.
+ *
+ * The matching exercise moved out of the text column and into that panel, so it
+ * queues for the same slot the media does — a screen shows a video or a matching
+ * exercise, never both stacked.
+ */
+export const RIGHT_COLUMN_TYPES = [...MEDIA_TYPES, 'box_match'];
+
+/**
  * Group sections into screens.
  *
  * - A heading always starts a new screen.
@@ -88,7 +97,7 @@ const NO_MEDIA = {
 
 export const selectGroupMedia = (allGroups, groupIndex) => {
   const group = allGroups[groupIndex] || [];
-  const own = group.filter((s) => MEDIA_TYPES.includes(s.content_type));
+  const own = group.filter((s) => RIGHT_COLUMN_TYPES.includes(s.content_type));
 
   // A screen's own media always wins, marker or not.
   if (own.length > 0) {
@@ -114,6 +123,8 @@ export const selectGroupMedia = (allGroups, groupIndex) => {
       return { ...NO_MEDIA, endedAtGroupIndex: i };
     }
 
+    // Only media carries forward. A matching exercise belongs to the screen that
+    // poses it, so it never persists even if something set the flag on it.
     const persistent = prev.filter(
       (s) => MEDIA_TYPES.includes(s.content_type) && s.content?.persist
     );
@@ -126,8 +137,9 @@ export const selectGroupMedia = (allGroups, groupIndex) => {
         endedAtGroupIndex: null,
       };
     }
-    // A group with non-persistent media ends the look-back.
-    if (prev.some((s) => MEDIA_TYPES.includes(s.content_type))) break;
+    // A screen that filled the slot with anything non-persistent — media or a
+    // matching exercise — ends the look-back.
+    if (prev.some((s) => RIGHT_COLUMN_TYPES.includes(s.content_type))) break;
   }
 
   return { ...NO_MEDIA };

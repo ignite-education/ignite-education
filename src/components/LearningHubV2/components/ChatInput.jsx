@@ -69,9 +69,9 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '', dis
           window.scrollTo(0, 0);
           setTimeout(() => window.scrollTo(0, 0), 300);
         }}
-        placeholder={placeholder}
+        aria-label={placeholder || undefined}
         rows={1}
-        className="w-full bg-white rounded-xl px-6 py-3 pr-14 font-light text-gray-900 placeholder-gray-400 caret-[#EF0B72] focus:outline-none resize-none"
+        className="w-full bg-white rounded-xl px-6 py-3 pr-14 font-light text-gray-900 caret-[#EF0B72] focus:outline-none resize-none"
         style={{
           boxShadow: isHovered
             ? '0 0 10px rgba(103,103,103,0.75)'
@@ -87,6 +87,37 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '', dis
         }}
         onInput={recalcHeight}
       />
+      {/*
+        The placeholder is drawn rather than handed to the textarea's `placeholder`
+        attribute, for two reasons the native one can't do: it fades out as the
+        student starts typing (the browser drops a native placeholder instantly),
+        and it sits 3.6px right of the text origin so it doesn't crowd the caret,
+        which rests at the textarea's own 24px padding.
+
+        Padding mirrors the textarea's `px-6 py-3 pr-14` exactly — apart from that
+        left nudge — so the text lands on the same baseline as what gets typed,
+        whatever the line-height resolves to. The textarea keeps an `aria-label`
+        so the hint still reaches screen readers.
+      */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          padding: '12px 56px 12px 27.6px',
+          fontSize: isMobile ? '16px' : '14px',
+          fontWeight: 300,
+          letterSpacing: '-0.01em',
+          color: '#9CA3AF',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          opacity: value ? 0 : 1,
+          transition: 'opacity 0.2s ease-out',
+        }}
+      >
+        {placeholder}
+      </div>
       <button
           type="submit"
           className="absolute cursor-pointer flex items-center justify-center"

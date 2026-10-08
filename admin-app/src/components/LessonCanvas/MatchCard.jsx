@@ -21,6 +21,9 @@ const MatchCard = ({ block, onUpdateContent }) => {
 
   const write = (next) => onUpdateContent({ ...(block.content || {}), pairs: next });
 
+  const setDescription = (value) =>
+    onUpdateContent({ ...(block.content || {}), description: value });
+
   const setField = (idx, field, value) => {
     const next = pairs.map((p, i) => (i === idx ? { ...p, [field]: value } : p));
     write(next);
@@ -76,6 +79,17 @@ const MatchCard = ({ block, onUpdateContent }) => {
           would not gate.
         </p>
       )}
+
+      {/* Optional standfirst, shown under the "Match the Pairs" heading — the
+          counterpart of the description under a video. Left blank it renders
+          nothing, so existing blocks are unaffected. */}
+      <textarea
+        value={block.content?.description || ''}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Description (optional) — shown under the heading"
+        rows={2}
+        style={{ ...fieldStyle, marginBottom: 10 }}
+      />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {pairs.map((pair, idx) => (

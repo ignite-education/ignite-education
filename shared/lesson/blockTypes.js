@@ -111,7 +111,11 @@ export const defaultContentFor = (type) => {
     case 'box_match':
       // Two blank pairs — the minimum that renders. The author adds up to
       // BOX_MATCH_MAX_PAIRS more; blanks are dropped by `boxMatchPairs`.
-      return { pairs: [{ name: '', description: '' }, { name: '', description: '' }] };
+      // `description` is the optional standfirst under the heading.
+      return {
+        description: '',
+        pairs: [{ name: '', description: '' }, { name: '', description: '' }],
+      };
     case 'paragraph':
     default:
       return '';

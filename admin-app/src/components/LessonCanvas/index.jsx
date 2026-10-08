@@ -163,8 +163,11 @@ const LessonCanvas = ({
 
           const warnings = [];
           if (resolved.dropped.length > 0) {
+            // Media and the matching exercise share one right-hand panel slot, so
+            // a screen holding a video and a matching exercise shows only the
+            // first of them to students.
             warnings.push(
-              `${resolved.dropped.length + 1} media — only the first shows`
+              `${resolved.dropped.length + 1} items for the media panel — only the first shows`
             );
           }
           const hasBody = screen.some(

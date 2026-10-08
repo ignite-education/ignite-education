@@ -24,13 +24,26 @@
   to { opacity: 0; }
 }
 
-/* Wrong answer in the box-matching exercise (`SectionBoxMatch`). */
-@keyframes matchShake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-5px); }
-  40% { transform: translateX(5px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
+/*
+ * Wrong answer in the box-matching exercise (`SectionBoxMatch`).
+ *
+ * A red copy of the slot's dashed outline, laid exactly over the white one and
+ * swelled in and out. It replaces a shake: a nudge that small, on a line that
+ * thin, read as a rendering glitch rather than an answer.
+ *
+ * One swell, no held peak: `ease-in-out` between the stops decelerates into the
+ * top and accelerates out of it, which is what reads as a breath rather than a
+ * blink. The peak stops just short of full opacity so a trace of the white line
+ * beneath still shows through it.
+ *
+ * The peak sits early rather than at the midpoint. Centred, the easing's
+ * deceleration in and acceleration out met at the top and the red appeared to
+ * hang there before letting go; arriving sooner puts most of the cycle into the
+ * long fade out, where it belongs.
+ */
+@keyframes matchPulse {
+  0%, 100% { opacity: 0; }
+  30% { opacity: 0.92; }
 }
 
 @keyframes chatFadeIn {

@@ -16,7 +16,6 @@ import Navbar from '@/components/Navbar'
 import CourseHero from './CourseHero'
 import CourseCurriculum from './CourseCurriculum'
 import EnrollmentRail from './EnrollmentRail'
-import SignupTicker from './SignupTicker'
 import FeedbackSection from './FeedbackSection'
 import CourseLeaders from './CourseLeaders'
 import FAQSection from './FAQSection'
@@ -222,9 +221,6 @@ export default async function CoursePage({ params }: PageProps) {
         </div>
 
         <Footer />
-
-        {/* Fixed to the viewport, so DOM position only affects paint order. */}
-        <SignupTicker />
       </div>
     </>
   )

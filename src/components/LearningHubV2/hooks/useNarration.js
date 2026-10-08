@@ -32,7 +32,6 @@ export default function useNarration({
   currentGroupIndex,
   resetKey,
   muted,
-  groupHasGate,
   restoringProgress,
   progressBarDone,
 }) {
@@ -54,6 +53,8 @@ export default function useNarration({
   const titleWordCountRef = useRef(0);
   const contentContainerRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const boundaryTimerRef = useRef(null); // timeout that stops audio at the group boundary
+  const boundaryCleanupRef = useRef(null); // removes the boundary listeners from the element
   const isPausedRef = useRef(false);
   const audioDataRef = useRef(null); // cached audio data
   const debounceRef = useRef(0);
@@ -140,8 +141,21 @@ export default function useNarration({
     return ranges;
   }, [allGroups, titleWordCountRef.current]);
 
+  // --- Tear down the group-boundary stop (timer + element listeners) ---
+  const clearBoundaryStop = useCallback(() => {
+    if (boundaryTimerRef.current) {
+      clearTimeout(boundaryTimerRef.current);
+      boundaryTimerRef.current = null;
+    }
+    if (boundaryCleanupRef.current) {
+      boundaryCleanupRef.current();
+      boundaryCleanupRef.current = null;
+    }
+  }, []);
+
   // --- Stop audio + RAF (does not touch reveal state) ---
   const stopNarration = useCallback(() => {
+    clearBoundaryStop();
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
@@ -153,10 +167,11 @@ export default function useNarration({
     isPausedRef.current = false;
     setIsReading(false);
     setIsPaused(false);
-  }, []);
+  }, [clearBoundaryStop]);
 
   // --- Mark the current group's reveal finished (all words visible, no highlight) ---
   const finishGroupReveal = useCallback((groupRange) => {
+    clearBoundaryStop();
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
@@ -172,7 +187,56 @@ export default function useNarration({
     isPausedRef.current = false;
     setIsReading(false);
     setIsPaused(false);
-  }, []);
+  }, [clearBoundaryStop]);
+
+  // --- Stop the audio at the end of the current group ---
+  // The lesson is ONE audio file and a group is just a word range inside it, so
+  // nothing in the platform stops playback at a group edge — we have to. The
+  // RAF reveal loop below also checks the boundary, but RAF is suspended in a
+  // hidden tab while the audio element keeps playing at full speed, so on its
+  // own it would let the voice run on into groups the student hasn't opened.
+  // A timer plus the element's own `timeupdate` both keep firing when hidden,
+  // so they are the authority here; RAF is only a frame-accurate refinement.
+  const armBoundaryStop = useCallback((audio, groupRange) => {
+    clearBoundaryStop(); // never leave a previous playback's timer/listeners armed
+    const wordTimestamps = wordTimestampsRef.current;
+    const { endIndex } = groupRange;
+    // Ranges overshoot the timestamp array (word counts drifted from the audio):
+    // no boundary we can trust, so leave the element's `onended` as the stop.
+    if (!audio || !wordTimestamps || endIndex >= wordTimestamps.length) return;
+    const boundaryTime = wordTimestamps[endIndex].end;
+
+    const schedule = () => {
+      if (boundaryTimerRef.current) {
+        clearTimeout(boundaryTimerRef.current);
+        boundaryTimerRef.current = null;
+      }
+      // A paused element's currentTime doesn't advance, so re-arming would only
+      // spin; the `play` listener below re-arms when playback comes back.
+      if (audio.paused) return;
+      const remainingMs = ((boundaryTime - audio.currentTime) / (audio.playbackRate || 1)) * 1000;
+      boundaryTimerRef.current = setTimeout(check, Math.max(remainingMs, 20));
+    };
+
+    // Always re-read currentTime rather than trusting the timer to have fired on
+    // time — background tabs throttle timers, so a late fire self-corrects.
+    function check() {
+      if (audioRef.current !== audio) return; // superseded by a newer playback
+      if (audio.currentTime >= boundaryTime) {
+        finishGroupReveal(groupRange);
+        return;
+      }
+      schedule();
+    }
+
+    audio.addEventListener('timeupdate', check);
+    audio.addEventListener('play', check);
+    boundaryCleanupRef.current = () => {
+      audio.removeEventListener('timeupdate', check);
+      audio.removeEventListener('play', check);
+    };
+    schedule();
+  }, [clearBoundaryStop, finishGroupReveal]);
 
   // --- Reveal loop: audio time → current group-local word index (React state) ---
   const startRevealLoop = useCallback((audio, groupRange) => {
@@ -182,7 +246,15 @@ export default function useNarration({
     const { startIndex, endIndex } = groupRange;
 
     const tick = () => {
-      if (!audio || audio.paused || audio.ended) return;
+      if (!audio || audio !== audioRef.current || audio.ended) return;
+      if (audio.paused) {
+        // Paused by the speaker button — toggleNarration restarts this loop.
+        if (isPausedRef.current) return;
+        // Paused by the browser or OS (iOS backgrounds media this way). Stay
+        // armed rather than dying, so the reveal picks back up on resume.
+        animationFrameRef.current = requestAnimationFrame(tick);
+        return;
+      }
       const currentTime = audio.currentTime;
 
       // Largest index in the group whose start time has passed = current word.
@@ -194,7 +266,9 @@ export default function useNarration({
       const local = wordIdx - startIndex; // -1 before the first word is spoken
       if (local !== revealIndexRef.current) setRevealIndex(local);
 
-      // Stop at the group boundary (audio is one continuous file for the lesson)
+      // Stop at the group boundary (audio is one continuous file for the lesson).
+      // Frame-accurate but foreground-only — `armBoundaryStop` is what holds the
+      // boundary when the tab is hidden and RAF is suspended.
       if (endIndex < wordTimestamps.length && currentTime >= wordTimestamps[endIndex].end) {
         finishGroupReveal(groupRange);
         return;
@@ -237,6 +311,7 @@ export default function useNarration({
     audio.play().then(() => {
       setIsReading(true);
       setIsPaused(false);
+      armBoundaryStop(audio, groupRange);
       startRevealLoop(audio, groupRange);
     }).catch((err) => {
       // Autoplay blocked (no user gesture yet) or playback failed. The caller
@@ -245,7 +320,7 @@ export default function useNarration({
       audioRef.current = null;
       onBlocked?.();
     });
-  }, [groupWordRanges, currentGroupIndex, startRevealLoop, finishGroupReveal, stopNarration]);
+  }, [groupWordRanges, currentGroupIndex, startRevealLoop, armBoundaryStop, finishGroupReveal, stopNarration]);
 
   // --- On group / lesson change: reset reveal, stop audio, re-latch audio mode ---
   useEffect(() => {
@@ -256,9 +331,19 @@ export default function useNarration({
     pendingStartRef.current = null;
     // Audio mode (the line/word highlight animation) runs whenever the lesson has
     // audio — even when muted. Mute only silences the voiceover, not the animation.
-    setGroupAudioMode(audioReady && !groupHasGate);
+    //
+    // A screen holding a matching exercise used to be excluded here and fell back
+    // to the typewriter. That was necessary only while the exercise sat in the
+    // text column and gated by withholding its `onComplete`, which audio mode
+    // bypasses — it derives completion from `revealComplete` instead. The
+    // exercise now lives in the right-hand panel and gates on `matchSolvedIds`,
+    // which holds either way, so those screens narrate like any other. Nothing
+    // else had to change: a `box_match` contributes no words to the narration
+    // text (`extractLessonText`) and none to `groupWordRanges`, so the word
+    // alignment is identical whether or not the screen is narrated.
+    setGroupAudioMode(audioReady);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentGroupIndex, currentModule, currentLesson, resetKey, audioReady, groupHasGate]);
+  }, [currentGroupIndex, currentModule, currentLesson, resetKey, audioReady]);
 
   // --- One persistent listener: start pending narration on first interaction ---
   // Kept separate from the auto-start effect so its cleanup never races with
@@ -274,6 +359,24 @@ export default function useNarration({
       document.removeEventListener('pointerdown', onGesture, true);
       document.removeEventListener('keydown', onGesture, true);
     };
+  }, []);
+
+  // --- Resume playback the browser suspended while the tab was hidden ---
+  // Chrome keeps an audible element running in a background tab (which is why
+  // `armBoundaryStop` has to hold the group boundary) but suspends a MUTED one,
+  // and doesn't reliably restart it on return. Left alone that freezes the word
+  // reveal for good, so `revealComplete` never flips and Continue never appears.
+  // This only ever resumes something already meant to be playing — narration is
+  // never paused on hide, so background listening still works.
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      const audio = audioRef.current;
+      if (!audio || !audio.paused || isPausedRef.current) return; // gone, live, or user-paused
+      audio.play().catch(() => {});
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
   }, []);
 
   // --- Auto-start narration when a group enters audio mode ---
@@ -306,6 +409,7 @@ export default function useNarration({
 
     // Currently playing → pause
     if (isReading && !isPausedRef.current) {
+      clearBoundaryStop();
       audioRef.current?.pause();
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -320,6 +424,7 @@ export default function useNarration({
     if (isReading && isPausedRef.current) {
       if (audioRef.current) {
         audioRef.current.play().catch(() => {});
+        armBoundaryStop(audioRef.current, groupRange);
         startRevealLoop(audioRef.current, groupRange);
       }
       isPausedRef.current = false;
@@ -330,7 +435,7 @@ export default function useNarration({
     // Not reading → replay this group from the start (user gesture, so play() is allowed).
     // Keep the text visible; a replay just moves the highlight.
     startNarration(0, { resetReveal: false });
-  }, [isReading, groupWordRanges, currentGroupIndex, startRevealLoop, startNarration]);
+  }, [isReading, groupWordRanges, currentGroupIndex, startRevealLoop, armBoundaryStop, clearBoundaryStop, startNarration]);
 
   // --- Keep the live audio's muted state in sync with the mute toggle ---
   // Toggling the button silences/re-enables the voiceover without stopping the

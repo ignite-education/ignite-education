@@ -14,6 +14,8 @@ import { groupSectionsByHeading, selectGroupMediaSections, selectGroupSuggestedQ
 import LessonHeader from './components/LessonHeader';
 import ContentRenderer from '@shared/lesson/renderers/ContentRenderer';
 import MediaPanel from '@shared/lesson/renderers/MediaPanel';
+import SectionBoxMatch from '@shared/lesson/renderers/SectionBoxMatch';
+import { boxMatchPairs, BOX_MATCH_MIN_PAIRS } from '@shared/lesson/blockTypes';
 import ChatInput from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';
 import ThumbsFeedback from './components/ThumbsFeedback';
@@ -206,10 +208,16 @@ const LearningHubV2 = () => {
   const isLastGroup = currentGroupIndex >= totalGroups - 1;
   const activeGroupAll = allGroups[currentGroupIndex] || [];
 
-  // Text sections for left column (typing animation)
+  // Text sections for left column (typing animation). `box_match` is excluded
+  // alongside the media types: the matching exercise lives in the right-hand
+  // panel now, not inline under the paragraph it follows.
   const activeGroup = useMemo(() => {
-    return activeGroupAll.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube' && s.content_type !== 'svg');
+    return activeGroupAll.filter(s =>
+      s.content_type !== 'image' && s.content_type !== 'youtube'
+      && s.content_type !== 'svg' && s.content_type !== 'box_match'
+    );
   }, [activeGroupAll]);
+
 
   // Media sections for right column (with persistent media support).
   // Rules live in @shared/lesson/groupSections so the admin canvas resolves
@@ -237,6 +245,20 @@ const LearningHubV2 = () => {
   });
 
   // Effective media: empty during the checkpoint, otherwise the active group's media
+  // Matching exercises that are actually on screen AND capable of gating.
+  //
+  // Derived from the resolved panel slot rather than the raw screen, because a
+  // match that lost the slot to a video is never rendered — gating on it would
+  // leave a screen no student could leave. Same reason an under-authored block
+  // (fewer than BOX_MATCH_MIN_PAIRS complete pairs) is excluded: it renders
+  // nothing and never reports itself solved.
+  const activeGroupMatches = useMemo(
+    () => activeGroupMedia.filter(s =>
+      s.content_type === 'box_match' && boxMatchPairs(s.content).length >= BOX_MATCH_MIN_PAIRS
+    ),
+    [activeGroupMedia]
+  );
+
   const effectiveMedia = showCheckpoint || showLessonSummary ? [] : activeGroupMedia;
   const effectiveMediaKey = showCheckpoint || showLessonSummary ? '' : activeGroupMedia.map(s => s.id).join('|');
 
@@ -245,6 +267,23 @@ const LearningHubV2 = () => {
   const [mediaFadePhase, setMediaFadePhase] = useState('visible'); // 'visible' | 'fading-out' | 'fading-in'
   const mediaKeyRef = useRef(effectiveMediaKey);
   const pendingMediaRef = useRef(null);
+  const fadeInRafRef = useRef(null);
+
+  /**
+   * Reveal the newly swapped-in media on the following frame.
+   *
+   * The wrapper is keyed on the media ids, so a swap remounts it — and an element
+   * that mounts straight at `opacity: 1` has no previous value to transition from,
+   * which is why the fade-in never used to happen. Painting one frame at 0 first
+   * is what gives the transition somewhere to start. Two nested rAFs because a
+   * single one can still land in the same paint as the mount.
+   */
+  const scheduleMediaFadeIn = useCallback(() => {
+    cancelAnimationFrame(fadeInRafRef.current);
+    fadeInRafRef.current = requestAnimationFrame(() => {
+      fadeInRafRef.current = requestAnimationFrame(() => setMediaFadePhase('visible'));
+    });
+  }, []);
 
   useEffect(() => {
     if (effectiveMediaKey === mediaKeyRef.current) return;
@@ -253,25 +292,30 @@ const LearningHubV2 = () => {
     pendingMediaRef.current = effectiveMedia;
     mediaKeyRef.current = effectiveMediaKey;
 
-    // If there's nothing currently displayed, swap in immediately
+    // Nothing on screen to clear, so go straight to fading the new media in
     if (displayedMedia.length === 0) {
       setDisplayedMedia(effectiveMedia);
-      setMediaFadePhase('visible');
-      return;
+      setMediaFadePhase('fading-in');
+      scheduleMediaFadeIn();
+      return () => cancelAnimationFrame(fadeInRafRef.current);
     }
 
     // Start fade-out of current media
     setMediaFadePhase('fading-out');
 
     const fadeOutTimer = setTimeout(() => {
-      // Swap to new media after fade-out completes
+      // Swap to new media after fade-out completes, then fade it in
       const next = pendingMediaRef.current;
       setDisplayedMedia(next);
-      setMediaFadePhase('visible');
+      setMediaFadePhase('fading-in');
+      scheduleMediaFadeIn();
     }, 250);
 
-    return () => clearTimeout(fadeOutTimer);
-  }, [effectiveMediaKey]);
+    return () => {
+      clearTimeout(fadeOutTimer);
+      cancelAnimationFrame(fadeInRafRef.current);
+    };
+  }, [effectiveMediaKey, scheduleMediaFadeIn]);
   const targetProgress = showLessonSummary
     ? 100
     : totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : 0;
@@ -409,32 +453,26 @@ const LearningHubV2 = () => {
   const completedSectionsRef = useRef(completedSections);
   completedSectionsRef.current = completedSections;
 
-  // A box-matching exercise forces the typewriter path: it gates on
-  // `completedSections`, and audio mode reveals every section at once and derives
-  // completion from `revealComplete` instead — which would walk straight past it.
-  // Inline user questions still narrate — the question is shown after the group's
-  // narration finishes (see the deferred effect below). The graded checkpoint is
-  // not a gate here at all; it comes after the last screen rather than inside one.
-  const groupHasGate = useMemo(
-    () => activeGroup.some(s => s.content_type === 'box_match'),
-    [activeGroup]
-  );
-
-  // Box-matching exercises already solved this lesson, by section id.
+  // Box-matching exercises solved on the screen currently open, by section id.
   //
-  // Held here rather than inside the exercise because the content container is
-  // keyed on `currentGroupIndex`, so pressing Back unmounts it — component-local
-  // state would silently re-lock a gate the student had already cleared.
+  // Held here rather than inside the exercise because the player needs the signal
+  // to release the Continue button. It is cleared on every screen change, so a
+  // student who goes Back re-does the exercise rather than finding it already
+  // solved — `resetScreenState` is where that happens, alongside the other
+  // per-screen resets, because clearing it in an effect would land *after* the
+  // exercise has remounted and seeded its rows from the stale value.
   const [matchSolvedIds, setMatchSolvedIds] = useState(() => new Set());
   const handleMatchSolved = useCallback((sectionId) => {
     if (!sectionId) return;
     setMatchSolvedIds(prev => (prev.has(sectionId) ? prev : new Set(prev).add(sectionId)));
   }, []);
-  // Reset per lesson, deliberately NOT per group — surviving navigation within
-  // the lesson is the entire point.
-  useEffect(() => {
+
+  /** State that belongs to one screen and must not survive navigating off it. */
+  const resetScreenState = useCallback(() => {
+    setCompletedSections(0);
+    setPendingUserQuestion(null);
     setMatchSolvedIds(new Set());
-  }, [currentModule, currentLesson]);
+  }, []);
   // The inline user question in the current group, if any (shown post-narration in audio mode).
   const groupUserQuestionSection = useMemo(
     () => activeGroup.find(s => s.user_question?.trim()) || null,
@@ -462,7 +500,6 @@ const LearningHubV2 = () => {
     currentGroupIndex,
     resetKey,
     muted: readAloudMuted,
-    groupHasGate,
     restoringProgress,
     progressBarDone,
   });
@@ -472,7 +509,15 @@ const LearningHubV2 = () => {
   const allContentRevealed = groupAudioMode
     ? revealComplete
     : completedSections >= activeGroup.length;
-  const allTypingComplete = allContentRevealed && !pendingUserQuestion;
+
+  // The matching exercise no longer sits in the typing sequence, so it can't gate
+  // by withholding `onComplete` the way it used to. It gates here instead —
+  // nothing advances until every gating match on the screen is solved.
+  const allMatchesSolved = useMemo(
+    () => activeGroupMatches.every(s => matchSolvedIds.has(s.id)),
+    [activeGroupMatches, matchSolvedIds]
+  );
+  const allTypingComplete = allContentRevealed && !pendingUserQuestion && allMatchesSolved;
 
   // Lets handleSectionComplete know whether we're narrating (defer the question).
   const groupAudioModeRef = useRef(groupAudioMode);
@@ -694,8 +739,7 @@ const LearningHubV2 = () => {
 
   // Reset to first group when lesson changes, restoring saved progress if available
   useEffect(() => {
-    setCompletedSections(0);
-    setPendingUserQuestion(null);
+    resetScreenState();
     resetCheckpointScreen();
     resetChat();
     setRestoringProgress(true);
@@ -724,7 +768,7 @@ const LearningHubV2 = () => {
       setCurrentGroupIndex(0);
       setRestoringProgress(false);
     }
-  }, [currentModule, currentLesson, user?.id, userCourseId, resetChat, resetCheckpointScreen]);
+  }, [currentModule, currentLesson, user?.id, userCourseId, resetChat, resetCheckpointScreen, resetScreenState]);
 
   // Load existing section feedback for this lesson
   useEffect(() => {
@@ -806,8 +850,7 @@ const LearningHubV2 = () => {
     setContentFading(true);
     setTimeout(() => {
       setChatInput('');
-      setCompletedSections(0);
-      setPendingUserQuestion(null);
+      resetScreenState();
       resetCheckpointScreen();
       setCurrentGroupIndex((prev) => {
         const next = getNextIndex(prev);
@@ -823,7 +866,7 @@ const LearningHubV2 = () => {
       });
       chatInputRef.current?.focus();
     }, 300);
-  }, [resetChat, resetCheckpointScreen, user?.id, userCourseId, currentModule, currentLesson]);
+  }, [resetChat, resetCheckpointScreen, resetScreenState, user?.id, userCourseId, currentModule, currentLesson]);
 
   const handleContinue = useCallback(() => {
     transitionToGroup((prev) => prev + 1);
@@ -925,7 +968,7 @@ const LearningHubV2 = () => {
       if (isLastGroup) {
         showCheckpointScreen();
       } else {
-        setCompletedSections(0);
+        resetScreenState();
         setCurrentGroupIndex((prev) => {
           const next = prev + 1;
           if (user?.id && userCourseId) {
@@ -942,7 +985,7 @@ const LearningHubV2 = () => {
       // More sections remain — reveal the next one
       setCompletedSections((prev) => prev + 1);
     }
-  }, [resetChat, isLastGroup, showCheckpointScreen, user?.id, userCourseId, currentModule, currentLesson]);
+  }, [resetChat, isLastGroup, showCheckpointScreen, resetScreenState, user?.id, userCourseId, currentModule, currentLesson]);
   const handleUserQuestionContinueRef = useRef(handleUserQuestionContinue);
   handleUserQuestionContinueRef.current = handleUserQuestionContinue;
 
@@ -1138,8 +1181,7 @@ const LearningHubV2 = () => {
                     saveUserProgress(user.id, userCourseId, currentModule, currentLesson, 0).catch(() => {});
                   }
                   // Reset all section/typing state
-                  setCompletedSections(0);
-                  setPendingUserQuestion(null);
+                  resetScreenState();
                   setShowLessonSummary(false);
                   resetCheckpointScreen();
                   resetChat();
@@ -1285,11 +1327,27 @@ const LearningHubV2 = () => {
                   key={displayedMedia.map(s => s.id).join('|')}
                   className="mt-5"
                   style={{
-                    opacity: mediaFadePhase === 'fading-out' ? 0 : 1,
-                    transition: 'opacity 250ms ease-out',
+                    opacity: mediaFadePhase === 'visible' ? 1 : 0,
+                    transition: mediaFadePhase === 'fading-out'
+                      ? 'opacity 250ms ease-out'
+                      : 'opacity 350ms ease-out',
                   }}
                 >
-                  <MediaPanel sections={displayedMedia} />
+                  {(() => {
+                    const match = displayedMedia.find(s => s.content_type === 'box_match');
+                    // One slot, one renderer — same rule as the desktop column.
+                    return match ? (
+                      <SectionBoxMatch
+                        key={match.id}
+                        section={match}
+                        isActive
+                        solved={matchSolvedIds.has(match.id)}
+                        onSolved={handleMatchSolved}
+                      />
+                    ) : (
+                      <MediaPanel sections={displayedMedia} />
+                    );
+                  })()}
                 </div>
               )}
 
@@ -1675,7 +1733,7 @@ const LearningHubV2 = () => {
               onChange={setChatInput}
               onSubmit={handleChatSubmit}
               disabled={isAnyAnimationActive}
-              placeholder={isMobile ? 'Type here' : ''}
+              placeholder="Type or ask a question"
             />
           </div>
           )}
@@ -1683,18 +1741,39 @@ const LearningHubV2 = () => {
 
         {/* Right column — media panel (desktop only; on mobile media renders inline above) */}
         {!isMobile && (() => {
-          const svgOnly = displayedMedia.every(s => s.content_type !== 'youtube');
+          const displayedMatch = displayedMedia.find(s => s.content_type === 'box_match');
+          // A video or a matching exercise is content the student works through, so
+          // it starts level with the lesson heading on the left. A lone image or SVG
+          // is decorative and sits centred in the column instead.
+          const headerAligned = !!displayedMatch || displayedMedia.some(s => s.content_type === 'youtube');
           return (
-            <div className="flex-[2] overflow-y-auto flex flex-col items-center" style={{ backgroundColor: '#F0F0F0', paddingTop: svgOnly ? '32px' : (leftHeaderHeight ? `${leftHeaderHeight + 9}px` : '32px'), paddingLeft: '32px', paddingRight: '32px', paddingBottom: '32px' }}>
+            <div className="flex-[2] overflow-y-auto flex flex-col items-center" style={{ backgroundColor: '#F0F0F0', paddingTop: headerAligned ? (leftHeaderHeight ? `${leftHeaderHeight + 9}px` : '32px') : '32px', paddingLeft: '32px', paddingRight: '32px', paddingBottom: '32px' }}>
               <div
                 key={displayedMedia.map(s => s.id).join('|')}
-                className={`w-full ${svgOnly ? 'flex-1 flex flex-col justify-center' : ''}`}
+                className={`w-full ${headerAligned ? '' : 'flex-1 flex flex-col justify-center'}`}
                 style={{
-                  opacity: mediaFadePhase === 'fading-out' ? 0 : 1,
-                  transition: 'opacity 250ms ease-out',
+                  opacity: mediaFadePhase === 'visible' ? 1 : 0,
+                  // Slower in than out: clearing the old media should feel brisk,
+                  // arriving should not.
+                  transition: mediaFadePhase === 'fading-out'
+                    ? 'opacity 250ms ease-out'
+                    : 'opacity 350ms ease-out',
                 }}
               >
-                <MediaPanel sections={displayedMedia} />
+                {/* One slot, one renderer. Rendering MediaPanel alongside the match
+                    put its `h-full` empty state above it, which pushed the exercise
+                    to the bottom of the column. */}
+                {displayedMatch ? (
+                  <SectionBoxMatch
+                    key={displayedMatch.id}
+                    section={displayedMatch}
+                    isActive
+                    solved={matchSolvedIds.has(displayedMatch.id)}
+                    onSolved={handleMatchSolved}
+                  />
+                ) : (
+                  <MediaPanel sections={displayedMedia} />
+                )}
               </div>
             </div>
           );
