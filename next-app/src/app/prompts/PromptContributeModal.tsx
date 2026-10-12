@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import { LLM_TOOLS, COMPLEXITIES, promptToSlug } from '@/data/placeholderPrompts'
 import { professionToSlug } from '@/lib/professionUtils'
 
@@ -283,7 +284,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?source=${SIGNUP_SOURCES.PROMPTS}`,
         skipBrowserRedirect: true,
         ...(queryParams ? { queryParams } : {}),
       },
@@ -345,6 +346,8 @@ export default function PromptContributeModal({ professions, initialTitle, user:
         return
       }
 
+      // One Tap never navigates, so /auth/callback never runs — stamp it here.
+      await recordSignupSource(supabase, SIGNUP_SOURCES.PROMPTS)
       onAuthSuccess(data.user)
     } catch (err) {
       console.error('[PromptContribute] Unexpected error:', err)

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, ExternalLink, EyeOff, SlidersHorizontal } from 'lucide-react';
 import { updateUserCourse, deleteUser } from '../../lib/api';
+import { signupSourceLabel } from '../../lib/signupSource';
 // A shared read-only-until-pencil primitive that happens to live under Courses/.
 // Promote it to components/ if a third non-Courses consumer appears.
 import EditableField from '../Courses/EditableField';
@@ -106,6 +107,19 @@ const UserDetail = ({ user, courses, courseTitle, onChanged, onCollapse, onDelet
               {new Date(user.created_at).toLocaleDateString('en-GB', {
                 day: 'numeric', month: 'short', year: 'numeric',
               })}
+            </span>
+          </div>
+        </div>
+
+        {/* Which surface the account was created on — the jobs board, a course
+            page, "request a course", a public profile, the prompts library or
+            the sign-in form itself. Stamped once at sign-up; "Unknown" is an
+            account from before tracking existed (migrations/add_signup_source.sql). */}
+        <div>
+          <span className="block text-xs font-medium text-gray-500 mb-1">Signed up from</span>
+          <div className="flex items-center min-h-[30px]">
+            <span className={`text-sm ${user.signup_source ? 'text-gray-900' : 'text-gray-400 italic'}`}>
+              {signupSourceLabel(user.signup_source)}
             </span>
           </div>
         </div>

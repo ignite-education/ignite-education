@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 
 interface CourseRequestModalProps {
   courseName: string
@@ -93,7 +94,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?source=${SIGNUP_SOURCES.COURSE_REQUEST}`,
         skipBrowserRedirect: true,
         ...(queryParams ? { queryParams } : {}),
       },
@@ -165,6 +166,9 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         return
       }
       console.log('[CourseRequest] Signed in as:', data.user.id, data.user.email)
+
+      // One Tap never navigates, so /auth/callback never runs — stamp it here.
+      await recordSignupSource(supabase, SIGNUP_SOURCES.COURSE_REQUEST)
 
       authUserIdRef.current = data.user.id
       submittedCourseNameRef.current = editedCourseName

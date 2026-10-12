@@ -1305,7 +1305,7 @@ export async function getAllUsers() {
 
   const { data, error } = await supabase
     .from('users')
-    .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public')
+    .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public, signup_source')
     .order('created_at', { ascending: false });
 
   if (error) {

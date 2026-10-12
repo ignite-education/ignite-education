@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 
 /**
@@ -57,6 +58,8 @@ export default function JobSignupModal({
         console.error('[JobSignupModal] Google sign-in failed:', error)
         return
       }
+      // One Tap never navigates, so /auth/callback never runs — stamp it here.
+      await recordSignupSource(supabase, SIGNUP_SOURCES.JOBS)
       onSignedIn()
     },
     [onSignedIn]
@@ -69,7 +72,7 @@ export default function JobSignupModal({
   })
 
   const redirectTo = useCallback(
-    () => `${window.location.origin}/auth/callback?${new URLSearchParams({ next: returnPath })}`,
+    () => `${window.location.origin}/auth/callback?${new URLSearchParams({ next: returnPath, source: SIGNUP_SOURCES.JOBS })}`,
     [returnPath]
   )
 
@@ -163,7 +166,7 @@ export default function JobSignupModal({
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '0.78rem', letterSpacing: '-0.01em' }}
         >
           Prefer email?{' '}
-          <a href={`/sign-in?next=${encodeURIComponent(returnPath)}`} className="underline hover:text-[#EF0B72] transition-colors">
+          <a href={`/sign-in?next=${encodeURIComponent(returnPath)}&source=${SIGNUP_SOURCES.JOBS}`} className="underline hover:text-[#EF0B72] transition-colors">
             Sign in on a full page
           </a>
         </p>

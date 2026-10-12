@@ -584,6 +584,44 @@ After OAuth, the callback handler routes users by role:
 - Admin/Teacher (with `?redirect=admin`) → `admin.ignite.education`
 - Everyone else → `/progress`
 
+### Where a sign-up came from
+
+`users.signup_source` records which surface the account was created on, so the admin
+portal's user list can say *why* someone joined and not just *when*. Values and the
+entry points that send them are listed in
+[`signupSource.ts`](next-app/src/lib/signupSource.ts); the admin labels live in
+[`admin-app/src/lib/signupSource.js`](admin-app/src/lib/signupSource.js). Keep the two in step.
+
+| Value | Surface |
+|---|---|
+| `jobs` | `/jobs` apply gate and job-alerts modal |
+| `course_page` | `/courses/{slug}` enrol CTA, or "start lesson" via `/sign-in?course=` |
+| `course_request` | "Request a course" on `/welcome` and `/courses` |
+| `profile` | A public profile at `ignite.education/{username}` |
+| `prompts` | Saving or contributing a prompt under `/prompts` |
+| `sign_in_page` | Came to `/sign-in` directly (navbar, bookmark, link) |
+| `app` | The Vite SPA's own sign-in paths |
+| `NULL` | Before tracking existed — rendered as "Unknown" |
+
+The value is written by the `record_signup_source()` RPC
+(`migrations/add_signup_source.sql`), never by a plain column update, for two reasons:
+
+- **Five code paths create the `public.users` row** (the auth trigger, the OAuth callback,
+  `enroll.ts`, `EnrollmentCTA`, the Vite `AuthContext`), and threading a column through all
+  of them is how `username` ended up NULL for months. The RPC runs *after* sign-in and does
+  not care who inserted the row.
+- **Google One Tap never navigates**, so `/auth/callback` never runs for it. Each One Tap
+  handler calls `recordSignupSource()` from the browser; the full-redirect flows carry
+  `?source=` on the callback URL instead and the route handler records it. Pages whose
+  OAuth fallback redirects straight back to themselves (`/prompts/*`, the course-request
+  modal) record it when they consume their `pending*` sessionStorage crumb.
+
+It is write-once and only accepted inside a 30-minute window after `auth.users.created_at`
+(the same idea as the referral claim's signup window), so a returning user clicking "sign
+in" on the jobs page a year later is not relabelled as a jobs sign-up. Covering a path
+twice is therefore harmless, and the whole thing is non-critical: a failure is logged and
+never turns a successful sign-in into an error.
+
 ### Users with no enrolled course
 
 `/progress` serves both enrolled and unenrolled users — **`/courses` is no longer an
@@ -684,6 +722,8 @@ See `migrations/fix_username_on_signup.sql`; `scripts/backfill-usernames.js` and
 `scripts/backfill-profile-avatars.js` repair existing rows.
 
 Supabase RPCs:
+- `record_signup_source(p_source)` — write-once stamp of where a new account signed up
+  (see "Where a sign-up came from" under Authentication)
 - `refresh_community_stats()` — nightly community metrics
 - `refresh_achievement_percentile_stats()` — nightly percentile calculations
 - `prune_notifications()` — nightly deletion of aged-out/expired notifications

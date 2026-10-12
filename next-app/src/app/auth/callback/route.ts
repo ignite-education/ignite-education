@@ -4,6 +4,7 @@ import { createUserRecord, addToResendAudience } from '@/lib/auth'
 import { claimReferral } from '@/lib/referral'
 import { enrollUserInCourse } from '@/lib/enroll'
 import { getCourseBySlug } from '@/lib/courseData'
+import { parseSignupSource, recordSignupSource } from '@/lib/signupSource'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -31,7 +32,12 @@ export async function GET(request: Request) {
         const firstName = (metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || '').trim()
         const lastName = (metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || '').trim()
         const country = request.headers.get('x-vercel-ip-country') || null
-        await createUserRecord(supabase, user, firstName, lastName, country)
+        // Which surface the sign-up started on (?source=, set by each entry
+        // point). Shown in the admin portal. Write-once and ignored for
+        // existing accounts, so a returning sign-in can't relabel anyone.
+        const source = parseSignupSource(searchParams.get('source'))
+        await createUserRecord(supabase, user, firstName, lastName, country, source)
+        await recordSignupSource(supabase, source)
 
         // Add to Resend audience (non-blocking, safe for returning users)
         if (user.email) {

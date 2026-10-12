@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { getAllUsers, updateUserRole, getAllCourses, getCourseRequestsByUser } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { SIGNUP_SOURCE_LABELS, UNKNOWN_SOURCE, signupSourceLabel } from '../../lib/signupSource';
 import UserDetail from './UserDetail';
 
 // Same recipe as the course status pill: -50 background, -700 text, -200
@@ -30,6 +31,7 @@ const UserList = () => {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const [busyId, setBusyId] = useState(null);
 
   const load = useCallback(async ({ silent = false } = {}) => {
@@ -59,9 +61,20 @@ const UserList = () => {
   }, [courses]);
 
   const filtered = useMemo(
-    () => (filter === 'all' ? users : users.filter((u) => u.role === filter)),
-    [users, filter]
+    () => users.filter((u) => {
+      if (filter !== 'all' && u.role !== filter) return false;
+      if (sourceFilter === 'all') return true;
+      if (sourceFilter === UNKNOWN_SOURCE) return !u.signup_source;
+      return u.signup_source === sourceFilter;
+    }),
+    [users, filter, sourceFilter]
   );
+
+  // Only sources that actually occur, so the menu never offers an empty bucket.
+  const sourcesPresent = useMemo(() => {
+    const seen = new Set(users.map((u) => u.signup_source || UNKNOWN_SOURCE));
+    return [...Object.keys(SIGNUP_SOURCE_LABELS), UNKNOWN_SOURCE].filter((s) => seen.has(s));
+  }, [users]);
 
   const patchUser = (id, patch) =>
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
@@ -87,6 +100,18 @@ const UserList = () => {
         <h3 className="text-sm font-medium text-gray-900">Users</h3>
         {!loading && <span className="text-xs text-gray-400">{filtered.length}</span>}
         <div className="flex-1" />
+        <select
+          value={sourceFilter}
+          onChange={(e) => setSourceFilter(e.target.value)}
+          className="px-2 py-1 border border-gray-200 rounded-md text-xs text-gray-700 focus:outline-none focus:border-pink-500"
+        >
+          <option value="all">All sources</option>
+          {sourcesPresent.map((s) => (
+            <option key={s} value={s}>
+              {s === UNKNOWN_SOURCE ? 'Unknown source' : SIGNUP_SOURCE_LABELS[s]}
+            </option>
+          ))}
+        </select>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -139,6 +164,18 @@ const UserList = () => {
                     )}
                   </button>
 
+                  {/* Where they signed up. Neutral, not a status — it's a fact
+                      about the past, so it earns no colour. Omitted when
+                      unknown rather than shouting "Unknown" on every old row. */}
+                  {user.signup_source && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-md border border-gray-200 bg-gray-50 text-gray-500 whitespace-nowrap hidden sm:inline"
+                      title="Signed up from"
+                    >
+                      {signupSourceLabel(user.signup_source)}
+                    </span>
+                  )}
+
                   <select
                     value={user.role}
                     onChange={(e) => setRole(user.id, e.target.value)}
@@ -173,9 +210,9 @@ const UserList = () => {
 
           {filtered.length === 0 && (
             <div className="px-3 py-8 text-center text-sm text-gray-500">
-              {filter === 'all'
+              {filter === 'all' && sourceFilter === 'all'
                 ? 'No users yet.'
-                : `No ${filter}s. Change the role filter to see everyone.`}
+                : 'No one matches these filters. Reset them to see everyone.'}
             </div>
           )}
         </div>

@@ -245,6 +245,7 @@ export const AuthProvider = ({ children }) => {
             last_name: lastName,
             onboarding_completed: false,
             role: 'student',
+            signup_source: 'app',
             ...(country ? { country } : {}),
           });
 
@@ -252,6 +253,11 @@ export const AuthProvider = ({ children }) => {
         if (insertError && !insertError.message.includes('duplicate key')) {
           console.error('Error creating user record:', insertError);
         }
+
+        // Covers the row when the auth trigger created it first. Write-once,
+        // sign-up window only — see migrations/add_signup_source.sql.
+        const { error: sourceError } = await supabase.rpc('record_signup_source', { p_source: 'app' });
+        if (sourceError) console.error('Error recording signup source:', sourceError);
       } catch (err) {
         console.error('Exception creating user record:', err);
       }
@@ -351,7 +357,7 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/progress`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/progress&source=app`,
       }
     });
 

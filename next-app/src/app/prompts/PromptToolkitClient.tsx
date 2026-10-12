@@ -6,6 +6,7 @@ import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { Prompt } from '@/data/placeholderPrompts'
 import PromptColumn from '@/components/prompts/PromptColumn'
@@ -154,6 +155,8 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
         return
       }
 
+      // One Tap never navigates, so /auth/callback never runs — stamp it here.
+      await recordSignupSource(supabase, SIGNUP_SOURCES.PROMPTS)
       setAuthUser(data.user)
     } catch (err) {
       console.error('[PromptToolkit] Unexpected error:', err)

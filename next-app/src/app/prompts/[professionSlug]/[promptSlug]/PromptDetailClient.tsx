@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
 import ComplexityIcon from '@/components/prompts/ComplexityIcon'
@@ -296,6 +297,8 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
         const pendingPromptId = sessionStorage.getItem('pendingSavePrompt')
         if (pendingPromptId === prompt.id) {
           sessionStorage.removeItem('pendingSavePrompt')
+          // OAuth redirected straight back here, not via /auth/callback.
+          await recordSignupSource(supabase, SIGNUP_SOURCES.PROMPTS)
           const { data: existing } = await supabase
             .from('saved_prompts')
             .select('id')

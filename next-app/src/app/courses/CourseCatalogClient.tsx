@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
 import { courseMatchesQuery, shouldOfferRequest } from '@/lib/courseUtils'
 import CourseRequestModal from '@/app/welcome/CourseRequestModal'
@@ -78,6 +79,8 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false, o
       if (!user) return
 
       sessionStorage.removeItem('pendingCourseRequest')
+      // The redirect fallback came straight back here, not via /auth/callback.
+      recordSignupSource(supabase, SIGNUP_SOURCES.COURSE_REQUEST)
 
       const firstName = user.user_metadata?.full_name?.split(' ')[0]
         || user.user_metadata?.name?.split(' ')[0]

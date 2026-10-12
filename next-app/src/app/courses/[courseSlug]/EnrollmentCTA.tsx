@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
 import { enrollUserInCourse, registerInterestForUser } from '@/lib/enroll'
@@ -68,8 +69,10 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
       setFirstName(extractFirstName(data.user))
       setCheckingStatus(false)
 
-      // One Tap never navigates, so /auth/callback never runs. If this visitor
-      // arrived from someone's public profile, claim it here.
+      // One Tap never navigates, so /auth/callback never runs. Stamp the
+      // sign-up source here, and if this visitor arrived from someone's
+      // public profile, claim it here too.
+      await recordSignupSource(supabase, SIGNUP_SOURCES.COURSE_PAGE)
       const ref = readReferrer()
       if (ref && data.session?.access_token) {
         const result = await claimReferral(data.session.access_token, ref)
@@ -95,7 +98,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
   // up here still credits that profile — the callback route runs server-side
   // and can't read localStorage itself.
   const callbackUrl = () => {
-    const params = new URLSearchParams({ next: window.location.pathname })
+    const params = new URLSearchParams({ next: window.location.pathname, source: SIGNUP_SOURCES.COURSE_PAGE })
     const ref = readReferrer()
     if (ref) params.set('ref', ref)
     return `${window.location.origin}/auth/callback?${params.toString()}`

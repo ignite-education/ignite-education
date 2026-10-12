@@ -24,7 +24,8 @@ export async function createUserRecord(
   user: User,
   firstName: string,
   lastName: string,
-  country?: string | null
+  country?: string | null,
+  signupSource?: string | null
 ) {
   const avatarUrl = resolveAvatarUrl(user)
 
@@ -38,6 +39,9 @@ export async function createUserRecord(
       role: 'student',
       ...(country ? { country } : {}),
       ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+      // Belt and braces: the callback also calls record_signup_source(), which
+      // is what covers the row when the auth trigger created it first.
+      ...(signupSource ? { signup_source: signupSource } : {}),
     })
 
   if (error && !error.message.includes('duplicate key')) {

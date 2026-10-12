@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 
 /**
@@ -32,6 +33,8 @@ export default function JobAuthCTA({ onSignedIn }: { onSignedIn?: () => void }) 
         console.error('[JobAuthCTA] Google sign-in failed:', error)
         return
       }
+      // One Tap never navigates, so /auth/callback never runs — stamp it here.
+      await recordSignupSource(supabase, SIGNUP_SOURCES.JOBS)
       onSignedIn?.()
     },
     [onSignedIn]
@@ -47,7 +50,7 @@ export default function JobAuthCTA({ onSignedIn }: { onSignedIn?: () => void }) 
 
   // Return to the board itself, preserving whichever profession page they are on.
   const redirectTo = useCallback(() => {
-    const params = new URLSearchParams({ next: window.location.pathname })
+    const params = new URLSearchParams({ next: window.location.pathname, source: SIGNUP_SOURCES.JOBS })
     return `${window.location.origin}/auth/callback?${params.toString()}`
   }, [])
 

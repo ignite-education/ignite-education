@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { readReferrer } from '@/lib/referral'
+import { SIGNUP_SOURCES, parseSignupSource } from '@/lib/signupSource'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import lottieData from '../../../public/icon-animation.json'
@@ -49,9 +50,15 @@ export default function SignInForm() {
       // Referral attribution. An explicit ?ref= beats the stored crumb, so a
       // freshly-clicked link wins over a profile visited days ago.
       const refParam = searchParams.get('ref') || readReferrer()
+      // Where the sign-up started. A page that sends people here can say so
+      // with ?source=; "start lesson" on a course page sends ?course= instead,
+      // which is just as telling. Anything else arrived at the form directly.
+      const source = parseSignupSource(searchParams.get('source'))
+        || (courseParam ? SIGNUP_SOURCES.COURSE_PAGE : SIGNUP_SOURCES.SIGN_IN_PAGE)
 
       const callbackParams = new URLSearchParams()
       callbackParams.set('next', nextParam)
+      callbackParams.set('source', source)
       if (courseParam) callbackParams.set('course', courseParam)
       if (refParam) callbackParams.set('ref', refParam)
       if (redirectParam === 'admin') callbackParams.set('redirect', 'admin')

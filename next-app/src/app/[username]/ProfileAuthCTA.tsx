@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { SIGNUP_SOURCES, recordSignupSource } from '@/lib/signupSource'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import ShareButtons from '@/components/ShareButtons'
 import { claimReferral, clearReferrer } from '@/lib/referral'
@@ -52,6 +53,9 @@ export default function ProfileAuthCTA({
         return
       }
 
+      // One Tap never navigates, so /auth/callback never runs — stamp it here.
+      await recordSignupSource(supabase, SIGNUP_SOURCES.PROFILE)
+
       // Claim before onSignedIn(): that unmounts this block in ProfileHero.
       if (data.session?.access_token) {
         const result = await claimReferral(data.session.access_token, username)
@@ -81,6 +85,7 @@ export default function ProfileAuthCTA({
     const params = new URLSearchParams({
       next: window.location.pathname,
       ref: username,
+      source: SIGNUP_SOURCES.PROFILE,
     })
     return `${window.location.origin}/auth/callback?${params.toString()}`
   }, [username])
