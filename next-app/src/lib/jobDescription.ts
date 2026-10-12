@@ -8,7 +8,9 @@ import { createClient } from '@/lib/supabase/client'
  * `description_text` is deliberately absent from BOARD_COLUMNS in jobsData.ts —
  * it runs up to 40KB per row, and multiplying that by the board's 300-row cap
  * would be a 12MB page. Read one row at a time and that cost disappears: the
- * pane shows one job, so it fetches one job.
+ * pane shows one job, so it fetches one job. (The per-job page at
+ * /jobs/[professionSlug]/[jobSlug] reads the same column server-side, also one
+ * row at a time, through jobsData.getJobByShortId.)
  *
  * No API route, and nothing new to secure. The anon policy on job_listings is
  * row-level — `status = 'approved' AND not expired`, see
@@ -67,43 +69,8 @@ export function fetchJobDescription(jobId: string): Promise<string | null> {
 }
 
 /**
- * Split the advert into renderable blocks.
- *
- * htmlToText (server/jobs/lib/normalise.js) has already flattened the
- * employer's markup: `<br>` and block closes became newlines, `<li>` became a
- * "• " prefix, and runs of blank lines were collapsed to at most one. So the
- * text arrives pre-structured and all this has to do is read that structure
- * back — paragraphs on newlines, and a bullet wherever the marker survived.
- *
- * The marker is not always ours. htmlToText only writes "• " for a real <li>,
- * and a great many adverts are typed into a plain-text field in the ATS with a
- * hyphen or an asterisk instead — those arrive as literal characters and no
- * list markup ever existed to convert. BULLET_MARKER therefore takes the lot.
- * The trailing \s+ is what keeps it honest: it matches "- Lead the discovery"
- * and leaves "e-commerce" and a line opening on a negative number alone.
- *
- * Rendering description_text rather than description_html is a security
- * decision as much as a formatting one. The HTML column is markup we did not
- * write, from hundreds of employers and half a dozen ATS vendors, and putting
- * it on the page would mean dangerouslySetInnerHTML and a sanitiser to
- * maintain. Plain text cannot carry a script.
+ * The block parser moved to lib/descriptionBlocks.ts so the per-job page (a
+ * server component) can call it — nothing exported from a 'use client' module
+ * is callable on the server. Re-exported here so the pane's import is unchanged.
  */
-export interface DescriptionBlock {
-  type: 'bullet' | 'paragraph'
-  text: string
-}
-
-const BULLET_MARKER = /^[•·*–—-]\s+/
-
-export function parseDescription(text: string): DescriptionBlock[] {
-  return text
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map(line =>
-      BULLET_MARKER.test(line)
-        ? { type: 'bullet' as const, text: line.replace(BULLET_MARKER, '') }
-        : { type: 'paragraph' as const, text: line }
-    )
-    .filter(block => block.text.length > 0)
-}
+export { parseDescription, BULLET_MARKER, type DescriptionBlock } from './descriptionBlocks'

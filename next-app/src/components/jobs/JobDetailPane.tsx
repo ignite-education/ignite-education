@@ -262,6 +262,21 @@ export default function JobDetailPane({ job, sources, isSignedIn, onClose }: Job
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '15px', letterSpacing: '-0.01em' }}
               >
                 {job.company}
+                {/* The role's own page — the URL Google indexes and the one to
+                    share. The first pane is server-rendered, so this is also
+                    an internal link a crawler reaches without hydrating. */}
+                {job.path && (
+                  <>
+                    <span className="text-black/30 mx-2" aria-hidden="true">·</span>
+                    <a
+                      href={job.path}
+                      className="text-black/55 hover:text-black transition-colors underline-offset-2 hover:underline"
+                      style={{ fontSize: '13px' }}
+                    >
+                      Open page
+                    </a>
+                  </>
+                )}
               </p>
 
               <div className="flex items-center gap-2 mt-[9px] flex-wrap">

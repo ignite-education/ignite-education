@@ -35,6 +35,7 @@ import {
 import { loadExisting, buildRow, persistBatch, chunkIds } from './lib/persist.js'
 import { sweepExpired, sweepStalePending, updateTypicalVolume, MAX_POSTED_AGE_DAYS } from './lib/expire.js'
 import { resolveCompanyLogos } from './lib/logos.js'
+import { notifyGoogleIndexing } from './lib/googleIndexing.js'
 
 const DEFAULT_DEADLINE_MS = Number(process.env.JOBS_INGEST_MAX_SECONDS || 240) * 1000
 // Resolving a canonical URL costs one outbound request per NEW job. Cheap at
@@ -162,7 +163,12 @@ export async function runJobIngest({
     `${totals.queued} queued), ${totals.updated} refreshed, ${totals.expired} expired`
   )
 
-  return { runs: summary, totals, durationMs: Date.now() - startedAt, dryRun }
+  // Last, after every source has persisted and swept, so one pass sees the
+  // whole night's additions and expiries. A no-op until the Google credentials
+  // are set; never throws (see lib/googleIndexing.js).
+  const indexing = dryRun ? { skipped: true, reason: 'dry run' } : await notifyGoogleIndexing(supabase)
+
+  return { runs: summary, totals, indexing, durationMs: Date.now() - startedAt, dryRun }
 }
 
 /** One (source × market) pass. */

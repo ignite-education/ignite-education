@@ -706,6 +706,98 @@ async function validate404() {
   }
 }
 
+// ─── Job posting pages ───────────────────────────────────────────────────────
+
+/**
+ * Google for Jobs eligibility, checked on one live listing.
+ *
+ * The URL comes from the sitemap rather than a hardcoded path because the
+ * inventory churns nightly. Asserts the JobPosting contract the page promises
+ * (next-app/src/app/jobs/[professionSlug]/[jobSlug]/page.tsx) and that a
+ * made-up slug is a real 404 — the apex catch-all would otherwise serve the SPA
+ * shell at 200 for every job URL if the vercel.json rewrite went missing.
+ */
+async function validateJobPosting() {
+  section('Job posting page (from sitemap)');
+
+  let locs = [];
+  try {
+    const xml = await (await fetch(`${BASE_URL}/sitemap.xml`)).text();
+    locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  } catch (e) {
+    fail(`Could not read sitemap: ${e.message}`);
+    return;
+  }
+
+  const jobUrl = locs.find((l) => /\/jobs\/[^/]+\/[^/]+-[0-9a-f]{8}$/.test(l));
+  if (!jobUrl) {
+    warn('Sitemap lists no per-job URLs (empty board, or every source excluded)');
+  } else {
+    let res;
+    try {
+      res = await fetch(jobUrl, { redirect: 'manual' });
+    } catch (e) {
+      fail(`Fetch failed: ${e.message}`);
+      return;
+    }
+    if (res.status === 200) pass(`HTTP 200 for ${jobUrl}`);
+    else fail(`HTTP ${res.status} for ${jobUrl} (a sitemapped job URL must be 200)`);
+
+    const html = await res.text();
+    const robotsMeta = extractTag(html, /<meta[^>]+name="robots"[^>]+content="([^"]+)"/i);
+    if (robotsMeta && /noindex/i.test(robotsMeta)) {
+      fail(`Sitemapped job URL is noindexed ("${robotsMeta}")`);
+    } else {
+      pass('Not noindexed');
+    }
+
+    const nodes = extractJsonLd(html).filter((j) => !j._parseError);
+    const posting = nodes.find((j) => j['@type'] === 'JobPosting');
+    const breadcrumb = nodes.find((j) => j['@type'] === 'BreadcrumbList');
+    if (breadcrumb) pass('Structured data: BreadcrumbList');
+    else fail('Missing structured data type: BreadcrumbList');
+
+    if (!posting) {
+      fail('Missing structured data type: JobPosting');
+    } else if (nodes.filter((j) => j['@type'] === 'JobPosting').length > 1) {
+      fail('More than one JobPosting on the page — Google requires exactly one');
+    } else {
+      pass('Structured data: JobPosting (exactly one)');
+      const check = (ok, label) => (ok ? pass(label) : fail(label));
+      check(typeof posting.title === 'string' && posting.title.length > 0, 'JobPosting.title present');
+      check(
+        typeof posting.description === 'string' && posting.description.length >= 200 && posting.description !== posting.title,
+        'JobPosting.description is substantial and not the title'
+      );
+      check(!Number.isNaN(Date.parse(posting.datePosted || '')), 'JobPosting.datePosted is a date');
+      check(
+        posting.validThrough === undefined || Date.parse(posting.validThrough) > Date.now(),
+        'JobPosting.validThrough is absent or in the future'
+      );
+      check(posting.hiringOrganization?.name, 'JobPosting.hiringOrganization.name present');
+      check(
+        posting.jobLocation?.address?.addressCountry || posting.jobLocationType === 'TELECOMMUTE',
+        'JobPosting has jobLocation or TELECOMMUTE'
+      );
+      check(posting.directApply === false, 'JobPosting.directApply is false (sign-in gate)');
+      check(posting.url === jobUrl, 'JobPosting.url matches the page URL');
+      if (posting.baseSalary) pass('baseSalary present (employer-stated)');
+    }
+  }
+
+  section('404 Handling (/jobs/product-manager/not-a-real-job-00000000)');
+  try {
+    const res = await fetch(`${BASE_URL}/jobs/product-manager/not-a-real-job-00000000`, { redirect: 'follow' });
+    if (res.status === 404) {
+      pass('Returns 404 for a non-existent job');
+    } else {
+      fail(`SOFT 404: returns ${res.status} for a non-existent job — check the /jobs/:professionSlug/:jobSlug rewrite in vercel.json`);
+    }
+  } catch (e) {
+    fail(`Fetch failed: ${e.message}`);
+  }
+}
+
 // ─── Staging Host Containment ────────────────────────────────────────────────
 
 /**
@@ -809,6 +901,7 @@ async function main() {
   // Redirects, sitemap, robots, 404
   await validateRootRedirect();
   await validateSitemap();
+  await validateJobPosting();
   await validateRobots();
   await validate404();
   await validateStagingHost();

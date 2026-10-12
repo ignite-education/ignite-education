@@ -5,7 +5,7 @@ import { getAllPublishedPosts } from '@/lib/blogData'
 import { getAllProfessionSlugs } from '@/lib/professionUtils'
 import { getAllPublicProfiles } from '@/lib/profileData'
 import { getAllPromptSlugs } from '@/data/placeholderPrompts'
-import { getProfessionsWithJobs } from '@/data/jobsData'
+import { getProfessionsWithJobs, getLiveJobPages } from '@/data/jobsData'
 import { professionToSlug } from '@/lib/professionUtils'
 
 export const revalidate = 3600
@@ -29,13 +29,14 @@ export const revalidate = 3600
  *  - `/sign-in`, `/reset-password`, `/certificate/*` — noindexed.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [courseSlugs, posts, professionSlugs, promptSlugs, profiles, jobProfessions] = await Promise.all([
+  const [courseSlugs, posts, professionSlugs, promptSlugs, profiles, jobProfessions, jobPages] = await Promise.all([
     getAllCourseSlugs(),
     getAllPublishedPosts(),
     getAllProfessionSlugs(),
     getAllPromptSlugs(),
     getAllPublicProfiles(),
     getProfessionsWithJobs('gb'),
+    getLiveJobPages('gb'),
   ])
 
   const now = new Date()
@@ -89,6 +90,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
+  // One URL per live listing that is allowed JobPosting markup (aggregator
+  // sources are excluded by getLiveJobPages). Expired listings drop out of
+  // this query and their pages 404, which is the behaviour Google requires of
+  // a job posting that has closed. lastModified is the approval date, not the
+  // nightly refresh — see getLiveJobPages.
+  const jobPostingPages: MetadataRoute.Sitemap = jobPages.map(({ path, lastModified }) => ({
+    url: `${SITE_URL}${path}`,
+    lastModified,
+    changeFrequency: 'daily',
+    priority: 0.6,
+  }))
+
   // Lowest priority of anything listed: these are the thinnest pages on the
   // site and there is eventually one per signup, so they should never outrank
   // the course/blog content in Google's crawl budget.
@@ -106,6 +119,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...professions,
     ...prompts,
     ...jobProfessionPages,
+    ...jobPostingPages,
     ...userProfiles,
   ]
 }

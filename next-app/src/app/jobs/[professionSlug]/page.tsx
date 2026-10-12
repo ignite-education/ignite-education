@@ -17,10 +17,11 @@ const BASE_URL = SITE_URL
 /**
  * The same board, pre-filtered to one profession.
  *
- * These are the SEO asset for the whole feature — a small, stable set of URLs
- * that answer the query people actually type ("entry level ux designer jobs
- * uk"). The per-job pages that would normally carry that weight do not exist
- * here by design.
+ * These are the SEO asset for the QUERY side of the feature — a small, stable
+ * set of URLs that answer what people actually type ("entry level ux designer
+ * jobs uk"). The per-job pages beneath them (./[jobSlug]/page.tsx) carry the
+ * JobPosting markup that feeds Google for Jobs; this page carries none, since
+ * Google rejects it on lists.
  *
  * Titles and headings use the SINGULAR profession name throughout, which is
  * both the grammatical form and the searched one: "Product Manager Jobs", not

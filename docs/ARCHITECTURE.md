@@ -183,6 +183,7 @@ Two non-obvious failure modes this configuration prevents:
 | `/prompts` | SSR | — | AI prompt toolkit (3-level dynamic routing) |
 | `/jobs` | ISR | 300s | Job board — list + detail pane; client-side search and filtering |
 | `/jobs/[professionSlug]` | ISR | 300s | Same board pre-filtered; the SEO asset for the feature |
+| `/jobs/[professionSlug]/[jobSlug]` | ISR | 300s | One job, full advert server-rendered, `JobPosting` JSON-LD — the Google for Jobs asset |
 | `/sign-in` | SSR | — | Auth entry with OAuth + email/password |
 | `/reset-password` | SSR | — | Password recovery |
 | `/privacy`, `/terms` | SSR | — | Static legal pages |
@@ -841,32 +842,65 @@ Rows select on click only. Below `lg` the pane stops
 being a column and covers the list, with its own back control; that switch is pure CSS, so
 nothing has to know the viewport width during hydration.
 
-**There are no per-job pages.** The pane is the detail view, and `?job=<id>` makes a listing
-linkable (it selects the role as well as scrolling to it, so the OAuth round trip from the apply
-gate lands on the Apply button the visitor left for). That is a deliberate scope choice: it
-removes an entire route tree, the soft-404-on-expiry problem, and the `JobPosting` structured-data
-question. The profession pages (`/jobs/[professionSlug]`) are the SEO asset instead.
+**Per-job pages exist for crawlers; the pane is still where people read.** The board stays a
+master–detail page and `?job=<id>` still deep-links a role (it selects it as well as scrolling to
+it, so the OAuth round trip from the apply gate lands on the button the visitor left for). Beneath
+it, every listing also has its own URL at `/jobs/[professionSlug]/[jobSlug]`, which is what
+Google for Jobs indexes. Those pages were deliberately *not* built at launch (route tree,
+soft-404-on-expiry, the `JobPosting` question, source terms); the decision was reversed on
+2026-10-12 to get the board into the Google Jobs tab, with the constraints below carried over
+rather than dropped.
 
-**All description lives in the pane.** `JobCard` shows no body text at all — title, employer and
-the filterable facts, nothing more. The pane shows the employer's full `description_text` (up to
-40KB), fetched **one row at a time in the browser** by `lib/jobDescription.ts` and never
-server-rendered. `description_text` therefore stays out of `BOARD_COLUMNS`; a 300-row page
-carrying it would be ~12MB. The fetch needs no API route — the anon policy on `job_listings` is
-row-level, so the browser is already entitled to exactly the rows the board renders. It is
-rendered as **text, not `description_html`**: that column is markup from hundreds of employers and
-would mean `dangerouslySetInnerHTML` plus a sanitiser to maintain.
+- **URL contract** (`next-app/src/lib/jobSlug.ts`, mirrored in `server/jobs/lib/googleIndexing.js`):
+  `/jobs/{professionSlug}/{slugify(title)}-{first 8 hex of id}`. There is no slug column. Only the
+  id suffix resolves — `getJobByShortId()` is a range query on the uuid primary key — so a retitled
+  or re-professioned listing 308s from its old URL to its current one and every URL the sitemap
+  ever emitted keeps working. A listing with no profession has no page.
+- **The page 404s the moment the listing is gone.** It reads through the same anon client and
+  freshness cut as the board, so unapproved, expired and over-45-day rows return no row and the
+  page calls `notFound()`. `validThrough` in the markup is set to that same moment. There is no
+  `loading.tsx` under `/jobs`, for the reason in `[professionSlug]/layout.tsx`.
+- **The advert is server-rendered here, and only here.** `JOB_PAGE_COLUMNS` adds
+  `description_text` for this one-row read; `BOARD_COLUMNS` still omits it. The text is parsed by
+  `lib/descriptionBlocks.ts` (directive-free so both the pane and the page can call it) and the
+  JSON-LD `description` is built from the same blocks by `lib/jobPostingHtml.ts`, so the markup
+  cannot disagree with the visible advert. Still text, never `description_html`.
+- **Never select `canonical_url` or `source_job_id` on a public page.** Both carry the employer's
+  advert URL — the thing the apply gate withholds — and anon RLS is row-level, not column-level.
+  `JobPosting.identifier` is our uuid.
 
-> **SEO consequence, deliberate.** Because the pane fetches client-side and the rows carry no
-> prose, **no descriptive text about any role reaches the server-rendered HTML** — a crawler sees
-> titles, employers, places and dates. `ai_summary` is still selected and still on `job.snippet`
-> (the pane falls back to it when an advert is empty or the fetch fails), so if the profession
-> pages need body text to rank, restoring a clamped snippet to `JobCard` puts it back in the
-> markup for all 300 rows at once.
+**`JobCard` shows no body text** — title, employer and the filterable facts. The title is a real
+`<a href>` to the job's page (with `tabIndex -1`, so the list adds no tab stops), which puts ~300
+crawlable internal links to the markup in the server HTML at no payload cost. The pane shows the
+full advert, fetched **one row at a time in the browser** by `lib/jobDescription.ts`; the per-job
+page reads the same column server-side. `ai_summary` is still on `job.snippet` as the fallback.
 
-**No `JobPosting` JSON-LD anywhere.** With no per-job pages there is nothing to attach it to, and
-emitting it would feed listings into the Google Jobs widget — which renders the vacancy inside
-Google's own result and sends the click somewhere other than here, defeating the account gate. It
-would also conflict with source terms that forbid redistribution to competing aggregators.
+**`JobPosting` JSON-LD: one block, on the per-job page only.** Google requires exactly one posting
+per dedicated page and rejects it on lists, so `/jobs` and the profession pages carry none.
+`generateJobPostingStructuredData()` in `lib/structuredData.ts` maps the columns; the rules that
+are not obvious from the code:
+
+| Rule | Why |
+|------|-----|
+| `directApply: false` | Applying means signing in first. The Google button lands on our gated page; the gate is unchanged. |
+| No markup for `job_sources.allow_jobposting = false` (Reed, Adzuna) | Aggregator terms forbid redistribution to other aggregators, which Google for Jobs is. Those pages render but are `noindex`. New aggregator sources must be seeded `false`. |
+| `baseSalary` only when `salary_is_estimate` is false | Google forbids estimated pay in markup. The page shows the figure exactly when the markup carries it. |
+| No markup under 200 characters of advert | Google treats it as incomplete; the page is `noindex` instead. |
+| `validThrough = min(expires_at, posted_at + 45d)` | The same instant the page starts 404ing. |
+| Remote roles carry `TELECOMMUTE` + `applicantLocationRequirements`, no `jobLocation` | A multi-country remote advert's parsed city/region is unreliable, and false location data is a policy violation. |
+
+**Google Indexing API** (`server/jobs/lib/googleIndexing.js`) runs as the last step of
+`runJobIngest()`: `URL_DELETED` first for every announced listing that is no longer live, then
+`URL_UPDATED` for live eligible listings never announced. It never re-announces a live row — the
+nightly refresh touches every row, so "changed" would be the whole board every night against a
+200/day quota. State is `job_listings.index_notified_{at,type}` (not `VOLATILE_FIELDS`); the daily
+cap is counted in the database because the workflow calls the ingest twice a night. A no-op until
+`GOOGLE_INDEXING_CLIENT_EMAIL` / `GOOGLE_INDEXING_PRIVATE_KEY` are set; the one-time setup
+(service account added as an **Owner** of the Search Console property) is at the top of that file.
+`scripts/notify-google-indexing.mjs --dry-run` prints the worklist; without the flag it backfills.
+The sitemap lists live eligible job URLs with `lastModified = approved_at` (not the nightly
+`updated_at`). The apex `vercel.json` needs the two-segment `/jobs/:professionSlug/:jobSlug`
+rewrite — without it the SPA catch-all serves every job URL as a 200 soft 404.
 
 #### The sign-in-to-apply gate
 
@@ -908,6 +942,7 @@ deploy. Adapters read their country identifier from `job_markets.source_params`.
 | Rate limits + ToS budget | `server/jobs/lib/rateLimiter.js`, `lib/budget.js` |
 | Expiry + outage guard | `server/jobs/lib/expire.js` |
 | Employer logos | `server/jobs/lib/logos.js` |
+| Google Indexing API (per-job pages) | `server/jobs/lib/googleIndexing.js` + `scripts/notify-google-indexing.mjs` |
 | Local runner | `scripts/run-job-ingest.mjs` |
 
 **Two-phase sources.** Workday, Oracle Recruiting Cloud, SmartRecruiters and the schema.org

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { Job } from '@/data/jobsData'
 import { SENIORITY_SHORT, formatPostedAt } from '@/lib/seniorityLabels'
+import { META_TAG_CLASS, metaTagStyle } from './metaTag'
 
 /**
  * One row of the list column.
@@ -26,11 +27,14 @@ import { SENIORITY_SHORT, formatPostedAt } from '@/lib/seniorityLabels'
  *
  * The cost is paid in SEO, and is worth stating where someone will find it: the
  * pane fetches its advert in the browser, so with the summary gone from here,
- * NO descriptive prose about any role reaches the server-rendered HTML. What a
- * crawler now sees of this board is titles, employers, places and dates. If the
- * profession pages ever need body text to rank on, this row is where it went —
- * put a clamped `job.snippet` back and it returns to the markup for all 300
- * rows at once.
+ * NO descriptive prose about any role reaches the LIST's server-rendered HTML.
+ * What a crawler sees of this board is titles, employers, places, dates — and,
+ * since the per-job pages shipped, a link per row to the page that does carry
+ * the advert and its JobPosting markup. That link is the title: a real <a> so
+ * ~300 crawlable internal links reach the markup at no payload cost, but with
+ * tabIndex -1 so it adds no tab stop (see the heading's comment). If the
+ * profession pages ever need body text of their own, put a clamped
+ * `job.snippet` back here and it returns to the markup for all 300 rows.
  */
 
 interface JobCardProps {
@@ -120,31 +124,11 @@ export function CompanyLogo({
 }
 
 /**
- * The tag from /progress section 1 (IntroSection's "Joined" / "12 Lessons" /
- * "Insider" row): 12px, black, 4px radius, 8×3 padding. Every circumstance of
- * the role wears it, so the meta line reads as a row of chips rather than a
- * run-on sentence with middots.
- *
- * The employer is the exception, and deliberately: it sits above this row as
- * plain text. Where the job is, when it was posted and what level it is are all
- * filters — the same facts the bar above the board sorts by, and a chip is what
- * a filterable value looks like on this page. Who the job is for is not one of
- * those; it is half the headline.
- *
- * The one departure is the fill — #F6F6F6 rather than /progress's #F0F0F0, so
- * it is the same grey as the band behind the cards. Three near-identical greys
- * on one row would read as a mistake.
- *
- * Exported alongside the logo so the detail pane's header states the same facts
- * in the same clothes; a chip that changed shape between the list and the pane
- * would read as a different kind of fact.
+ * The meta chip lives in ./metaTag.ts (directive-free, so the per-job page can
+ * use it from the server). Re-exported here because the pane and index.ts
+ * import it from this file.
  */
-export const META_TAG_CLASS = 'inline-block px-[8px] py-[3px] text-black bg-[#F6F6F6] rounded-[4px] font-normal'
-export const metaTagStyle = {
-  fontFamily: 'var(--font-geist-sans), sans-serif',
-  fontSize: '12px',
-  letterSpacing: '-0.02em',
-} as const
+export { META_TAG_CLASS, metaTagStyle } from './metaTag'
 
 export default function JobCard({ job, index = 0, isSelected, onSelect }: JobCardProps) {
   const posted = formatPostedAt(job.postedAt)
@@ -219,7 +203,25 @@ export default function JobCard({ job, index = 0, isSelected, onSelect }: JobCar
             className="text-black font-semibold line-clamp-2"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '16px', letterSpacing: '-0.01em', lineHeight: 1.3 }}
           >
-            {job.title}
+            {job.path ? (
+              /* A plain left click selects the row exactly as clicking anywhere
+                 else on it does — the href is for crawlers, middle-clicks and
+                 cmd-clicks, which get the per-job page. tabIndex -1 keeps the
+                 list out of the tab order, as the comment above explains. */
+              <a
+                href={job.path}
+                tabIndex={-1}
+                onClick={event => {
+                  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+                  event.preventDefault()
+                }}
+                className="text-inherit no-underline"
+              >
+                {job.title}
+              </a>
+            ) : (
+              job.title
+            )}
           </h3>
 
           <p

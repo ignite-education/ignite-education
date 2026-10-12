@@ -114,6 +114,17 @@ services:
         value: "claude-sonnet-5"
       - key: JOBS_APPLY_DAILY_CAP
         value: "200"
+      # Google Indexing API for the per-job pages. Credentials are set in the
+      # dashboard (sync: false); the step is a no-op until they exist. Setup
+      # steps are at the top of server/jobs/lib/googleIndexing.js.
+      - key: GOOGLE_INDEXING_CLIENT_EMAIL
+        sync: false
+      - key: GOOGLE_INDEXING_PRIVATE_KEY
+        sync: false
+      - key: GOOGLE_INDEXING_DAILY_CAP
+        value: "180"
+      - key: GOOGLE_INDEXING_ENABLED
+        value: "true"
 
   # Cron job to refresh Reddit cache daily at 6 AM UTC
   - type: cron

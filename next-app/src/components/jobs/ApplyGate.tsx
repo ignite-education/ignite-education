@@ -133,7 +133,15 @@ export function useApplyAction({ jobId, jobTitle, company, isSignedIn }: UseAppl
     <JobSignupModal
       jobTitle={jobTitle}
       company={company}
-      returnPath={typeof window !== 'undefined' ? `${window.location.pathname}?job=${jobId}` : '/jobs'}
+      // On the board, ?job= reselects the role after the OAuth round trip. On a
+      // per-job page the path already names the role, so the query would be noise.
+      returnPath={
+        typeof window === 'undefined'
+          ? '/jobs'
+          : /^\/jobs\/[^/]+\/[^/]+$/.test(window.location.pathname)
+            ? window.location.pathname
+            : `${window.location.pathname}?job=${jobId}`
+      }
       onClose={() => setShowModal(false)}
       onSignedIn={handleSignedIn}
     />

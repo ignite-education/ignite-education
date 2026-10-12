@@ -1,6 +1,7 @@
 import type { Course, Coach, FAQ } from '@/types/course'
 import type { BlogPost } from '@/types/blog'
 import type { Certificate } from '@/types/certificate'
+import type { JobDetail } from '@/data/jobsData'
 import { SITE_URL, ORG_ID, DEFAULT_OG_IMAGE } from '@/lib/siteConfig'
 
 const BASE_URL = SITE_URL
@@ -309,6 +310,174 @@ export function generateCertificateBreadcrumbStructuredData(
     'itemListElement': [
       { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': HOME_URL },
       { '@type': 'ListItem', 'position': 2, 'name': `${userName}'s Certificate`, 'item': `${BASE_URL}/certificate/${certificateId}` },
+    ],
+  }
+}
+
+// ─── Job postings ────────────────────────────────────────────────────────────
+
+/**
+ * Google's requirements for JobPosting, checked 2026-10-12 against
+ * developers.google.com/search/docs/appearance/structured-data/job-posting:
+ *
+ *  - ONE posting per page, on a page dedicated to that job. Never on a list.
+ *  - Required: title, description (HTML, not equal to the title), datePosted,
+ *    hiringOrganization, and jobLocation — or for a fully remote role,
+ *    jobLocationType TELECOMMUTE plus applicantLocationRequirements.
+ *  - baseSalary only when the EMPLOYER states it. Our estimated figures
+ *    (salary_is_estimate) must never be emitted.
+ *  - validThrough in the past, a 404, or no markup once the job expires.
+ *    The per-job page 404s via RLS + the freshness cut; validThrough is set
+ *    to the same moment so the two never disagree.
+ *  - directApply: false. Applying here means signing in first, which is more
+ *    than Google's "a short, simple process".
+ */
+
+const PROFESSION_PAGE_HOME = `${BASE_URL}/jobs`
+
+/** Minimum advert length for markup. Under this Google reads it as incomplete. */
+export const MIN_JOBPOSTING_DESCRIPTION_CHARS = 200
+
+const EMPLOYMENT_TYPE_RULES: [RegExp, string][] = [
+  [/intern/i, 'INTERN'],
+  [/contract|fixed.?term|freelance/i, 'CONTRACTOR'],
+  [/\btemp/i, 'TEMPORARY'],
+  [/part.?time/i, 'PART_TIME'],
+  [/full.?time|permanent|regular/i, 'FULL_TIME'],
+]
+
+/**
+ * schema.org employmentType from the two free-text columns every ATS fills
+ * differently ("Full-time", "FULL_TIME", "Permanent", "Fixed Term Contract").
+ * May yield more than one; omitted when nothing matches.
+ */
+export function employmentTypes(contractType: string | null, contractTime: string | null): string[] {
+  const text = [contractType, contractTime].filter(Boolean).join(' ')
+  const found: string[] = []
+  for (const [re, value] of EMPLOYMENT_TYPE_RULES) {
+    if (re.test(text) && !found.includes(value)) found.push(value)
+  }
+  return found
+}
+
+const COUNTRY_NAMES: Record<string, string> = { GB: 'United Kingdom' }
+
+function salaryUnit(period: string | null): string | null {
+  const units: Record<string, string> = {
+    year: 'YEAR', month: 'MONTH', week: 'WEEK', day: 'DAY', hour: 'HOUR',
+  }
+  return period ? units[period] || null : null
+}
+
+/**
+ * validThrough: whichever comes first of the stored expiry and the 45-day
+ * freshness cut that jobsData applies at read time, so the markup expires at
+ * exactly the moment the page starts returning 404.
+ */
+export function jobValidThrough(job: JobDetail, maxPostedAgeDays: number): string | null {
+  const candidates: number[] = []
+  if (job.expiresAt) candidates.push(new Date(job.expiresAt).getTime())
+  if (job.postedAt) candidates.push(new Date(job.postedAt).getTime() + maxPostedAgeDays * 86_400_000)
+  const valid = candidates.filter(t => Number.isFinite(t))
+  return valid.length ? new Date(Math.min(...valid)).toISOString() : null
+}
+
+/**
+ * Generate JobPosting schema.org structured data for a per-job page.
+ *
+ * `descriptionHtml` is built from the SAME DescriptionBlock[] the page renders
+ * (lib/jobPostingHtml.ts), so the markup matches the visible advert.
+ */
+export function generateJobPostingStructuredData(
+  job: JobDetail,
+  pageUrl: string,
+  descriptionHtml: string,
+  { maxPostedAgeDays }: { maxPostedAgeDays: number }
+) {
+  const countryCode = (job.countryCode || 'GB').toUpperCase()
+  const validThrough = jobValidThrough(job, maxPostedAgeDays)
+  const types = employmentTypes(job.contractType, job.contractTime)
+  const unit = salaryUnit(job.salaryPeriod)
+  const locality = job.locationCity || job.location
+
+  const salary =
+    !job.salaryIsEstimate && unit && (job.salaryMin != null || job.salaryMax != null)
+      ? {
+          '@type': 'MonetaryAmount',
+          'currency': job.salaryCurrency || 'GBP',
+          'value': {
+            '@type': 'QuantitativeValue',
+            ...(job.salaryMin != null && job.salaryMax != null && job.salaryMin !== job.salaryMax
+              ? { 'minValue': job.salaryMin, 'maxValue': job.salaryMax }
+              : { 'value': job.salaryMin ?? job.salaryMax }),
+            'unitText': unit,
+          },
+        }
+      : null
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'JobPosting',
+    'title': job.title,
+    'description': descriptionHtml,
+    'datePosted': job.postedAt || job.firstSeenAt,
+    ...(validThrough ? { 'validThrough': validThrough } : {}),
+    'hiringOrganization': {
+      '@type': 'Organization',
+      'name': job.company,
+      ...(job.companyLogoUrl ? { 'logo': job.companyLogoUrl } : {}),
+    },
+    // Remote roles carry NO jobLocation. Google does not require one when
+    // applicantLocationRequirements is present, and our city/region columns
+    // for a multi-country remote advert are whatever parseLocation() made of
+    // "United States / Netherlands / UK" — publishing that as a postal address
+    // is the "false location data" Google's content policy names. On-site
+    // roles get the city when we have one and the country alone when not.
+    ...(job.isRemote
+      ? {
+          'jobLocationType': 'TELECOMMUTE',
+          'applicantLocationRequirements': {
+            '@type': 'Country',
+            'name': COUNTRY_NAMES[countryCode] || countryCode,
+          },
+        }
+      : {
+          'jobLocation': {
+            '@type': 'Place',
+            'address': {
+              '@type': 'PostalAddress',
+              ...(locality ? { 'addressLocality': locality } : {}),
+              ...(locality && job.locationRegion ? { 'addressRegion': job.locationRegion } : {}),
+              'addressCountry': countryCode,
+            },
+          },
+        }),
+    ...(types.length ? { 'employmentType': types.length === 1 ? types[0] : types } : {}),
+    ...(salary ? { 'baseSalary': salary } : {}),
+    // Our id, never source_job_id — the jsonld adapter stores the employer's
+    // advert URL in that column, which the apply gate withholds.
+    'identifier': { '@type': 'PropertyValue', 'name': job.company, 'value': job.id },
+    'directApply': false,
+    'url': pageUrl,
+  }
+}
+
+/**
+ * Generate Breadcrumb schema.org structured data for a per-job page.
+ */
+export function generateJobBreadcrumbStructuredData(
+  professionName: string,
+  professionSlug: string,
+  job: { title: string; path: string }
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': HOME_URL },
+      { '@type': 'ListItem', 'position': 2, 'name': 'Job Board', 'item': PROFESSION_PAGE_HOME },
+      { '@type': 'ListItem', 'position': 3, 'name': `${professionName} Jobs`, 'item': `${PROFESSION_PAGE_HOME}/${professionSlug}` },
+      { '@type': 'ListItem', 'position': 4, 'name': job.title, 'item': `${BASE_URL}${job.path}` },
     ],
   }
 }

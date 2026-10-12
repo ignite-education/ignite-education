@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { professionToSlug } from '@/lib/professionUtils'
+import { jobPath } from '@/lib/jobSlug'
 
 export type Seniority = 'entry' | 'mid' | 'senior'
 
@@ -23,11 +24,39 @@ export type Job = {
   contractType: string | null
   postedAt: string | null
   displaySource: string
+  /**
+   * The listing's own page, `/jobs/{profession}/{title}-{id8}`, or null when
+   * the row has no profession. Computed server-side (lib/jobSlug.ts) so client
+   * components can link without knowing the contract.
+   */
+  path: string | null
+}
+
+/**
+ * Everything the per-job page needs on top of a board row. Read one row at a
+ * time, never for the list — see JOB_PAGE_COLUMNS.
+ */
+export type JobDetail = Job & {
+  descriptionText: string | null
+  locationRegion: string | null
+  countryCode: string | null
+  contractTime: string | null
+  /** The ingest source key — gates JobPosting markup via job_sources.allow_jobposting. */
+  source: string
+  expiresAt: string | null
+  firstSeenAt: string
+  approvedAt: string | null
 }
 
 export type JobSourceAttribution = {
   key: string
   name: string
+  /**
+   * Whether listings from this source may carry JobPosting JSON-LD, appear in
+   * the sitemap and be announced to Google. False for aggregator feeds whose
+   * terms forbid redistribution. See migrations/add_job_posting_pages.sql.
+   */
+  allowJobPosting: boolean
   attribution: {
     required?: boolean
     label?: string
@@ -71,7 +100,7 @@ const MAX_BOARD_ROWS = 300
  * cut applies at read time, so a listing crosses the threshold on the next ISR
  * revalidation rather than at the next ingest.
  */
-const MAX_POSTED_AGE_DAYS = 45
+export const MAX_POSTED_AGE_DAYS = 45
 
 /**
  * PostgREST `or` clause for "posted recently, or undated".
@@ -95,9 +124,10 @@ function freshnessFilter(): string {
  *
  * Explicit, never select('*'):
  *  - description_text is deliberately absent. It is up to 40KB per row, and no
- *    page reads it: the card shows a precomputed summary of it and Apply goes
- *    straight to the employer's own advert, so the full text is never needed
- *    here. server/jobs/lib/summarise.js is the only thing that reads it.
+ *    LIST reads it: the card shows a precomputed summary of it and Apply goes
+ *    straight to the employer's own advert. The two places that do read it —
+ *    the detail pane (lib/jobDescription.ts) and the per-job page
+ *    (JOB_PAGE_COLUMNS below) — fetch exactly one row each.
  *  - both ai_summary and description_snippet are selected. The first is what
  *    the card shows; the second is the fallback for anything not summarised
  *    yet, and costs nothing extra since it is ~300 characters either way.
@@ -109,6 +139,22 @@ const BOARD_COLUMNS = `
   profession, seniority, location_raw, location_city, is_remote,
   salary_min, salary_max, salary_currency, salary_period, salary_is_estimate,
   contract_type, posted_at, display_source
+`
+
+/**
+ * The per-job page's columns: a board row plus the advert and the facts
+ * JobPosting markup needs. One row per request, so the payload argument
+ * against description_text does not apply.
+ *
+ * NEVER add `canonical_url` or `source_job_id` here. Both carry the employer's
+ * advert URL (the jsonld adapter stores `{board}:{advert URL}` as the job id),
+ * which is the thing the sign-in gate exists to withhold. Anon RLS is
+ * row-level, not column-level — the only protection is not asking.
+ */
+const JOB_PAGE_COLUMNS = `
+  ${BOARD_COLUMNS},
+  description_text, location_region, country_code, contract_time,
+  source, expires_at, first_seen_at, approved_at
 `
 
 /** Cookie-less client so pages stay statically renderable / ISR-cacheable. */
@@ -146,6 +192,21 @@ function mapDbJob(row: any): Job {
     contractType: row.contract_type ?? null,
     postedAt: row.posted_at ?? null,
     displaySource: row.display_source,
+    path: jobPath(row),
+  }
+}
+
+function mapDbJobDetail(row: any): JobDetail {
+  return {
+    ...mapDbJob(row),
+    descriptionText: row.description_text ?? null,
+    locationRegion: row.location_region ?? null,
+    countryCode: row.country_code ?? null,
+    contractTime: row.contract_time ?? null,
+    source: row.source,
+    expiresAt: row.expires_at ?? null,
+    firstSeenAt: row.first_seen_at,
+    approvedAt: row.approved_at ?? null,
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -193,16 +254,37 @@ export async function getJobs({
  */
 export async function getSourceAttribution(): Promise<Record<string, JobSourceAttribution>> {
   const supabase = getSupabase()
-  const { data, error } = await supabase.from('job_sources').select('key, name, attribution')
+  let result = await supabase
+    .from('job_sources')
+    .select('key, name, attribution, allow_jobposting')
 
-  if (error) {
-    console.error('Error fetching job source attribution:', error)
+  // Deploy-order safety. allow_jobposting arrived with
+  // migrations/add_job_posting_pages.sql; if this build reaches production
+  // before that is applied, the select fails on the unknown column (42703)
+  // and every source badge — a contractual requirement for aggregators —
+  // would vanish from the board. Retry without it and treat every source as
+  // allowed, which is the pre-migration behaviour.
+  if (result.error?.code === '42703') {
+    console.warn('job_sources.allow_jobposting is missing — apply migrations/add_job_posting_pages.sql')
+    result = await supabase.from('job_sources').select('key, name, attribution')
+  }
+
+  if (result.error) {
+    console.error('Error fetching job source attribution:', result.error)
     return {}
   }
 
   const map: Record<string, JobSourceAttribution> = {}
-  for (const row of data || []) {
-    map[row.key] = { key: row.key, name: row.name, attribution: row.attribution || {} }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const row of (result.data || []) as any[]) {
+    map[row.key] = {
+      key: row.key,
+      name: row.name,
+      // Default true: the column is NOT NULL DEFAULT true, and a source that
+      // predates the column should behave as it did before it existed.
+      allowJobPosting: row.allow_jobposting !== false,
+      attribution: row.attribution || {},
+    }
   }
   return map
 }
@@ -227,4 +309,87 @@ export async function getProfessionsWithJobs(market = 'gb'): Promise<string[]> {
     return []
   }
   return [...new Set((data || []).map(r => r.profession).filter(Boolean))]
+}
+
+/**
+ * One listing by the eight-hex-character prefix of its id — the suffix of a
+ * per-job URL (lib/jobSlug.ts).
+ *
+ * A uuid compares bytewise in Postgres, which is the same order as its hex
+ * text, so a prefix is a range on the primary key: no slug column, no second
+ * index, and every URL the sitemap has ever emitted still resolves after a
+ * retitle. Two live rows sharing a prefix is a 2^-32 event; `limit(2)` lets
+ * the caller notice and pick the one whose title matches.
+ *
+ * Returns null for anything the board would not show: anon RLS hides
+ * unapproved and expired rows, and the freshness cut hides the rest. The page
+ * turns null into a real 404, which is what Google requires of an expired
+ * posting.
+ */
+export async function getJobByShortId(shortId: string, market = 'gb'): Promise<JobDetail[]> {
+  if (!/^[0-9a-f]{8}$/.test(shortId)) return []
+  const supabase = getSupabase()
+
+  const { data, error } = await supabase
+    .from('job_listings')
+    .select(JOB_PAGE_COLUMNS)
+    .gte('id', `${shortId}-0000-0000-0000-000000000000`)
+    .lte('id', `${shortId}-ffff-ffff-ffff-ffffffffffff`)
+    .eq('market', market)
+    .or(freshnessFilter())
+    .limit(2)
+
+  if (error) {
+    console.error('Error fetching job by short id:', error)
+    return []
+  }
+  return (data || []).map(mapDbJobDetail)
+}
+
+/**
+ * Every live listing that is allowed a JobPosting page, for the sitemap.
+ *
+ * lastModified is approved_at (falling back to first_seen_at), NOT updated_at:
+ * the nightly ingest rewrites every re-seen row's volatile columns whether or
+ * not anything changed, so updated_at moves daily for the whole board and
+ * would tell Google to recrawl everything every day.
+ */
+export async function getLiveJobPages(market = 'gb'): Promise<{ path: string; lastModified: Date }[]> {
+  const supabase = getSupabase()
+
+  const { data: excludedSources, error: sourcesError } = await supabase
+    .from('job_sources')
+    .select('key')
+    .eq('allow_jobposting', false)
+  // Fail CLOSED. If the exclusion list cannot be read (the migration not yet
+  // applied, or any other error), listing no job pages is recoverable on the
+  // next revalidation; listing aggregator-sourced ones is a terms breach.
+  if (sourcesError) {
+    console.error('Error fetching excluded job sources — listing no job pages:', sourcesError)
+    return []
+  }
+  const excluded = (excludedSources || []).map(r => r.key)
+
+  let query = supabase
+    .from('job_listings')
+    .select('id, title, profession, source, approved_at, first_seen_at')
+    .eq('market', market)
+    .or(freshnessFilter())
+    .not('profession', 'is', null)
+    .order('posted_at', { ascending: false, nullsFirst: false })
+    .limit(2000)
+  if (excluded.length) query = query.not('source', 'in', `(${excluded.join(',')})`)
+
+  const { data, error } = await query
+  if (error) {
+    console.error('Error fetching live job pages:', error)
+    return []
+  }
+
+  const pages: { path: string; lastModified: Date }[] = []
+  for (const row of data || []) {
+    const path = jobPath(row)
+    if (path) pages.push({ path, lastModified: new Date(row.approved_at || row.first_seen_at) })
+  }
+  return pages
 }

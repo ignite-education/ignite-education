@@ -72,12 +72,12 @@ export default async function JobBoardPage() {
     },
   ]
 
-  // NOTE: no JobPosting markup anywhere on this feature. There are no per-job
-  // pages to attach it to, and emitting it would feed listings into the Google
-  // Jobs widget — which renders the vacancy inside Google's own result and sends
-  // the click somewhere other than here, defeating the account gate. It would
-  // also conflict with source terms that forbid redistribution to competing
-  // aggregators.
+  // NOTE: no JobPosting markup on this page or the profession pages, and
+  // deliberately. Google requires exactly one posting per dedicated page and
+  // rejects it on lists. The markup lives on the per-job pages at
+  // /jobs/[professionSlug]/[jobSlug], one JobPosting each — see that route and
+  // "Job board" in docs/ARCHITECTURE.md for the eligibility rules (aggregator
+  // sources are excluded; the sign-in apply gate is unchanged).
 
   return (
     <>
