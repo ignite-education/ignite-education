@@ -628,8 +628,9 @@ null is a first-class state, not an error:
 | **Google Identity Services** | One Tap sign-in | Vite SPA + Next.js |
 | **Greenhouse / Lever / Ashby / Workable** | Public ATS job-board feeds — no keys, full descriptions, direct employers. Startup ATSs; they cover almost none of the large brands | API (`server/jobs/sources/`) |
 | **SmartRecruiters** | Public, vendor-documented Posting API. Two-phase, but its list call filters by country server-side, so a 4,783-posting global board costs 33 detail fetches | API (`server/jobs/sources/smartrecruiters.js`) |
-| **Workday / Eightfold / Oracle Recruiting Cloud** | Enterprise ATSs — public, unauthenticated, undocumented. The only route to Roche, Nike, LSEG, Mars, Netflix, M&S. Two-phase: one request per job for the description | API (`server/jobs/sources/`) |
-| **schema.org JobPosting** | Vendor-agnostic — any careers site publishing `JobPosting` as **JSON-LD or microdata**, read through its sitemap. British Airways, BBC and EY today. The most durable adapter, because the format is a published standard | Sitemap + JSON-LD/microdata |
+| **Workday / Eightfold / Oracle Recruiting Cloud** | Enterprise ATSs — public, unauthenticated, undocumented. The only route to Roche, Nike, LSEG, Mars, Netflix, M&S, Microsoft. Two-phase: one request per job for the description. Eightfold has two API shapes: `apply/v2` (Netflix) and the newer `pcsx` (Microsoft), which has no detail endpoint and hydrates from the advert page's JSON-LD instead, paced at ~6s a request because the tenant rate-limits hard | API (`server/jobs/sources/`) |
+| **Avature** | Enterprise CRM/ATS portal, server-rendered HTML with no API and no structured data. The list is the search page (12 tiles a request, each with a location — the early market gate), the description is the largest field element in the advert template. Bloomberg today | HTML (`server/jobs/sources/avature.js`) |
+| **schema.org JobPosting** | Vendor-agnostic — any careers site publishing `JobPosting` as **JSON-LD or microdata**, read through its sitemap or, for a small board with none, a listing page (`listUrl`). British Airways, BBC, EY, Currys and Macmillan today. The most durable adapter, because the format is a published standard | Sitemap or listing page + JSON-LD/microdata |
 | **Amazon Jobs** | In-house ATS, the one case discovery cannot solve. Single-phase with inline descriptions, so its whole UK board costs nine requests and no per-job fetch | API (`server/jobs/sources/amazon.js`) |
 | **Reed.co.uk** | UK job aggregation; its `graduate` flag is the best entry-level signal available. Key is not self-serve | API |
 
@@ -857,7 +858,7 @@ deploy. Adapters read their country identifier from `job_markets.source_params`.
 |---------|------|
 | Orchestrator + filter cascade + hydration | `server/jobs/index.js` |
 | Startup ATS adapters | `server/jobs/sources/{greenhouse,lever,ashby,workable,smartrecruiters}.js` |
-| Enterprise ATS adapters (two-phase) | `server/jobs/sources/{workday,eightfold,oracleOrc,jsonld}.js` |
+| Enterprise ATS adapters (two-phase) | `server/jobs/sources/{workday,eightfold,oracleOrc,avature,jsonld}.js` |
 | In-house ATS adapters (one employer each) | `server/jobs/sources/amazon.js` |
 | Aggregator adapters | `server/jobs/sources/reed.js` |
 | Board discovery | `server/jobs/lib/discover.js` + `scripts/discover-job-boards.mjs` |
@@ -991,11 +992,23 @@ exhausted and correctly report "no board found" for a company with a perfectly g
 real `fetchPage()`. The bar for adding one is deliberately high — an allowlisted company, a large
 board, and no other route — because a hand-written adapter per employer does not scale.
 
-**Boards we deliberately do not build.** Apple, Google, Microsoft, Meta, TikTok, Uber, LinkedIn
-and JD.com all block automated access to their job data (401/403/private GraphQL; LinkedIn's
-Greenhouse board holds only ATS test fixtures). Working around that would breach their terms, so
-`DENYLIST` in `lib/discover.js` refuses to probe them and says why. They stay allowlisted and are
-covered by the aggregator sweep only, where the employer has chosen to syndicate.
+**Boards we deliberately do not build.** Apple, Google, Meta, TikTok, Uber, LinkedIn and JD.com
+all block automated access to their job data (401/403/private GraphQL; LinkedIn's Greenhouse
+board holds only ATS test fixtures). Working around that would breach their terms, so `DENYLIST`
+in `lib/discover.js` refuses to probe them and says why. They stay allowlisted and are covered by
+the aggregator sweep only, where the employer has chosen to syndicate. Microsoft was on the list
+until October 2026, when its board moved to an Eightfold site whose robots.txt explicitly allows
+the search API and the advert pages — the denylist records *current* behaviour, so re-check an
+entry when a brand changes ATS. Outside the denylist, `job_companies.reason` records the brands
+that are not blocked by policy but still unreachable in practice: BT (SuccessFactors with a
+client-rendered search page and a robots-disallowed AJAX path), CHANEL (403), Tony Blair Institute
+(429), Civil Service Jobs (bot challenge page), and the Liberal Democrats (plain pages, no markup,
+a dozen roles — add by hand).
+
+**robots.txt is read with standard semantics.** `robotsAllows(origin, path)` takes the longest
+matching rule in the `User-agent: *` group, Allow winning ties. The earlier rule — any bare
+`Disallow: /` is a refusal — misread exactly the careful tenants: Avature and Eightfold both
+close the host with `Disallow: /` and then open `/careers` with an explicit Allow.
 
 #### Market matching
 
@@ -1136,12 +1149,15 @@ config change has no history at the new scope, so it re-baselines immediately.
 
 #### Coverage gap
 
-**`job_companies.reason` records why an uncovered company is uncovered.** Ten of them are not
-"not done yet" but "cannot be done from an ATS feed" — the eight DENYLIST brands, Bloomberg
-(Avature, plus a 403) and Comic Relief (BeApplied, authenticated API, no JobPosting markup). Without
-that written down, every sweep re-probes them and every reviewer re-asks. `allowed` is deliberately
-left alone: dropping a brand from the allowlist is a brand decision, and the eight become reachable
-again the moment an aggregator is ever accepted.
+**`job_companies.reason` records why an uncovered company is uncovered.** Most of them are not
+"not done yet" but "cannot be done from an ATS feed" — the seven DENYLIST brands, Comic Relief
+(BeApplied, authenticated API, no JobPosting markup), BT, CHANEL, Tony Blair Institute and the
+Liberal Democrats (see "Boards we deliberately do not build"). Without that written down, every
+sweep re-probes them and every reviewer re-asks. `allowed` is deliberately left alone: dropping a
+brand from the allowlist is a brand decision, and the blocked ones become reachable again the
+moment an aggregator is ever accepted. Bloomberg and Microsoft were on this list until October
+2026 and are now boards (`migrations/seed_job_board_oct_2026_boards.sql`), which is the other
+reason to keep the reasons specific: "Avature, no adapter" is a backlog item, "403" is not.
 
 ATS feeds are used almost exclusively by tech companies and digital agencies. A live probe of
 ~60 UK healthcare and renewable-energy employers found **zero** usable boards. So the ATS tier

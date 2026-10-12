@@ -21,6 +21,17 @@
  *     "jobUrlPattern":"/job/",              // substring or regex source
  *     "locationPattern":"/job/([^/-]+)-" }  // OPTIONAL, see below
  *
+ * OR, for a board with no sitemap, a listing page whose links are the adverts:
+ *   { "listUrl":"https://jobs.macmillan.org.uk/jobs/home/",
+ *     "jobUrlPattern":"/jobs/vacancy/" }
+ * Every href on that page matching jobUrlPattern becomes a work item, exactly
+ * as a sitemap entry would, minus the <lastmod>. It exists for small in-house
+ * boards (Macmillan is five vacancies on one page) that mark their adverts up
+ * perfectly but never publish a sitemap — the alternative was a per-site
+ * scraper for a board that produces a handful of roles a year. The listing
+ * page must carry every open advert; a paginated or JS-rendered listing needs
+ * a real adapter, not this.
+ *
  * TWO-PHASE, and the most extreme case of it: the "list" is a sitemap, so a
  * work item starts as nothing but a URL. Three consequences worth understanding:
  *
@@ -61,6 +72,29 @@ import {
 // A sitemap is one request for the whole board, so paging here slices a list we
 // already hold rather than making more requests.
 const PAGE_SIZE = 100
+
+/**
+ * Every advert link on a listing page, resolved to absolute URLs and
+ * de-duplicated. The listing-page counterpart of parseSitemap(): same output
+ * shape, no <lastmod>, so the age gate simply never fires early.
+ */
+export function parseListingPage(html, baseUrl, matcher) {
+  const seen = new Set()
+  const entries = []
+  for (const match of String(html).matchAll(/<a\b[^>]*\bhref=["']([^"'#]+)["']/gi)) {
+    let url
+    try {
+      url = new URL(decodeEntities(match[1]), baseUrl).toString()
+    } catch {
+      continue
+    }
+    if (matcher && !matcher.test(url)) continue
+    if (seen.has(url)) continue
+    seen.add(url)
+    entries.push({ url, lastmod: null })
+  }
+  return entries
+}
 
 /** Extract <loc>/<lastmod> pairs without taking on an XML parser. */
 function parseSitemap(xml) {
@@ -135,7 +169,7 @@ const VOID_ELEMENTS = new Set([
  * htmlToText() in ../lib/normalise.js: nesting depth is the only thing that
  * matters here and career-site markup is well-formed enough for it.
  */
-function elementAt(html, start) {
+export function elementAt(html, start) {
   const open = /^<([a-z][a-z0-9]*)\b[^>]*?(\/?)>/i.exec(html.slice(start))
   if (!open) return null
 
@@ -193,6 +227,15 @@ function readProp(scope, name) {
   return htmlToText(element.inner) || null
 }
 
+/** og:title, else the first h1 — the page's own idea of the job title. */
+export function pageTitle(html) {
+  const og = /<meta\b[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i.exec(html)?.[1]
+    || /<meta\b[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["']/i.exec(html)?.[1]
+  if (og) return decodeEntities(og).trim() || null
+  const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1]
+  return h1 ? htmlToText(h1) || null : null
+}
+
 /** A nested itemscope's inner markup, so its own itemprops can be read. */
 function readScope(scope, name) {
   return propElement(scope, name)?.inner || null
@@ -220,7 +263,12 @@ export function extractJobPostingMicrodata(html) {
     return null
   }
 
-  const title = readProp(scope, 'title')
+  // Not every tenant marks the title up. Currys' SuccessFactors board carries
+  // description, datePosted and jobLocation as microdata but no
+  // itemprop="title" at all; the Open Graph title (and failing that the h1) is
+  // the same string on every RMK template seen, so it stands in rather than
+  // dropping an otherwise complete advert.
+  const title = readProp(scope, 'title') || pageTitle(scope)
   // Taken as RAW HTML — hydrateOne() stores the markup and derives the text.
   //
   // The LONGEST rather than the first: BT publishes two description properties,
@@ -307,19 +355,13 @@ export default {
   requiresQuery: false,
 
   async fetchPage({ market, account, page, http, limiter }) {
-    const { sitemapUrl, jobUrlPattern, locationPattern } = account?.params || {}
-    if (!sitemapUrl) {
+    const { sitemapUrl, listUrl, jobUrlPattern, locationPattern } = account?.params || {}
+    if (!sitemapUrl && !listUrl) {
       throw new Error(
-        `jsonld board "${account?.account}" has no sitemapUrl in params — ` +
+        `jsonld board "${account?.account}" has no sitemapUrl or listUrl in params — ` +
         'run scripts/discover-job-boards.mjs to generate it'
       )
     }
-
-    // Only page 1 costs a request; later pages slice the cached list. The
-    // sitemap is re-read per page rather than cached across the run because a
-    // board rarely needs more than one page and adapters hold no state.
-    await limiter.wait()
-    const { data } = await http.get(sitemapUrl, { timeout: 30_000, responseType: 'text' })
 
     let matches
     try {
@@ -328,7 +370,21 @@ export default {
       throw new Error(`jsonld board "${account.account}": jobUrlPattern is not a valid regex`)
     }
 
-    const jobs = parseSitemap(data)
+    // Only page 1 costs a request; later pages slice the cached list. The
+    // sitemap is re-read per page rather than cached across the run because a
+    // board rarely needs more than one page and adapters hold no state.
+    await limiter.wait()
+    const { data } = await http.get(sitemapUrl || listUrl, { timeout: 30_000, responseType: 'text' })
+
+    // A listing page is read for its links; a sitemap for its <loc>s. Both end
+    // up as {url, lastmod} and nothing below cares which it was. A listing page
+    // needs jobUrlPattern — without it every nav link on the page is a "job".
+    if (!sitemapUrl && !matches) {
+      throw new Error(`jsonld board "${account.account}": listUrl needs a jobUrlPattern`)
+    }
+    const entries = sitemapUrl ? parseSitemap(data) : parseListingPage(data, listUrl, matches)
+
+    const jobs = entries
       .filter(e => !matches || matches.test(e.url))
       .map(e => ({ ...e, location: locationFromUrl(e.url, locationPattern) }))
       // The market gate, early. Only for boards that opted in with

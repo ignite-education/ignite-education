@@ -39,6 +39,7 @@ import smartrecruiters from './smartrecruiters.js'
 import workday from './workday.js'
 import eightfold from './eightfold.js'
 import oracleOrc from './oracleOrc.js'
+import avature from './avature.js'
 import amazon from './amazon.js'
 import jsonld from './jsonld.js'
 import reed from './reed.js'
@@ -59,6 +60,10 @@ export const ADAPTERS = {
   [workday.key]: workday,
   [eightfold.key]: eightfold,
   [oracleOrc.key]: oracleOrc,
+  // Also enterprise, but server-rendered HTML rather than an API: the list is
+  // the search page and the advert is read out of the page template. The only
+  // route to Bloomberg.
+  [avature.key]: avature,
   // In-house ATSs. One employer each and no discovery route to them, so they
   // only exist where the company is worth hand-writing an adapter for.
   [amazon.key]: amazon,

@@ -102,7 +102,7 @@ const BOARD_SOURCES = {
   },
   eightfold: {
     label: 'Eightfold',
-    hint: 'Needs the board host and the domain query parameter.',
+    hint: 'Needs the board host and the domain query parameter. Newer sites (Microsoft) need "api":"pcsx" — Find boards sets it.',
     params: { host: '', domain: '', location: 'United Kingdom' },
   },
   oracle_orc: {
@@ -110,9 +110,14 @@ const BOARD_SOURCES = {
     hint: 'Needs the Fusion pod host and the careers site number.',
     params: { host: '', siteNumber: 'CX_1' },
   },
+  avature: {
+    label: 'Avature',
+    hint: 'Server-rendered portal at <tenant>.avature.net/<portal>. 12 jobs per list request, so set pages to cover the board.',
+    params: { host: '', portal: 'careers' },
+  },
   jsonld: {
     label: 'Careers site (JobPosting)',
-    hint: 'Any careers site publishing schema.org JobPosting, read through its sitemap.',
+    hint: 'Any careers site publishing schema.org JobPosting, read through its sitemap — or, for a small board with no sitemap, a listUrl whose links match jobUrlPattern.',
     params: { sitemapUrl: '', jobUrlPattern: '/job/' },
   },
   amazon: {

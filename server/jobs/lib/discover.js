@@ -43,6 +43,7 @@ import { ADAPTERS } from '../sources/index.js'
 // it can) would seed boards that quietly return nothing. It handles both
 // serialisations — JSON-LD and microdata.
 import { extractJobPosting } from '../sources/jsonld.js'
+import { parseSearchPage } from '../sources/avature.js'
 import { normaliseCompany, slugify, matchesMarket } from './normalise.js'
 
 const USER_AGENT = 'IgniteEducationJobBot/1.0 (+https://ignite.education/jobs)'
@@ -64,7 +65,10 @@ const http = axios.create({
 export const DENYLIST = new Map([
   ['apple.com', 'jobs.apple.com API returns 401 to unauthenticated clients'],
   ['google.com', 'careers API is closed; scraping is against their terms'],
-  ['microsoft.com', 'careers search API blocks non-browser clients'],
+  // microsoft.com was here until 2026-10: the old jobs.careers.microsoft.com
+  // search API did block non-browser clients, but the board moved to Eightfold
+  // (apply.careers.microsoft.com) whose robots.txt explicitly allows the search
+  // API and the advert pages. See the pcsx notes in ../sources/eightfold.js.
   ['meta.com', 'careers is a private GraphQL endpoint'],
   ['tiktok.com', 'lifeattiktok API blocks non-browser clients'],
   ['uber.com', 'careers API returns 403 to automated clients'],
@@ -105,7 +109,9 @@ const MIN_DESCRIPTION_CHARS = 400
 
 /** Vendor fingerprints. `adapter` null means "we can detect it, we cannot ingest it yet". */
 const VENDORS = [
-  { key: 'greenhouse', adapter: 'greenhouse', pattern: /(?:boards|job-boards)\.greenhouse\.io\/([a-z0-9_-]+)/i },
+  // `.eu.` is Greenhouse's EU data-residency host (The Economist). Same board
+  // API, same token — only the careers-page link differs.
+  { key: 'greenhouse', adapter: 'greenhouse', pattern: /(?:boards|job-boards)(?:\.eu)?\.greenhouse\.io\/([a-z0-9_-]+)/i },
   { key: 'lever', adapter: 'lever', pattern: /jobs\.lever\.co\/([a-z0-9_-]+)/i },
   { key: 'ashby', adapter: 'ashby', pattern: /jobs\.ashbyhq\.com\/([a-z0-9_-]+)/i },
   { key: 'workable', adapter: 'workable', pattern: /apply\.workable\.com\/([a-z0-9_-]+)/i },
@@ -124,7 +130,9 @@ const VENDORS = [
   // which now works because extractJobPosting() reads the microdata these sites
   // publish rather than JSON-LD. See sources/jsonld.js.
   { key: 'successfactors', adapter: null, pattern: /(career\d*\.successfactors\.[a-z]+)/i },
-  { key: 'avature', adapter: null, pattern: /([a-z0-9-]+)\.avature\.net/i },
+  // Captures the tenant and, when the link carries one, the portal name
+  // ("careers" on Bloomberg; tenants can run several).
+  { key: 'avature', adapter: 'avature', pattern: /([a-z0-9-]+)\.avature\.net(?:\/([a-z0-9_-]+))?/i },
   { key: 'teamtailor', adapter: null, pattern: /([a-z0-9-]+)\.teamtailor\.com/i },
   { key: 'recruitee', adapter: null, pattern: /([a-z0-9-]+)\.recruitee\.com/i },
   { key: 'personio', adapter: null, pattern: /([a-z0-9-]+)\.jobs\.personio\.[a-z]+/i },
@@ -316,8 +324,10 @@ async function fetchCareersPages(domain, notes, careersUrl = null) {
       continue
     }
 
-    if (!robotsCache.has(origin)) robotsCache.set(origin, await robotsAllows(origin))
-    if (!robotsCache.get(origin)) {
+    // Cached per URL rather than per origin now that the path matters: a host
+    // that closes `/` and opens `/careers` answers differently for the two.
+    if (!robotsCache.has(url)) robotsCache.set(url, await robotsAllows(origin, new URL(url).pathname))
+    if (!robotsCache.get(url)) {
       // Only worth saying out loud for the typed URL. For a guessed one it is
       // noise — the admin never asked for that address to be tried.
       if (url === careersUrl) {
@@ -348,23 +358,48 @@ async function fetchCareersPages(domain, notes, careersUrl = null) {
   return pages
 }
 
-/** Conservative robots check: only the paths we actually fetch, only global rules. */
-async function robotsAllows(origin) {
+/**
+ * Does robots.txt let us fetch `path` on this origin? Only the global
+ * (`User-agent: *`) group is read — we are not a named crawler.
+ *
+ * Standard semantics, not the old "any bare Disallow: / is a refusal": the
+ * most specific (longest) matching rule wins, and Allow beats Disallow on a
+ * tie. The difference matters for exactly the sites that are careful about
+ * robots. Avature and Eightfold tenants both close the host with `Disallow: /`
+ * and then open the careers portal with `Allow: /careers` — the blanket rule
+ * was never about the pages we read, and refusing them meant Bloomberg and
+ * Microsoft read as "not crawlable" when their robots files say the opposite.
+ */
+async function robotsAllows(origin, path = '/') {
   try {
     const res = await http.get(`${origin}/robots.txt`, { responseType: 'text' })
     if (res.status !== 200 || typeof res.data !== 'string') return true
 
-    // Only the `User-agent: *` block matters — we are not a named crawler.
     const block = res.data.split(/user-agent:/i).find(s => s.trim().startsWith('*'))
     if (!block) return true
 
-    const disallows = [...block.matchAll(/^\s*disallow:\s*(\S*)/gim)].map(m => m[1])
-    // A bare "Disallow: /" is a blanket refusal. Anything narrower is about
-    // paths we do not touch.
-    return !disallows.includes('/')
+    const rules = [...block.matchAll(/^\s*(allow|disallow):\s*(\S*)/gim)]
+      .map(m => ({ allow: m[1].toLowerCase() === 'allow', pattern: m[2] }))
+      // An empty Disallow means "nothing is disallowed"; an empty Allow is noise.
+      .filter(r => r.pattern)
+      .filter(r => robotsPatternMatches(r.pattern, path))
+    if (!rules.length) return true
+
+    rules.sort((a, b) => (b.pattern.length - a.pattern.length) || (Number(b.allow) - Number(a.allow)))
+    return rules[0].allow
   } catch {
     return true
   }
+}
+
+/** robots.txt path patterns: `*` is a wildcard, a trailing `$` anchors the end. */
+function robotsPatternMatches(pattern, path) {
+  const anchored = pattern.endsWith('$')
+  const source = (anchored ? pattern.slice(0, -1) : pattern)
+    .split('*')
+    .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('.*')
+  return new RegExp(`^${source}${anchored ? '$' : ''}`).test(path)
 }
 
 // ---------------------------------------------------------------------------
@@ -376,6 +411,7 @@ async function buildCandidate(vendor, { company, domain, market }) {
     case 'workday': return workdayCandidate(vendor, { company, market })
     case 'eightfold': return eightfoldCandidate(vendor, { company, domain, market })
     case 'oracle_orc': return orcCandidate(vendor, { company, market })
+    case 'avature': return avatureCandidate(vendor, { company, market })
     default: return tokenCandidate(vendor.adapter, vendor.match[0], { company, market })
   }
 }
@@ -617,15 +653,69 @@ function describeFacets(all, location, postedIds) {
 async function eightfoldCandidate(vendor, { company, domain, market }) {
   const host = vendor.match[0].replace(/^https?:\/\//, '').replace(/\/.*$/, '')
   const location = market?.name || 'United Kingdom'
+  const params = { domain, start: 0, num: 20, location, sort_by: 'timestamp' }
 
-  const res = await http.get(`https://${host}/api/apply/v2/jobs`, {
-    params: { domain, start: 0, num: 20, location, sort_by: 'timestamp' },
+  const res = await http.get(`https://${host}/api/apply/v2/jobs`, { params })
+  if (res.status === 200 && res.data?.positions) {
+    const marketJobs = countInMarket(res.data.positions, p => (p.locations || [p.location]).join('; '), market)
+    return candidateRow('eightfold', slugify(company), company,
+      { host, domain, location }, res.data.count || 0, marketJobs, [])
+  }
+
+  // Newer Eightfold sites refuse v2 ("Not authorized for PCSX") and serve the
+  // same board under /api/pcsx/search instead — Microsoft is the live case.
+  // Seeded with api:"pcsx" so the adapter reads the right shape, and only if
+  // the advert pages carry the JSON-LD the pcsx path hydrates from.
+  if (res.status !== 401 && res.status !== 403) return null
+  const pcsx = await http.get(`https://${host}/api/pcsx/search`, { params })
+  const positions = pcsx.status === 200 ? pcsx.data?.data?.positions : null
+  if (!positions?.length) return null
+
+  const page = await http.get(`https://${host}/careers/job/${positions[0].id}`, {
+    params: { domain }, responseType: 'text',
   })
-  if (res.status !== 200 || !res.data?.positions) return null
+  const posting = typeof page.data === 'string' ? extractJobPosting(page.data) : null
+  if (!posting?.description) return null
 
-  const marketJobs = countInMarket(res.data.positions, p => (p.locations || [p.location]).join('; '), market)
+  const marketJobs = countInMarket(positions, p => (p.locations || [p.location]).join('; '), market)
   return candidateRow('eightfold', slugify(company), company,
-    { host, domain, location }, res.data.count || 0, marketJobs, [])
+    { host, domain, location, api: 'pcsx' }, pcsx.data?.data?.count || 0, marketJobs,
+    ['pcsx API — descriptions read from the advert pages\' JSON-LD'])
+}
+
+/**
+ * Avature: verify the portal's search page lists jobs, by calling the real
+ * adapter. The portal name is "careers" on every tenant seen, but a careers
+ * page link can carry a different one, so a fingerprinted name wins.
+ */
+async function avatureCandidate(vendor, { company, market }) {
+  const [tenant, linkedPortal] = vendor.match
+  if (!tenant) return null
+  const host = `${tenant}.avature.net`
+
+  const adapter = ADAPTERS.avature
+  for (const portal of [...new Set([linkedPortal, 'careers'].filter(Boolean))]) {
+    if (!(await robotsAllows(`https://${host}`, `/${portal}/SearchJobs/`))) continue
+    const account = { account: slugify(company), company, params: { host, portal }, markets: [market?.code || 'gb'] }
+    let listed
+    try {
+      listed = await adapter.fetchPage({
+        market: market || { code: 'gb', location_matchers: [], location_excluders: [] },
+        account, page: 1, http, limiter: { wait: async () => {} }, env: process.env,
+      })
+    } catch {
+      continue
+    }
+    // fetchPage already applied the market gate, so a page with no in-market
+    // tile is still a working board; the total tells us it exists.
+    const total = parseSearchPage((await http.get(`https://${host}/${portal}/SearchJobs/`, { responseType: 'text' })).data).total
+    if (!total) continue
+
+    return candidateRow('avature', slugify(company), company, { host, portal },
+      total, listed.items.length, ['server-rendered portal — 12 jobs per list request'],
+      Math.ceil(total / 12))
+  }
+  return null
 }
 
 /**
@@ -645,6 +735,7 @@ async function eightfoldHostProbe({ company, domain, market }) {
     `explore.jobs.${host}`,
     `jobs.${host}`,
     `careers.${host}`,
+    `apply.careers.${host}`,   // Microsoft's pcsx-era host
     `${label}.eightfold.ai`,
     `${label}.jobs.${tld}`,
   ])]
@@ -873,13 +964,18 @@ function sampleLocation(posting) {
 
 /** Slug candidates, tried only when the careers page yielded no fingerprint. */
 async function guessTokens({ company, domain, aliases, market, notes }) {
-  const label = registrableDomain(domain || '').split('.')[0]
+  const host = registrableDomain(domain || '')
+  const label = host.split('.')[0]
   const tokens = [...new Set([
     slugify(company),
     slugify(company).replace(/-/g, ''),
     normaliseCompany(company).replace(/\s+/g, ''),
     label,
     label.replace(/-/g, ''),
+    // The whole domain, dots and all: Ashby lets a company use it as the board
+    // name, and monday.com's is literally "monday.com" — which every slug
+    // above mangles.
+    host,
     ...aliases.map(slugify),
   ].filter(Boolean))]
 

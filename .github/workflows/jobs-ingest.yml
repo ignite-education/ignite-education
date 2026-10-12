@@ -97,7 +97,7 @@ jobs:
       - name: Ingest enterprise ATS feeds
         run: |
           ./.github/scripts/ingest.sh \
-            '{"sources":["workday","eightfold","oracle_orc","jsonld"],"maxSeconds":420}' \
+            '{"sources":["workday","eightfold","oracle_orc","avature","jsonld"],"maxSeconds":420}' \
             "$API/api/cron/ingest-jobs"
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
