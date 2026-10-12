@@ -16,10 +16,10 @@ const navTint = (color: string) =>
 const NAV_BOTTOM_LINE = 'inset 0 -1px 0 rgba(128, 128, 128, 0.35)'
 // Backdrop blur on the bar, so the section edge scrolling beneath it (and the
 // content) is softened rather than showing as a hard line through the tint.
-const NAV_BACKDROP_BLUR = 'blur(8px)'
+const NAV_BACKDROP_BLUR = 'blur(12px)'
 // How far (px) either side of the section boundary the tint fades from one
 // colour to the other, instead of switching at a hard stop.
-const NAV_SPLIT_FEATHER = 12
+const NAV_SPLIT_FEATHER = 24
 
 interface WelcomeScrollManagerProps {
   educationSection: React.ReactNode
