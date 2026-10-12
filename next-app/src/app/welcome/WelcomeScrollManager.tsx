@@ -10,6 +10,10 @@ import Navbar from '@/components/Navbar'
 const NAV_BG_ALPHA = 0.85
 const navTint = (color: string) =>
   color === 'white' ? `rgba(255, 255, 255, ${NAV_BG_ALPHA})` : `rgba(0, 0, 0, ${NAV_BG_ALPHA})`
+// 1px grey line along the bottom edge. A translucent mid-grey so it shows on
+// both the black and white sections; drawn as an inset shadow rather than a
+// border so the bar stays exactly 65px tall.
+const NAV_BOTTOM_LINE = 'inset 0 -1px 0 rgba(128, 128, 128, 0.35)'
 
 interface WelcomeScrollManagerProps {
   educationSection: React.ReactNode
@@ -228,7 +232,10 @@ export default function WelcomeScrollManager({
           Navbar's own `black` variant is solid, so the tint lives here). */}
       <div
         className="sticky top-0 z-50"
-        style={{ background: isMobile || isTablet ? navTint('black') : navBackground }}
+        style={{
+          background: isMobile || isTablet ? navTint('black') : navBackground,
+          boxShadow: NAV_BOTTOM_LINE,
+        }}
       >
         <Navbar
           logoClipPercentage={isMobile || isTablet ? 100 : logoClipPercentage}
