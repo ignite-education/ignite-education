@@ -80,11 +80,49 @@ export function jobPath({ id, title, profession }) {
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
+/**
+ * The private key as OpenSSL needs it: a PEM with real newlines.
+ *
+ * Every dashboard mangles a pasted PEM differently, and OpenSSL's answer to
+ * all of them is the same unhelpful `DECODER routines::unsupported`. Accept
+ * the shapes that actually turn up — the JSON file's value with literal \n,
+ * that value escaped once more by a shell or a secrets UI (\\n), the value
+ * with its JSON quotes still on, the whole key file pasted as one blob, and
+ * a base64 of the PEM — and reject anything that still does not look like a
+ * key, naming what was found so the fix is obvious from the log.
+ */
+export function normalisePrivateKey(raw) {
+  let key = String(raw || '').trim()
+  if (key.startsWith('{')) {
+    try { key = JSON.parse(key).private_key || '' } catch { /* fall through to the check below */ }
+  }
+  key = key.replace(/^['"]+|['"]+$/g, '')
+  key = key.replace(/\\\\n/g, '\n').replace(/\\n/g, '\n').replace(/\r/g, '')
+  if (!key.includes('-----BEGIN')) {
+    try {
+      const decoded = Buffer.from(key, 'base64').toString('utf8')
+      if (decoded.includes('-----BEGIN')) key = decoded
+    } catch { /* not base64 */ }
+  }
+  if (!/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]+-----END [A-Z ]*PRIVATE KEY-----/.test(key)) {
+    throw new Error(
+      `GOOGLE_INDEXING_PRIVATE_KEY is not a PEM private key (starts "${key.slice(0, 20)}", ` +
+      `${key.length} chars). Paste the private_key value from the service account's JSON file.`
+    )
+  }
+  return key.trim() + '\n'
+}
+
 function readCredentials() {
-  const email = process.env.GOOGLE_INDEXING_CLIENT_EMAIL
-  const key = process.env.GOOGLE_INDEXING_PRIVATE_KEY
-  if (!email || !key) return null
-  return { email, key: key.replace(/\\n/g, '\n') }
+  const rawKey = process.env.GOOGLE_INDEXING_PRIVATE_KEY
+  let email = process.env.GOOGLE_INDEXING_CLIENT_EMAIL
+  if (!rawKey) return null
+  // The whole JSON key file pasted into the key variable carries the email too.
+  if (!email && rawKey.trim().startsWith('{')) {
+    try { email = JSON.parse(rawKey).client_email } catch { /* reported below */ }
+  }
+  if (!email) return null
+  return { email, key: normalisePrivateKey(rawKey) }
 }
 
 function base64url(input) {
@@ -98,7 +136,12 @@ async function getAccessToken({ email, key }, { fetchImpl = fetch } = {}) {
   const claims = base64url(JSON.stringify({
     iss: email, scope: SCOPE, aud: TOKEN_URL, iat: now, exp: now + 3600,
   }))
-  const signature = crypto.createSign('RSA-SHA256').update(`${header}.${claims}`).sign(key, 'base64url')
+  let signature
+  try {
+    signature = crypto.createSign('RSA-SHA256').update(`${header}.${claims}`).sign(key, 'base64url')
+  } catch (error) {
+    throw new Error(`GOOGLE_INDEXING_PRIVATE_KEY could not be used to sign (${error.message}) — re-paste the private_key value from the JSON key file`)
+  }
   const assertion = `${header}.${claims}.${signature}`
 
   const res = await fetchImpl(TOKEN_URL, {
@@ -218,7 +261,13 @@ export async function notifyGoogleIndexing(supabase, { dryRun = false, log = con
   if (process.env.GOOGLE_INDEXING_ENABLED === 'false') {
     return { ...empty, skipped: true, reason: 'GOOGLE_INDEXING_ENABLED=false' }
   }
-  const credentials = readCredentials()
+  let credentials
+  try {
+    credentials = readCredentials()
+  } catch (error) {
+    console.error('[jobs] Google Indexing API credentials are unusable:', error.message)
+    return { ...empty, errors: 1, failed: error.message }
+  }
   if (!credentials) {
     log('ℹ️  [jobs] Google Indexing API not configured (GOOGLE_INDEXING_CLIENT_EMAIL / _PRIVATE_KEY) — skipping')
     return { ...empty, skipped: true, reason: 'no credentials' }
