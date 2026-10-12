@@ -3,24 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Navbar from '@/components/Navbar'
 
-// The sticky navbar's background. It follows the colour of the section
-// scrolling beneath it (and the boundary between two sections, pixel for
-// pixel), so this is just how opaque that tint is: 1 would be a solid bar,
-// 0 the old fully transparent one.
-const NAV_BG_ALPHA = 0.85
-const navTint = (color: string) =>
-  color === 'white' ? `rgba(255, 255, 255, ${NAV_BG_ALPHA})` : `rgba(0, 0, 0, ${NAV_BG_ALPHA})`
-// 1px grey line along the bottom edge. A translucent mid-grey so it shows on
-// both the black and white sections; drawn as an inset shadow rather than a
-// border so the bar stays exactly 65px tall.
-const NAV_BOTTOM_LINE = 'inset 0 -1px 0 rgba(128, 128, 128, 0.35)'
-// Backdrop blur on the bar, so the section edge scrolling beneath it (and the
-// content) is softened rather than showing as a hard line through the tint.
-const NAV_BACKDROP_BLUR = 'blur(12px)'
-// How far (px) either side of the section boundary the tint fades from one
-// colour to the other, instead of switching at a hard stop.
-const NAV_SPLIT_FEATHER = 24
-
 interface WelcomeScrollManagerProps {
   educationSection: React.ReactNode
   coursesSection: React.ReactNode
@@ -42,7 +24,6 @@ export default function WelcomeScrollManager({
 }: WelcomeScrollManagerProps) {
   const [logoClipPercentage, setLogoClipPercentage] = useState(100)
   const [invertLayers, setInvertLayers] = useState(false)
-  const [navBackground, setNavBackground] = useState(navTint('black'))
   const [isMobile, setIsMobile] = useState(false)
   const [isTablet, setIsTablet] = useState(false)
 
@@ -83,7 +64,7 @@ export default function WelcomeScrollManager({
   const footerRef = useRef<HTMLDivElement>(null)
 
   const calculateLogoClip = useCallback(() => {
-    if (!logoContainerRef.current) return { clipPercent: 100, invertLayers: false, navBackground: navTint('black') }
+    if (!logoContainerRef.current) return { clipPercent: 100, invertLayers: false }
 
     const navbarHeight = 65
 
@@ -108,10 +89,6 @@ export default function WelcomeScrollManager({
     let currentSectionColor = 'black' // Default when no sections overlap (navbar first appears over Education)
     let nextSectionColor: string | null = null
     let transitionProgress = 0
-    // Where the boundary between the two sections currently sits, in px from
-    // the top of the navbar — drives the background tint, which (unlike the
-    // logo clip) tracks it across the navbar's full height.
-    let boundaryY: number | null = null
 
     // Find which section(s) the navbar overlaps
     for (let i = 0; i < sectionBoundaries.length; i++) {
@@ -133,7 +110,6 @@ export default function WelcomeScrollManager({
           break
         } else if (sectionTop > navbarTop && sectionTop < navbarBottom) {
           // Section boundary entering from below — transitioning from previous to this
-          boundaryY = sectionTop
           if (sectionTop >= logoTop && sectionTop <= logoBottom) {
             transitionProgress = (logoBottom - sectionTop) / logoHeight
           } else if (sectionTop < logoTop) {
@@ -150,7 +126,6 @@ export default function WelcomeScrollManager({
           break
         } else if (sectionTop <= navbarTop && sectionBottom < navbarBottom) {
           // Section exiting from top — transitioning from this to next
-          boundaryY = sectionBottom
           if (sectionBottom >= logoTop && sectionBottom <= logoBottom) {
             transitionProgress = 1 - (sectionBottom - logoTop) / logoHeight
           } else if (sectionBottom > logoBottom) {
@@ -188,18 +163,9 @@ export default function WelcomeScrollManager({
       }
     }
 
-    // Background tint: the colour of the section beneath, fading from one
-    // colour to the other around the section boundary while one is crossing
-    // the navbar.
-    const navBackground =
-      nextSectionColor === null || nextSectionColor === currentSectionColor || boundaryY === null
-        ? navTint(currentSectionColor)
-        : `linear-gradient(to bottom, ${navTint(currentSectionColor)} ${boundaryY - NAV_SPLIT_FEATHER}px, ${navTint(nextSectionColor)} ${boundaryY + NAV_SPLIT_FEATHER}px)`
-
     return {
       clipPercent: Math.max(0, Math.min(100, clipPercent)),
-      invertLayers: shouldInvert,
-      navBackground
+      invertLayers: shouldInvert
     }
   }, [])
 
@@ -211,10 +177,9 @@ export default function WelcomeScrollManager({
     const handleScroll = () => {
       if (!ticking) {
         rafId = requestAnimationFrame(() => {
-          const { clipPercent, invertLayers, navBackground } = calculateLogoClip()
+          const { clipPercent, invertLayers } = calculateLogoClip()
           setLogoClipPercentage(clipPercent)
           setInvertLayers(invertLayers)
-          setNavBackground(navBackground)
           ticking = false
         })
         ticking = true
@@ -234,22 +199,13 @@ export default function WelcomeScrollManager({
 
   return (
     <div style={{ overflowX: 'clip' }}>
-      {/* Sticky Navbar — slightly translucent. On desktop the tint follows the
-          section beneath it; on mobile/tablet it's a plain black bar (the
-          Navbar's own `black` variant is solid, so the tint lives here). */}
-      <div
-        className="sticky top-0 z-50"
-        style={{
-          background: isMobile || isTablet ? navTint('black') : navBackground,
-          boxShadow: NAV_BOTTOM_LINE,
-          backdropFilter: NAV_BACKDROP_BLUR,
-          WebkitBackdropFilter: NAV_BACKDROP_BLUR,
-        }}
-      >
+      {/* Sticky Navbar — transparent, section backgrounds show through */}
+      <div className="sticky top-0 z-50">
         <Navbar
           logoClipPercentage={isMobile || isTablet ? 100 : logoClipPercentage}
           invertLayers={isMobile || isTablet ? false : invertLayers}
           logoContainerRef={logoContainerRef}
+          variant={isMobile || isTablet ? 'black' : 'default'}
         />
       </div>
 
