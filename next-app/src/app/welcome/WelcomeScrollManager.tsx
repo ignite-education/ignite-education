@@ -14,6 +14,12 @@ const navTint = (color: string) =>
 // both the black and white sections; drawn as an inset shadow rather than a
 // border so the bar stays exactly 65px tall.
 const NAV_BOTTOM_LINE = 'inset 0 -1px 0 rgba(128, 128, 128, 0.35)'
+// Backdrop blur on the bar, so the section edge scrolling beneath it (and the
+// content) is softened rather than showing as a hard line through the tint.
+const NAV_BACKDROP_BLUR = 'blur(8px)'
+// How far (px) either side of the section boundary the tint fades from one
+// colour to the other, instead of switching at a hard stop.
+const NAV_SPLIT_FEATHER = 12
 
 interface WelcomeScrollManagerProps {
   educationSection: React.ReactNode
@@ -182,12 +188,13 @@ export default function WelcomeScrollManager({
       }
     }
 
-    // Background tint: the colour of the section beneath, split at the
-    // section boundary while one is crossing the navbar.
+    // Background tint: the colour of the section beneath, fading from one
+    // colour to the other around the section boundary while one is crossing
+    // the navbar.
     const navBackground =
       nextSectionColor === null || nextSectionColor === currentSectionColor || boundaryY === null
         ? navTint(currentSectionColor)
-        : `linear-gradient(to bottom, ${navTint(currentSectionColor)} ${boundaryY}px, ${navTint(nextSectionColor)} ${boundaryY}px)`
+        : `linear-gradient(to bottom, ${navTint(currentSectionColor)} ${boundaryY - NAV_SPLIT_FEATHER}px, ${navTint(nextSectionColor)} ${boundaryY + NAV_SPLIT_FEATHER}px)`
 
     return {
       clipPercent: Math.max(0, Math.min(100, clipPercent)),
@@ -235,6 +242,8 @@ export default function WelcomeScrollManager({
         style={{
           background: isMobile || isTablet ? navTint('black') : navBackground,
           boxShadow: NAV_BOTTOM_LINE,
+          backdropFilter: NAV_BACKDROP_BLUR,
+          WebkitBackdropFilter: NAV_BACKDROP_BLUR,
         }}
       >
         <Navbar
