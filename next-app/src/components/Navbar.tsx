@@ -7,16 +7,33 @@ import { createClient, clearSupabaseCookies } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import lottieData from '../../public/icon-animation.json'
 
+const LOGO_BLACK = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_5.png'
+const LOGO_WHITE = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png'
+
+// Themed mode (see the `theme` prop): the whole bar swaps between a light and a
+// dark look to match the section beneath it, easing over 300ms, on a blurred
+// translucent tint. Modelled on harvey.ai's header.
+const THEME_EASE = '300ms cubic-bezier(0.3, 0.3, 0.3, 1)'
+const THEME_TINT = {
+  white: 'rgba(255, 255, 255, 0.72)',
+  black: 'rgba(0, 0, 0, 0.6)',
+} as const
+const THEME_BLUR = 'blur(16px)'
+
 interface NavbarProps {
   logoClipPercentage?: number
   invertLayers?: boolean
   logoContainerRef?: RefObject<HTMLDivElement | null>
   variant?: 'default' | 'black' | 'frosted'
+  /** The colour of the section currently beneath the bar. When set, the bar
+   *  takes a matching translucent tint and the logo crossfades to contrast
+   *  with it, instead of the clip-path split driven by `logoClipPercentage`. */
+  theme?: 'white' | 'black'
   hideLogo?: boolean
   noPaddingBottom?: boolean
 }
 
-export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef, variant = 'default', hideLogo = false, noPaddingBottom = false }: NavbarProps) {
+export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef, variant = 'default', theme, hideLogo = false, noPaddingBottom = false }: NavbarProps) {
   // For frosted variant, always show black logo (invert layers to put black on top)
   // For frosted variant, always show black logo (invert layers to put black on top)
   const effectiveInvertLayers = variant === 'frosted' ? true : invertLayers
@@ -75,7 +92,15 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
   }, [])
 
   return (
-    <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-[#E5E5E7]/70 backdrop-blur-md' : ''}>
+    <div
+      className={theme ? '' : variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-[#E5E5E7]/70 backdrop-blur-md' : ''}
+      style={theme ? {
+        backgroundColor: THEME_TINT[theme],
+        backdropFilter: THEME_BLUR,
+        WebkitBackdropFilter: THEME_BLUR,
+        transition: `background-color ${THEME_EASE}`,
+      } : undefined}
+    >
       {/* 15px padding either side of a 35px row: the navbar is 65px tall at every breakpoint. */}
       <div className={`px-6 md:px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
         {/* Logo - links to home (hidden on pages with centered logo).
@@ -102,7 +127,39 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
             </div>
             {/* Desktop: text logo with clip-path transitions */}
             <div ref={logoContainerRef} className="logo-container hidden md:block" style={{ position: 'relative', width: '99px', height: 'auto' }}>
-              {!effectiveInvertLayers ? (
+              {theme ? (
+                <>
+                  {/* Themed: both logos stacked, crossfading so the bar's
+                      colour swap reads as one eased change. */}
+                  <img
+                    src={LOGO_BLACK}
+                    alt="Ignite Education home"
+                    className="logo-layer"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '99px',
+                      height: 'auto',
+                      opacity: theme === 'white' ? 1 : 0,
+                      transition: `opacity ${THEME_EASE}`,
+                    }}
+                  />
+                  <img
+                    src={LOGO_WHITE}
+                    alt=""
+                    aria-hidden="true"
+                    className="logo-layer"
+                    style={{
+                      position: 'relative',
+                      width: '99px',
+                      height: 'auto',
+                      opacity: theme === 'black' ? 1 : 0,
+                      transition: `opacity ${THEME_EASE}`,
+                    }}
+                  />
+                </>
+              ) : !effectiveInvertLayers ? (
                 <>
                   {/* Standard order for BLACK->WHITE transitions */}
                   {/* Black logo - clips from top, shows bottom portion */}
