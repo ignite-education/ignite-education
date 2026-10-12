@@ -46,7 +46,7 @@ status="$(
 }
 
 echo "HTTP ${status}"
-jq '{skipped, totals, runs: [.runs[]? | {label, status, note, fetched: .stats.fetched, inserted: .stats.inserted}]}' \
+jq '{skipped, totals, indexing, runs: [.runs[]? | {label, status, note, fetched: .stats.fetched, inserted: .stats.inserted}]}' \
   "${body}" || cat "${body}"
 
 # 1. Ingest disabled server-side.
@@ -73,6 +73,22 @@ failed="$(jq -r '[.runs[]? | select(.status == "failed") | "\(.label): \(.error 
 if [ -n "${failed}" ]; then
   echo "::error::Source(s) failed: ${failed}"
   exit 1
+fi
+
+# The Google Indexing API step (server/jobs/lib/googleIndexing.js) runs last
+# and never fails the ingest by design, so its outcome has to be surfaced here
+# or a misconfigured service account is invisible for weeks. Skipping on
+# missing credentials is legitimate before the rollout is finished; a
+# per-call failure or a stopped run (403 = not a Search Console owner, 429 =
+# quota) is a warning worth reading.
+indexing_skipped="$(jq -r '.indexing.reason // empty' "${body}")"
+indexing_failed="$(jq -r '.indexing.failed // .indexing.stopped // empty' "${body}")"
+if [ -n "${indexing_failed}" ]; then
+  echo "::warning::Google Indexing API step did not complete: ${indexing_failed}"
+elif [ -n "${indexing_skipped}" ]; then
+  echo "::notice::Google Indexing API step skipped: ${indexing_skipped}"
+elif [ "$(jq -r '.indexing.errors // 0' "${body}")" -gt 0 ]; then
+  echo "::warning::Google Indexing API: $(jq -r '.indexing.errors' "${body}") call(s) failed — see index_notify_error on the affected job_listings rows"
 fi
 
 # Not a failure — a partial run is the deliberate outcome of the deadline or the
