@@ -76,6 +76,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
 
   return (
     <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-[#E5E5E7]/70 backdrop-blur-md' : ''}>
+      {/* 15px padding either side of a 35px row: the navbar is 65px tall at every breakpoint. */}
       <div className={`px-6 md:px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
         {/* Logo - links to home (hidden on pages with centered logo).
             Targets /welcome, not "/": the apex root permanently redirects there,
@@ -88,7 +89,8 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
         {hideLogo ? (
           <div className="w-[35px] md:w-[99px]" />
         ) : (
-          <Link href="/welcome" className="inline-block">
+          // Fixed at 35px to match the sign-in area; the 99px-wide text logo is ~36px tall and overflows by half a pixel.
+          <Link href="/welcome" className="flex items-center h-[35px]">
             {/* Mobile: animated square icon — Lottie canvas is 600x600 with ~15% internal padding, so we overflow-clip it */}
             <div className="md:hidden w-[33px] h-[33px] overflow-hidden">
               <Lottie
@@ -169,7 +171,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
 
         {/* Right side - Sign In button by default, swaps to avatar once auth confirms signed in */}
         <div
-          className="flex items-center justify-end w-[85px] h-[35px] md:h-[41px] transition-opacity duration-300 ease-out"
+          className="flex items-center justify-end w-[85px] h-[35px] transition-opacity duration-300 ease-out"
           style={{ opacity: authLoaded ? 1 : 0 }}
         >
           {authLoaded && (user ? (
@@ -178,12 +180,12 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
                 <img
                   src={profilePicture}
                   alt="Profile"
-                  className="object-cover rounded-sm w-[35px] h-[35px] md:w-[41px] md:h-[41px]"
+                  className="object-cover rounded-sm w-[35px] h-[35px]"
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <div
-                  className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm w-[35px] h-[35px] md:w-[41px] md:h-[41px]"
+                  className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm w-[35px] h-[35px]"
                 >
                   {firstName?.charAt(0).toUpperCase() || '?'}
                 </div>
@@ -192,7 +194,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
           ) : (
             <Link
               href="/sign-in"
-              className="px-5 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors flex items-center justify-center whitespace-nowrap h-[35px] md:h-auto md:py-2"
+              className="px-5 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors flex items-center justify-center whitespace-nowrap h-[35px]"
               style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', textAlign: 'center' }}
             >
               Sign In

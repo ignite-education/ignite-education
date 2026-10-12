@@ -75,7 +75,7 @@ export default function WelcomeScrollManager({
   const calculateLogoClip = useCallback(() => {
     if (!logoContainerRef.current) return { clipPercent: 100, invertLayers: false, navBackground: navTint('black') }
 
-    const navbarHeight = 73
+    const navbarHeight = 65
 
     // Get logo's actual vertical position in viewport
     const logoRect = logoContainerRef.current.getBoundingClientRect()
@@ -114,7 +114,7 @@ export default function WelcomeScrollManager({
       const navbarTop = 0
       const navbarBottom = navbarHeight
 
-      // Check if section overlaps navbar in viewport (0-73px range)
+      // Check if section overlaps navbar in viewport (0-65px range)
       if (sectionBottom > navbarTop && sectionTop < navbarBottom) {
         if (sectionTop <= navbarTop && sectionBottom >= navbarBottom) {
           // Navbar fully within this section
