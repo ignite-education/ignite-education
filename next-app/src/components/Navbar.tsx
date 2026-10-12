@@ -15,8 +15,8 @@ const LOGO_WHITE = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/p
 // translucent tint. Modelled on harvey.ai's header.
 const THEME_EASE = '300ms cubic-bezier(0.3, 0.3, 0.3, 1)'
 const THEME_TINT = {
-  white: 'rgba(255, 255, 255, 0.72)',
-  black: 'rgba(0, 0, 0, 0.6)',
+  white: 'rgba(255, 255, 255, 0.6)',
+  black: 'rgba(0, 0, 0, 0.5)',
 } as const
 const THEME_BLUR = 'blur(16px)'
 
