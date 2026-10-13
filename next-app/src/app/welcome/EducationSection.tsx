@@ -11,6 +11,14 @@ const BACKGROUND_VIDEO_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-bg.mp4'
 // Black tint over the footage so the white heading and bullets stay readable.
 const OVERLAY_OPACITY = 0.45
+// The video itself fades up to this rather than fully opaque, so a little of
+// the black ground shows through and the footage sits further back.
+const VIDEO_OPACITY = 0.8
+// The sticky navbar (see WelcomeScrollManager / Navbar) is 65px tall and sits
+// in flow above this section. The wrapper is pulled up under it by the same
+// amount so the footage shows through the bar's translucent blur; the content
+// is padded back down so nothing moves.
+const NAVBAR_HEIGHT = 65
 
 // The video is never in the SSR HTML. It mounts (and starts buffering) only
 // once the section is within half a viewport, and plays only once the section
@@ -191,7 +199,10 @@ export default function EducationSection() {
   }
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative', background: 'black', overflow: 'hidden' }}>
+    <div
+      ref={wrapperRef}
+      style={{ position: 'relative', background: 'black', overflow: 'hidden', marginTop: -NAVBAR_HEIGHT, paddingTop: NAVBAR_HEIGHT }}
+    >
       {videoPhase !== 'idle' && (
         <video
           ref={videoRef}
@@ -214,7 +225,7 @@ export default function EducationSection() {
             height: '100%',
             objectFit: 'cover',
             pointerEvents: 'none',
-            opacity: videoVisible ? 1 : 0,
+            opacity: videoVisible ? VIDEO_OPACITY : 0,
             transition: 'opacity 600ms ease-out',
           }}
         />
