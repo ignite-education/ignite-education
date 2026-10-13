@@ -7480,10 +7480,24 @@ app.get('/api/admin/referrals', verifyAdmin, async (req, res) => {
 // it used to render the literal string "Email not accessible" for every row.
 app.get('/api/admin/users', verifyAdmin, async (req, res) => {
   try {
-    const { data: profiles, error } = await supabase
+    // signup_source arrives with a hand-applied migration
+    // (migrations/add_signup_source.sql). Until it has run, Postgres rejects
+    // the whole select (42703, undefined column) — which blanked the entire
+    // user list once. Degrade to the old shape instead: every row still
+    // renders, the source just reads "Unknown".
+    const COLUMNS = 'id, first_name, last_name, role, created_at, enrolled_course, username, is_public';
+    let { data: profiles, error } = await supabase
       .from('users')
-      .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public, signup_source')
+      .select(`${COLUMNS}, signup_source`)
       .order('created_at', { ascending: false });
+
+    if (error?.code === '42703') {
+      console.warn('users.signup_source missing — run migrations/add_signup_source.sql');
+      ({ data: profiles, error } = await supabase
+        .from('users')
+        .select(COLUMNS)
+        .order('created_at', { ascending: false }));
+    }
 
     if (error) throw error;
 

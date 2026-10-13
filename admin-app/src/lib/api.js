@@ -1303,10 +1303,21 @@ export async function getAllUsers() {
     console.warn('Falling back to direct user query (no emails):', error.message);
   }
 
-  const { data, error } = await supabase
+  // Same shape as the API, including the retry without signup_source for a
+  // database where migrations/add_signup_source.sql has not been run yet.
+  const COLUMNS = 'id, first_name, last_name, role, created_at, enrolled_course, username, is_public';
+  let { data, error } = await supabase
     .from('users')
-    .select('id, first_name, last_name, role, created_at, enrolled_course, username, is_public, signup_source')
+    .select(`${COLUMNS}, signup_source`)
     .order('created_at', { ascending: false });
+
+  if (error?.code === '42703') {
+    console.warn('users.signup_source missing — run migrations/add_signup_source.sql');
+    ({ data, error } = await supabase
+      .from('users')
+      .select(COLUMNS)
+      .order('created_at', { ascending: false }));
+  }
 
   if (error) {
     console.error('Error fetching users:', error);
