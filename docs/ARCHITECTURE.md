@@ -452,9 +452,10 @@ optimized. SVGs still need `unoptimized` — the optimizer rejects SVG unless
 so `next-app/public` resolves on the apex, but Supabase remains the convention.
 
 **Video follows the same rule.** Section 2 of `/welcome` (`EducationSection.tsx`)
-is a two-column layout on black: heading and promises on the left, a portrait
-video (720x1280, muted, audio-stripped, ~1 MB, rounded corners) on the right,
-stacking under the text on mobile. The clip lives in the same `assets` bucket,
+is a two-column layout on black: heading and a row of three grey promise cards
+on the left (the row slides in from the right, scroll-linked), a portrait
+centre-crop of the office clip (404x720, muted, audio-stripped, ~0.45 MB,
+rounded corners) on the right, stacking under the text on mobile. The clip lives in the same `assets` bucket,
 uploaded with `node --env-file=.env scripts/upload-asset.mjs <file>
 <bucket-path>` (one-year `cacheControl`, so bump the filename when replacing).
 The `<video>` is server-rendered with `preload="auto"` so its first frame is

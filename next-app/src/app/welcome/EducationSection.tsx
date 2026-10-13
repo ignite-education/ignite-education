@@ -2,16 +2,24 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-// Portrait clip for the right column (720x1280, 24fps, no audio, ~1 MB).
-// Hosted in the public Supabase `assets` bucket like every other welcome-page
-// image — see "Static images on public pages" in docs/ARCHITECTURE.md. Upload
-// a replacement with scripts/upload-asset.mjs and bump the filename: the bucket
-// serves a one-year cache-control, so the same path would keep the old bytes.
+// Portrait clip for the right column: a centred 9:16 crop of the office
+// footage (404x720, 30fps, no audio, ~1 MB). Hosted in the public Supabase
+// `assets` bucket like every other welcome-page image — see "Static images on
+// public pages" in docs/ARCHITECTURE.md. Upload a replacement with
+// scripts/upload-asset.mjs and bump the filename: the bucket serves a one-year
+// cache-control, so the same path would keep the old bytes.
 const VIDEO_URL =
-  'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait.mp4'
+  'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-crop.mp4'
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 16
+const CARD_BG = '#1C1C1E'
+const CARD_RADIUS = 16
+// The card row starts this far to the right (as a fraction of the viewport
+// width) when it enters at the bottom of the screen, and settles into place
+// by the time its top reaches CARDS_SETTLE_AT of the viewport height.
+const CARDS_OFFSET_VW = 0.3
+const CARDS_SETTLE_AT = 0.45
 
 // The <video> is server-rendered with preload="auto" so its first frame is
 // already there when the user reaches the section (the clip is fetched during
@@ -30,8 +38,7 @@ export default function EducationSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [shouldPlay, setShouldPlay] = useState(false)
-  const [visiblePromises, setVisiblePromises] = useState<Set<number>>(new Set())
-  const promiseRefs = useRef<(HTMLDivElement | null)[]>([])
+  const cardsRowRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const update = () => {
@@ -51,27 +58,47 @@ export default function EducationSection() {
     }
   }, [])
 
-  // Each promise triggers independently when it crosses 40% from the bottom
+  // Scroll-linked slide: the card row sits off to the right while it is below
+  // the fold and glides left into place as the user scrolls it up the screen
+  // (and back out if they scroll up). Written straight to the DOM from a
+  // RAF-throttled passive scroll listener, so no React re-render per frame.
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const idx = Number((entry.target as HTMLElement).dataset.promiseIdx)
-            setVisiblePromises((prev) => new Set(prev).add(idx))
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { rootMargin: isMobile ? '0px 0px -30% 0px' : '0px 0px -40% 0px', threshold: 0 }
-    )
+    const row = cardsRowRef.current
+    if (!row) return
 
-    promiseRefs.current.forEach((el) => {
-      if (el) observer.observe(el)
-    })
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      row.style.transform = 'none'
+      row.style.opacity = '1'
+      return
+    }
 
-    return () => observer.disconnect()
-  }, [isMobile])
+    let rafId: number | null = null
+    const update = () => {
+      rafId = null
+      const vh = window.innerHeight
+      const top = row.getBoundingClientRect().top
+      const start = vh
+      const end = vh * CARDS_SETTLE_AT
+      const raw = (start - top) / (start - end)
+      const p = Math.min(1, Math.max(0, raw))
+      const eased = 1 - Math.pow(1 - p, 3)
+      const offset = (1 - eased) * window.innerWidth * CARDS_OFFSET_VW
+      row.style.transform = `translate3d(${offset.toFixed(1)}px, 0, 0)`
+      row.style.opacity = (0.3 + 0.7 * eased).toFixed(3)
+    }
+    const schedule = () => {
+      if (rafId === null) rafId = requestAnimationFrame(update)
+    }
+
+    update()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+    }
+  }, [])
 
   // One-shot observer: start playback once ~30% of the video is on screen,
   // then disconnect so the clip plays exactly once per page view.
@@ -219,35 +246,46 @@ export default function EducationSection() {
           gridTemplateColumns: isMobile ? undefined : 'minmax(0, 1fr) auto',
           alignItems: isMobile ? 'stretch' : 'center',
           columnGap: isTablet ? '3rem' : '5rem',
-          rowGap: '4rem',
+          rowGap: '3rem',
         }}
       >
-        {/* Left column: heading + promises */}
+        {/* Left column: heading + promise cards */}
         <div style={{ minWidth: 0 }}>
-          <h2
-            className="text-4xl md:text-5xl font-bold leading-tight"
-            style={{ marginBottom: isMobile ? '3rem' : '3.5rem' }}
-          >
+          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
               {renderHeading()}
             </span>
           </h2>
 
-          <div className="auth-promises-list" style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '2.25rem' : '2rem' }}>
+          {/* Promises: a row of three grey cards that slides in from the right on scroll */}
+          <div
+            ref={cardsRowRef}
+            className="auth-promises-list text-white"
+            style={{
+              display: 'grid',
+              // Three across only where the left column is wide enough.
+              gridTemplateColumns: isMobile || isTablet ? '1fr' : 'repeat(3, minmax(0, 1fr))',
+              gap: isMobile ? '1rem' : '1.5rem',
+              marginTop: isMobile ? '2.5rem' : '3rem',
+              // Server-rendered already offset, so there is no jump when the
+              // scroll listener takes over on hydration.
+              transform: `translate3d(${CARDS_OFFSET_VW * 100}vw, 0, 0)`,
+              opacity: 0.3,
+              willChange: 'transform, opacity',
+            }}
+          >
             {PROMISES.map((promise, idx) => (
               <div
                 key={idx}
-                ref={(el) => { promiseRefs.current[idx] = el }}
                 data-promise-idx={idx}
                 style={{
+                  background: CARD_BG,
+                  borderRadius: CARD_RADIUS,
+                  padding: isMobile ? '1.75rem' : '2rem',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'flex-start',
                   gap: '1.25rem',
-                  opacity: visiblePromises.has(idx) ? 1 : 0,
-                  transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(15px)',
-                  // Delay lives inside the shorthand: React warns when `transition`
-                  // and `transitionDelay` are set together on the same element.
-                  transition: `opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 600}ms, transform 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 600}ms`,
                 }}
               >
                 <img
@@ -255,13 +293,13 @@ export default function EducationSection() {
                   alt=""
                   width={42}
                   height={42}
-                  style={{ width: '42px', height: '42px', flexShrink: 0, marginTop: '-2px' }}
+                  style={{ width: '42px', height: '42px' }}
                 />
                 <div>
                   <div className="text-xl font-semibold text-white mb-2">
                     {promise.title}
                   </div>
-                  <div className="text-base text-white font-normal">
+                  <div className="text-base text-white font-normal" style={{ opacity: 0.85 }}>
                     {promise.desc}
                   </div>
                 </div>
@@ -270,11 +308,13 @@ export default function EducationSection() {
           </div>
         </div>
 
-        {/* Right column: portrait video (below the text on mobile) */}
-        <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end' }}>
+        {/* Right column: portrait video (below the text on mobile). Sits above
+            the card row so the cards slide in from behind it. */}
+        <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end', position: 'relative', zIndex: 1 }}>
           {video}
         </div>
       </div>
+
     </section>
   )
 }
