@@ -29,7 +29,7 @@ const VIDEO_RADIUS = 16
 const CARD_BG = '#F6F6F6'
 const CARD_RADIUS = 16
 const CARD_GAP = 20
-const CARD_SIZE = 224
+const CARD_SIZE = 212
 // Desktop only: the row of three fixed-size cards can be wider than the left
 // column, in which case its tail runs under the video. As the row scrolls up
 // the viewport it shifts left by exactly that overflow, settling once its top
@@ -307,7 +307,7 @@ export default function EducationSection() {
               gridTemplateColumns: isRow ? undefined : '1fr',
               gap: isRow ? CARD_GAP : 16,
               width: isRow ? 'max-content' : undefined,
-              marginTop: isMobile ? '2.5rem' : '3rem',
+              marginTop: isMobile ? '3rem' : '4rem',
               willChange: isRow ? 'transform' : undefined,
             }}
           >
@@ -322,11 +322,11 @@ export default function EducationSection() {
                   background: CARD_BG,
                   color: 'black',
                   borderRadius: CARD_RADIUS,
-                  padding: '18px',
+                  padding: isRow ? '16px' : '18px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '1rem',
+                  gap: '0.75rem',
                 }}
               >
                 <img
@@ -334,13 +334,13 @@ export default function EducationSection() {
                   alt=""
                   width={32}
                   height={32}
-                  style={{ width: '32px', height: '32px' }}
+                  style={{ width: isRow ? '28px' : '32px', height: isRow ? '28px' : '32px' }}
                 />
                 <div>
                   <div className="font-semibold" style={{ fontSize: '20px', lineHeight: '25px', marginBottom: '6px' }}>
                     {promise.title}
                   </div>
-                  <div style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: isRow ? '0.8rem' : '0.85rem', lineHeight: 1.35 }}>
                     {promise.desc}
                   </div>
                 </div>

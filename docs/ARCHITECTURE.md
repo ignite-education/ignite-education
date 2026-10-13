@@ -452,7 +452,7 @@ optimized. SVGs still need `unoptimized` — the optimizer rejects SVG unless
 so `next-app/public` resolves on the apex, but Supabase remains the convention.
 
 **Video follows the same rule.** Section 2 of `/welcome` (`EducationSection.tsx`)
-is a two-column layout on black: heading and three 224px promise cards in the
+is a two-column layout on black: heading and three 212px promise cards in the
 course-card style (#F6F6F6, black text) on the left, and on the right a
 510px-wide panel looping a 648x720 centre-crop of the office clip (muted,
 audio-stripped, ~0.65 MB). On desktop the panel is absolutely positioned to
