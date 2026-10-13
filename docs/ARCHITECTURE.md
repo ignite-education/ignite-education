@@ -455,10 +455,10 @@ so `next-app/public` resolves on the apex, but Supabase remains the convention.
 is a two-column layout on black: heading and three 212px promise cards in the
 course-card style (#F6F6F6, black text) on the left, and on the right a
 510px-wide panel looping an 810x900 centre-crop of the office clip (muted,
-audio-stripped, ~1.4 MB). On desktop the panel is absolutely positioned to
-span the section's full height, and the section is pulled 65px up under the
-sticky navbar so the footage shows through the bar's translucent blur; on
-tablet and mobile the video is an in-flow rounded box and everything stacks. On
+audio-stripped, ~1.4 MB, rounded corners). On desktop the box is absolutely
+positioned to span the section's content height, inset by the section's 4vh
+padding top and bottom and the 2.5rem gutter on the right; on tablet and mobile
+the video is an in-flow rounded box and everything stacks. On
 desktop the fixed-size card row can be wider than the left column, so its tail
 sits under the video; a scroll-linked transform shifts the row left by exactly
 that overflow as it rises up the viewport, and a row that fits never moves. The section's left padding is computed to put the heading on the same

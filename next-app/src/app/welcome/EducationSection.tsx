@@ -13,14 +13,9 @@ import { useState, useEffect, useRef } from 'react'
 const VIDEO_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide-v3.mp4'
 const VIDEO_WIDTH = 510
-// On desktop the panel also covers the 2.5rem right gutter so it touches the
-// viewport edge; the grid still reserves only VIDEO_WIDTH for it.
-const GUTTER = 40
-// The sticky navbar (see WelcomeScrollManager / Navbar) is 65px tall and sits
-// in flow above this section. On desktop the section is pulled up under it by
-// that amount and the video panel spans the section's full height, so the
-// footage shows through the bar's translucent blur.
-const NAVBAR_HEIGHT = 65
+// Vertical padding of the section on desktop; the video panel is inset by
+// the same amount top and bottom.
+const SECTION_PAD_Y = '4vh'
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 16
@@ -225,16 +220,17 @@ export default function EducationSection() {
       aria-hidden="true"
       tabIndex={-1}
       style={isRow ? {
-        // Desktop: a panel the full height of the section (navbar included),
-        // running off the right edge of the viewport.
+        // Desktop: a box inset by the section padding top and bottom and by
+        // the gutter on the right, spanning the section's content height.
         position: 'absolute',
-        top: 0,
-        bottom: 0,
-        right: 0,
-        width: (isWide ? VIDEO_WIDTH : 440) + GUTTER,
-        height: '100%',
+        top: SECTION_PAD_Y,
+        bottom: SECTION_PAD_Y,
+        right: '2.5rem',
+        width: isWide ? VIDEO_WIDTH : 440,
+        // Explicit: a replaced element ignores `bottom` when height is auto.
+        height: `calc(100% - 2 * ${SECTION_PAD_Y})`,
         objectFit: 'cover',
-        borderBottomLeftRadius: VIDEO_RADIUS,
+        borderRadius: VIDEO_RADIUS,
         background: '#111',
         pointerEvents: 'none',
         zIndex: 1,
@@ -260,11 +256,10 @@ export default function EducationSection() {
       className="relative auth-section-2"
       style={{
         background: 'black',
-        marginTop: isRow ? -NAVBAR_HEIGHT : undefined,
-        paddingTop: isMobile ? '6rem' : isRow ? `calc(4vh + ${NAVBAR_HEIGHT}px)` : '4vh',
-        paddingBottom: isMobile ? '4rem' : '4vh',
+        paddingTop: isMobile ? '6rem' : SECTION_PAD_Y,
+        paddingBottom: isMobile ? '4rem' : SECTION_PAD_Y,
         // Section height on desktop (content is centred inside it).
-        minHeight: isRow ? `calc(min(78vh, 740px) + 8vh + ${NAVBAR_HEIGHT}px)` : undefined,
+        minHeight: isRow ? `calc(min(78vh, 740px) + 2 * ${SECTION_PAD_Y})` : undefined,
         display: isRow ? 'flex' : undefined,
         flexDirection: isRow ? 'column' : undefined,
         justifyContent: isRow ? 'center' : undefined,
