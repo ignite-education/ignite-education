@@ -10,20 +10,20 @@ import { useState, useEffect, useRef } from 'react'
 const BACKGROUND_VIDEO_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-bg.mp4'
 // Black tint over the footage so the white heading and bullets stay readable.
-const OVERLAY_OPACITY = 0.45
-// The video itself fades up to this rather than fully opaque, so a little of
+const OVERLAY_OPACITY = 0.6
+// The video itself is shown at this rather than fully opaque, so a little of
 // the black ground shows through and the footage sits further back.
-const VIDEO_OPACITY = 0.8
+const VIDEO_OPACITY = 0.7
 // The sticky navbar (see WelcomeScrollManager / Navbar) is 65px tall and sits
 // in flow above this section. The wrapper is pulled up under it by the same
 // amount so the footage shows through the bar's translucent blur; the content
 // is padded back down so nothing moves.
 const NAVBAR_HEIGHT = 65
 
-// The video is never in the SSR HTML. It mounts (and starts buffering) only
-// once the section is within half a viewport, and plays only once the section
-// is actually on screen, so the initial page load is unaffected.
-type VideoPhase = 'idle' | 'load' | 'play'
+// The <video> is server-rendered with preload="auto" so its first frame is
+// already there when the user reaches the section (the clip, ~0.9 MB, is
+// fetched during page load at the browser's lowest priority). Playback still
+// starts only once the section scrolls into view.
 
 export default function EducationSection() {
   const [isMobile, setIsMobile] = useState(false)
@@ -31,8 +31,7 @@ export default function EducationSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [videoPhase, setVideoPhase] = useState<VideoPhase>('idle')
-  const [videoVisible, setVideoVisible] = useState(false)
+  const [shouldPlay, setShouldPlay] = useState(false)
   const [visiblePromises, setVisiblePromises] = useState<Set<number>>(new Set())
   const promiseRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -76,69 +75,41 @@ export default function EducationSection() {
     return () => observer.disconnect()
   }, [isMobile])
 
-  // Two one-shot observers on the full-width wrapper: the first mounts the
-  // <video> half a viewport early so it is buffered by the time it is needed,
-  // the second starts playback once ~30% of the section is on screen. Both
-  // unobserve after firing, so the clip plays exactly once per page view.
+  // One-shot observer: start playback once ~30% of the section is on screen,
+  // then disconnect so the clip plays exactly once per page view.
   useEffect(() => {
     const el = wrapperRef.current
     if (!el) return
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData
+    // Leave the first frame as a still for these users.
     if (reducedMotion || saveData) return
 
-    const loadObserver = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
-          setVideoPhase((prev) => (prev === 'idle' ? 'load' : prev))
-          loadObserver.disconnect()
-        }
-      },
-      { rootMargin: '50% 0px' }
-    )
-    const playObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setVideoPhase('play')
-          playObserver.disconnect()
-          loadObserver.disconnect()
+          setShouldPlay(true)
+          observer.disconnect()
         }
       },
       { threshold: 0.3 }
     )
-
-    // On a tall desktop viewport the section already sits inside the prefetch
-    // margin at scroll position 0, so without this the clip would start
-    // downloading during the initial page load. Waiting for `load` keeps the
-    // first paint, LCP and the hero's own assets uncontested. (If the user
-    // scrolls the section on screen before then, the play observer below
-    // mounts and plays it in one step.)
-    const startPrefetch = () => loadObserver.observe(el)
-    if (document.readyState === 'complete') {
-      startPrefetch()
-    } else {
-      window.addEventListener('load', startPrefetch, { once: true })
-    }
-    playObserver.observe(el)
-    return () => {
-      window.removeEventListener('load', startPrefetch)
-      loadObserver.disconnect()
-      playObserver.disconnect()
-    }
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
-    if (videoPhase !== 'play') return
+    if (!shouldPlay) return
     const video = videoRef.current
     if (!video) return
     // Autoplay policies require muted + playsInline; set muted on the element
-    // too, since React only reflects the prop as a property on hydration.
+    // too, since React does not emit the attribute in server-rendered HTML.
     video.muted = true
     video.play().catch(() => {
-      // Blocked (e.g. iOS low-power mode): the section simply stays black.
+      // Blocked (e.g. iOS low-power mode): the first frame stays as a still.
     })
-  }, [videoPhase])
+  }, [shouldPlay])
 
   // Render the heading with pink highlighted words and explicit line breaks
   const renderHeading = () => {
@@ -203,33 +174,29 @@ export default function EducationSection() {
       ref={wrapperRef}
       style={{ position: 'relative', background: 'black', overflow: 'hidden', marginTop: -NAVBAR_HEIGHT, paddingTop: NAVBAR_HEIGHT }}
     >
-      {videoPhase !== 'idle' && (
-        <video
-          ref={videoRef}
-          src={BACKGROUND_VIDEO_URL}
-          muted
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-          disableRemotePlayback
-          aria-hidden="true"
-          tabIndex={-1}
-          onPlaying={() => setVideoVisible(true)}
-          // No `loop` and no poster: the browser holds the last decoded frame
-          // after `ended`. pause() is only a guard against a stray replay.
-          onEnded={(e) => e.currentTarget.pause()}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            pointerEvents: 'none',
-            opacity: videoVisible ? VIDEO_OPACITY : 0,
-            transition: 'opacity 600ms ease-out',
-          }}
-        />
-      )}
+      <video
+        ref={videoRef}
+        src={BACKGROUND_VIDEO_URL}
+        muted
+        playsInline
+        preload="auto"
+        disablePictureInPicture
+        disableRemotePlayback
+        aria-hidden="true"
+        tabIndex={-1}
+        // No `loop` and no poster: the browser holds the last decoded frame
+        // after `ended`. pause() is only a guard against a stray replay.
+        onEnded={(e) => e.currentTarget.pause()}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+          opacity: VIDEO_OPACITY,
+        }}
+      />
       <div
         aria-hidden="true"
         style={{ position: 'absolute', inset: 0, background: `rgba(0, 0, 0, ${OVERLAY_OPACITY})`, pointerEvents: 'none' }}

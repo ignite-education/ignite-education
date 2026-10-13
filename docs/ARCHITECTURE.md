@@ -452,15 +452,17 @@ optimized. SVGs still need `unoptimized` — the optimizer rejects SVG unless
 so `next-app/public` resolves on the apex, but Supabase remains the convention.
 
 **Video follows the same rule.** The background clip behind section 2 of
-`/welcome` (`EducationSection.tsx`) is a muted, audio-stripped 720p/30fps MP4 in
-the same `assets` bucket, uploaded with `node --env-file=.env
+`/welcome` (`EducationSection.tsx`) is a muted, audio-stripped 720p/30fps MP4
+(~0.9 MB) in the same `assets` bucket, uploaded with `node --env-file=.env
 scripts/upload-asset.mjs <file> <bucket-path>` (one-year `cacheControl`, so bump
-the filename when replacing). The `<video>` element is **never in the SSR HTML**:
-an `IntersectionObserver` mounts it half a viewport before the section, a second
-one calls `play()` at 30% visibility, and it has no `loop`/poster so the browser
-holds the final frame after `ended`. `prefers-reduced-motion` and `saveData`
-skip it entirely, leaving the original black background. Initial load, LCP and
-CLS are unchanged because nothing is fetched until the user scrolls.
+the filename when replacing). The `<video>` is server-rendered with
+`preload="auto"` so its first frame is already in place when the user reaches
+the section (a deliberate trade: the clip is fetched during page load, at the
+browser's lowest priority, so it does not block LCP). An `IntersectionObserver`
+calls `play()` at 30% visibility, and the element has no `loop`/poster so the
+browser holds the final frame after `ended`. `prefers-reduced-motion` and
+`saveData` leave it as a still. It runs up under the sticky navbar, which shows
+it through a translucent blur.
 
 **Corollary — the default OG image lives in the ROOT `public/`.** `og-image.png`
 is referenced by both apps, so it sits at repo-root `public/og-image.png` and is
