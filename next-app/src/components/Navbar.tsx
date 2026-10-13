@@ -18,7 +18,7 @@ const THEME_TINT = {
   white: 'rgba(255, 255, 255, 0.6)',
   black: 'rgba(0, 0, 0, 0.5)',
 } as const
-const THEME_BLUR = 'blur(32px)'
+const THEME_BLUR = 'blur(16px)'
 
 interface NavbarProps {
   logoClipPercentage?: number
