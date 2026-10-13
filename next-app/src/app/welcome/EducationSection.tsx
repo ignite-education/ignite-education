@@ -13,13 +13,14 @@ import { useState, useEffect, useRef } from 'react'
 const VIDEO_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide.mp4'
 const VIDEO_WIDTH = 510
+// On desktop the panel also covers the 2.5rem right gutter so it touches the
+// viewport edge; the grid still reserves only VIDEO_WIDTH for it.
+const GUTTER = 40
 // The sticky navbar (see WelcomeScrollManager / Navbar) is 65px tall and sits
 // in flow above this section. On desktop the section is pulled up under it by
 // that amount and the video panel spans the section's full height, so the
 // footage shows through the bar's translucent blur.
 const NAVBAR_HEIGHT = 65
-// Bottom corners of the black section, curving over the white section 3.
-const SECTION_RADIUS = 24
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 16
@@ -225,14 +226,15 @@ export default function EducationSection() {
       tabIndex={-1}
       style={isRow ? {
         // Desktop: a panel the full height of the section (navbar included),
-        // flush to the right gutter.
+        // running off the right edge of the viewport.
         position: 'absolute',
         top: 0,
         bottom: 0,
-        right: '2.5rem',
-        width: isWide ? VIDEO_WIDTH : 440,
+        right: 0,
+        width: (isWide ? VIDEO_WIDTH : 440) + GUTTER,
         height: '100%',
         objectFit: 'cover',
+        borderBottomLeftRadius: VIDEO_RADIUS,
         background: '#111',
         pointerEvents: 'none',
         zIndex: 1,
@@ -253,118 +255,113 @@ export default function EducationSection() {
   )
 
   return (
-    // White backdrop: <main> is black, so without it the rounded corners would
-    // reveal black and be invisible against section 3.
-    <div style={{ background: 'white' }}>
-      <section
-        ref={sectionRef}
-        className="relative auth-section-2"
+    <section
+      ref={sectionRef}
+      className="relative auth-section-2"
+      style={{
+        background: 'black',
+        marginTop: isRow ? -NAVBAR_HEIGHT : undefined,
+        paddingTop: isMobile ? '6rem' : isRow ? `calc(4vh + ${NAVBAR_HEIGHT}px)` : '4vh',
+        paddingBottom: isMobile ? '4rem' : '4vh',
+        // Keep the section as tall as the video box used to make it.
+        minHeight: isRow ? `calc(min(72vh, 680px) + 8vh + ${NAVBAR_HEIGHT}px)` : undefined,
+        display: isRow ? 'flex' : undefined,
+        flexDirection: isRow ? 'column' : undefined,
+        justifyContent: isRow ? 'center' : undefined,
+        // Section 3's heading sits at the left of a centred 72rem block (gutter
+        // px-8 md:px-10) plus a 2rem inset. Reproduce that exact left edge here
+        // so the two headings line up, while the content runs to the right
+        // gutter so the 510px video and the three cards have room.
+        paddingLeft: isMobile ? '2rem' : 'calc(max((100% - 72rem) / 2, 2.5rem) + 2rem)',
+        paddingRight: isMobile ? '2rem' : '2.5rem',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        className="w-full text-white"
         style={{
-          background: 'black',
-          borderRadius: `0 0 ${SECTION_RADIUS}px ${SECTION_RADIUS}px`,
-          marginTop: isRow ? -NAVBAR_HEIGHT : undefined,
-          paddingTop: isMobile ? '6rem' : isRow ? `calc(4vh + ${NAVBAR_HEIGHT}px)` : '4vh',
-          paddingBottom: isMobile ? '4rem' : '4vh',
-          // Keep the section as tall as the video box used to make it.
-          minHeight: isRow ? `calc(min(72vh, 680px) + 8vh + ${NAVBAR_HEIGHT}px)` : undefined,
-          display: isRow ? 'flex' : undefined,
-          flexDirection: isRow ? 'column' : undefined,
-          justifyContent: isRow ? 'center' : undefined,
-          // Section 3's heading sits at the left of a centred 72rem block (gutter
-          // px-8 md:px-10) plus a 2rem inset. Reproduce that exact left edge here
-          // so the two headings line up, while the content runs to the right
-          // gutter so the 510px video and the three cards have room.
-          paddingLeft: isMobile ? '2rem' : 'calc(max((100% - 72rem) / 2, 2.5rem) + 2rem)',
-          paddingRight: isMobile ? '2rem' : '2.5rem',
-          overflow: 'hidden',
+          display: isMobile ? 'flex' : 'grid',
+          flexDirection: 'column',
+          gridTemplateColumns: isMobile ? undefined : 'minmax(0, 1fr) auto',
+          alignItems: isMobile ? 'stretch' : 'center',
+          columnGap: isTablet ? '2.5rem' : '3.5rem',
+          rowGap: '3rem',
         }}
       >
-        <div
-          className="w-full text-white"
-          style={{
-            display: isMobile ? 'flex' : 'grid',
-            flexDirection: 'column',
-            gridTemplateColumns: isMobile ? undefined : 'minmax(0, 1fr) auto',
-            alignItems: isMobile ? 'stretch' : 'center',
-            columnGap: isTablet ? '2.5rem' : '3.5rem',
-            rowGap: '3rem',
-          }}
-        >
-          {/* Left column: heading + promise cards */}
-          <div ref={leftColRef} style={{ minWidth: 0 }}>
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              <span style={{ display: 'inline', whiteSpace: 'normal' }}>
-                {renderHeading()}
-              </span>
-            </h2>
+        {/* Left column: heading + promise cards */}
+        <div ref={leftColRef} style={{ minWidth: 0 }}>
+          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+            <span style={{ display: 'inline', whiteSpace: 'normal' }}>
+              {renderHeading()}
+            </span>
+          </h2>
 
-            {/* Promises: three square cards in the course-card style. On desktop
-                the row is fixed-size and may overflow under the video; the
-                effect above shifts it left on scroll (see ROW_SETTLE_AT). */}
-            <div
-              ref={cardsRowRef}
-              className="auth-promises-list"
-              style={{
-                display: isRow ? 'flex' : 'grid',
-                gridTemplateColumns: isRow ? undefined : '1fr',
-                gap: isRow ? CARD_GAP : 16,
-                width: isRow ? 'max-content' : undefined,
-                marginTop: isMobile ? '2.5rem' : '3rem',
-                willChange: isRow ? 'transform' : undefined,
-              }}
-            >
-              {PROMISES.map((promise, idx) => (
-                <div
-                  key={idx}
-                  data-promise-idx={idx}
-                  style={{
-                    width: isRow ? CARD_SIZE : undefined,
-                    height: isRow ? CARD_SIZE : undefined,
-                    flexShrink: 0,
-                    background: CARD_BG,
-                    color: 'black',
-                    borderRadius: CARD_RADIUS,
-                    padding: '18px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '1rem',
-                  }}
-                >
-                  <img
-                    src={TICK_URL}
-                    alt=""
-                    width={32}
-                    height={32}
-                    style={{ width: '32px', height: '32px' }}
-                  />
-                  <div>
-                    <div className="font-semibold" style={{ fontSize: '20px', lineHeight: '25px', marginBottom: '6px' }}>
-                      {promise.title}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
-                      {promise.desc}
-                    </div>
+          {/* Promises: three square cards in the course-card style. On desktop
+              the row is fixed-size and may overflow under the video; the
+              effect above shifts it left on scroll (see ROW_SETTLE_AT). */}
+          <div
+            ref={cardsRowRef}
+            className="auth-promises-list"
+            style={{
+              display: isRow ? 'flex' : 'grid',
+              gridTemplateColumns: isRow ? undefined : '1fr',
+              gap: isRow ? CARD_GAP : 16,
+              width: isRow ? 'max-content' : undefined,
+              marginTop: isMobile ? '2.5rem' : '3rem',
+              willChange: isRow ? 'transform' : undefined,
+            }}
+          >
+            {PROMISES.map((promise, idx) => (
+              <div
+                key={idx}
+                data-promise-idx={idx}
+                style={{
+                  width: isRow ? CARD_SIZE : undefined,
+                  height: isRow ? CARD_SIZE : undefined,
+                  flexShrink: 0,
+                  background: CARD_BG,
+                  color: 'black',
+                  borderRadius: CARD_RADIUS,
+                  padding: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                }}
+              >
+                <img
+                  src={TICK_URL}
+                  alt=""
+                  width={32}
+                  height={32}
+                  style={{ width: '32px', height: '32px' }}
+                />
+                <div>
+                  <div className="font-semibold" style={{ fontSize: '20px', lineHeight: '25px', marginBottom: '6px' }}>
+                    {promise.title}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
+                    {promise.desc}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-
-          {/* Right column. On desktop this only reserves the video's width: the
-              panel itself is absolutely positioned on the section so it can run
-              the full height, and it paints above the card row so the cards
-              slide out from behind it. */}
-          {isRow ? (
-            <div style={{ width: isWide ? VIDEO_WIDTH : 440 }} aria-hidden="true" />
-          ) : (
-            <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end', position: 'relative', zIndex: 1 }}>
-              {video}
-            </div>
-          )}
         </div>
-        {isRow && video}
-      </section>
-    </div>
+
+        {/* Right column. On desktop this only reserves the video's width: the
+            panel itself is absolutely positioned on the section so it can run
+            the full height, and it paints above the card row so the cards
+            slide out from behind it. */}
+        {isRow ? (
+          <div style={{ width: isWide ? VIDEO_WIDTH : 440 }} aria-hidden="true" />
+        ) : (
+          <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end', position: 'relative', zIndex: 1 }}>
+            {video}
+          </div>
+        )}
+      </div>
+      {isRow && video}
+    </section>
   )
 }
