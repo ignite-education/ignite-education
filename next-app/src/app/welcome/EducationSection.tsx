@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 // Clip for the right column: a centred 648x720 (9:10) crop of the office
-// footage, 30fps, no audio, ~0.7 MB. The box it fills is 510px wide to match
+// footage (from the 1080p export), 30fps, no audio, ~0.7 MB. The box it fills is 510px wide to match
 // the 2x2 course-card grid in section 3, and roughly square, so object-fit
 // cover trims at most ~10% either way. Hosted in the public Supabase `assets`
 // bucket like every other welcome-page image — see "Static images on public
@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from 'react'
 // scripts/upload-asset.mjs and bump the filename: the bucket serves a one-year
 // cache-control, so the same path would keep the old bytes.
 const VIDEO_URL =
-  'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide.mp4'
+  'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide-v2.mp4'
 const VIDEO_WIDTH = 510
 // On desktop the panel also covers the 2.5rem right gutter so it touches the
 // viewport edge; the grid still reserves only VIDEO_WIDTH for it.
