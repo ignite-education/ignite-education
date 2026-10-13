@@ -452,21 +452,21 @@ optimized. SVGs still need `unoptimized` — the optimizer rejects SVG unless
 so `next-app/public` resolves on the apex, but Supabase remains the convention.
 
 **Video follows the same rule.** Section 2 of `/welcome` (`EducationSection.tsx`)
-is a two-column layout on black: heading and three square grey promise cards
-on the left (on desktop the row collapses into a fanned stack as it scrolls up
-the viewport, snapping card 2 then card 3 over card 1), and a 510px-wide,
-roughly square box on the right playing a 648x720 centre-crop of the office
-clip (muted, audio-stripped, ~0.65 MB, rounded corners); everything stacks on
-mobile. The section's left padding is computed to put the heading on the same
+is a two-column layout on black: heading and three 249px promise cards in the
+course-card style (#F6F6F6, black text) on the left, and a 510px-wide box on
+the right looping a 648x720 centre-crop of the office clip (muted,
+audio-stripped, ~0.65 MB, rounded corners); everything stacks on mobile. On
+desktop the fixed-size card row can be wider than the left column, so its tail
+sits under the video; a scroll-linked transform shifts the row left by exactly
+that overflow as it rises up the viewport, and a row that fits never moves. The section's left padding is computed to put the heading on the same
 x as "The best courses." in section 3 (centred 72rem block + 2rem inset). The clip lives in the same `assets` bucket,
 uploaded with `node --env-file=.env scripts/upload-asset.mjs <file>
 <bucket-path>` (one-year `cacheControl`, so bump the filename when replacing).
 The `<video>` is server-rendered with `preload="auto"` so its first frame is
 already in place when the user reaches it (a deliberate trade: the clip is
 fetched during page load, at the browser's lowest priority, so it does not block
-LCP). An `IntersectionObserver` calls `play()` at 30% visibility, and the
-element has no `loop`/poster so the browser holds the final frame after
-`ended`. `prefers-reduced-motion` and `saveData` leave it as a still.
+LCP). An `IntersectionObserver` calls `play()` at 30% visibility and the clip loops. `prefers-reduced-motion`
+and `saveData` leave it as a still.
 
 **Corollary — the default OG image lives in the ROOT `public/`.** `og-image.png`
 is referenced by both apps, so it sits at repo-root `public/og-image.png` and is

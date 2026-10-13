@@ -16,22 +16,23 @@ const VIDEO_WIDTH = 510
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 16
-const CARD_BG = '#1C1C1E'
+// Cards match the course cards in section 3: #F6F6F6, black text, 18px
+// semibold title, 0.85rem body, 249px square on desktop.
+const CARD_BG = '#F6F6F6'
 const CARD_RADIUS = 16
 const CARD_GAP = 20
-// Desktop only: the three square cards start as a row and collapse into a
-// fanned stack as the user scrolls. Card 2 snaps over card 1 once the row's
-// top rises above STACK_STEP_1 of the viewport height, card 3 over card 2 at
-// STACK_STEP_2, each landing CARD_FAN px to the right of the one beneath so
-// the earlier cards still peek out. Both snaps reverse on scrolling back up.
-const STACK_STEP_1 = 0.7
-const STACK_STEP_2 = 0.55
-const CARD_FAN = 28
+const CARD_SIZE = 249
+// Desktop only: the row of three fixed-size cards can be wider than the left
+// column, in which case its tail runs under the video. As the row scrolls up
+// the viewport it shifts left by exactly that overflow, settling once its top
+// reaches ROW_SETTLE_AT of the viewport height, so every card ends up clear
+// of the video. A row that fits does not move.
+const ROW_SETTLE_AT = 0.3
 
 // The <video> is server-rendered with preload="auto" so its first frame is
 // already there when the user reaches the section (the clip is fetched during
 // page load at the browser's lowest priority). Playback starts only once the
-// section scrolls into view, runs once, and holds the final frame.
+// section scrolls into view, then loops.
 
 const PROMISES = [
   { title: 'Built by Industry Experts', desc: 'Our courses are built with industry experts to ensure you get the latest area expertise.' },
@@ -46,8 +47,8 @@ export default function EducationSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [shouldPlay, setShouldPlay] = useState(false)
+  const leftColRef = useRef<HTMLDivElement>(null)
   const cardsRowRef = useRef<HTMLDivElement>(null)
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     const update = () => {
@@ -68,36 +69,32 @@ export default function EducationSection() {
     }
   }, [])
 
-  // Scroll-linked stack (desktop only, where the cards are a row of three).
-  // Written straight to the DOM from a RAF-throttled passive scroll listener;
-  // the CSS transition on each card does the snapping.
+  // Scroll-linked shift for an overflowing row (desktop only). Written
+  // straight to the DOM from a RAF-throttled passive scroll listener.
   const isRow = !isMobile && !isTablet
   useEffect(() => {
     const row = cardsRowRef.current
-    const cards = cardRefs.current
-    if (!row) return
-    const reset = () => cards.forEach((c) => { if (c) c.style.transform = 'none' })
+    const col = leftColRef.current
+    if (!row || !col) return
     if (!isRow || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      reset()
+      row.style.transform = 'none'
       return
     }
 
     let rafId: number | null = null
-    let stage = -1
     const update = () => {
       rafId = null
+      const overflow = Math.max(0, row.scrollWidth - col.clientWidth)
+      if (overflow === 0) {
+        row.style.transform = 'none'
+        return
+      }
       const vh = window.innerHeight
       const top = row.getBoundingClientRect().top
-      const next = top < vh * STACK_STEP_2 ? 2 : top < vh * STACK_STEP_1 ? 1 : 0
-      if (next === stage) return
-      stage = next
-      const cardWidth = (row.clientWidth - 2 * CARD_GAP) / 3
-      cards.forEach((card, i) => {
-        if (!card || i === 0) return
-        // Slide left over the previous cards, leaving CARD_FAN px of each visible.
-        const dx = stage >= i ? -i * (cardWidth + CARD_GAP) + i * CARD_FAN : 0
-        card.style.transform = dx ? `translate3d(${dx.toFixed(1)}px, 0, 0)` : 'none'
-      })
+      const raw = (vh - top) / (vh - vh * ROW_SETTLE_AT)
+      const p = Math.min(1, Math.max(0, raw))
+      const eased = 1 - Math.pow(1 - p, 2)
+      row.style.transform = `translate3d(${(-eased * overflow).toFixed(1)}px, 0, 0)`
     }
     const schedule = () => {
       if (rafId === null) rafId = requestAnimationFrame(update)
@@ -214,19 +211,17 @@ export default function EducationSection() {
       muted
       playsInline
       preload="auto"
+      loop
       disablePictureInPicture
       disableRemotePlayback
       aria-hidden="true"
       tabIndex={-1}
-      // No `loop` and no poster: the browser holds the last decoded frame
-      // after `ended`. pause() is only a guard against a stray replay.
-      onEnded={(e) => e.currentTarget.pause()}
       style={{
         display: 'block',
         // Desktop: a fixed-width, roughly square box. Mobile: full width at
         // the clip's own aspect.
         width: isMobile ? '100%' : isTablet ? 300 : isWide ? VIDEO_WIDTH : 440,
-        height: isMobile ? 'auto' : isTablet ? 'min(55vh, 440px)' : 'min(62vh, 600px)',
+        height: isMobile ? 'auto' : isTablet ? 'min(55vh, 440px)' : 'min(72vh, 680px)',
         aspectRatio: isMobile ? '648 / 720' : undefined,
         maxWidth: '100%',
         objectFit: 'cover',
@@ -243,8 +238,8 @@ export default function EducationSection() {
       className="relative auth-section-2"
       style={{
         background: 'black',
-        paddingTop: isMobile ? '6rem' : '6vh',
-        paddingBottom: isMobile ? '4rem' : '6vh',
+        paddingTop: isMobile ? '6rem' : '4vh',
+        paddingBottom: isMobile ? '4rem' : '4vh',
         // Section 3's heading sits at the left of a centred 72rem block (gutter
         // px-8 md:px-10) plus a 2rem inset. Reproduce that exact left edge here
         // so the two headings line up, while the content runs to the right
@@ -266,58 +261,58 @@ export default function EducationSection() {
         }}
       >
         {/* Left column: heading + promise cards */}
-        <div style={{ minWidth: 0 }}>
+        <div ref={leftColRef} style={{ minWidth: 0 }}>
           <h2 className="text-4xl md:text-5xl font-bold leading-tight">
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
               {renderHeading()}
             </span>
           </h2>
 
-          {/* Promises: three square grey cards. On desktop they start as a row
-              and collapse into a fanned stack on scroll (see the effect above). */}
+          {/* Promises: three square cards in the course-card style. On desktop
+              the row is fixed-size and may overflow under the video; the
+              effect above shifts it left on scroll (see ROW_SETTLE_AT). */}
           <div
             ref={cardsRowRef}
-            className="auth-promises-list text-white"
+            className="auth-promises-list"
             style={{
-              display: 'grid',
-              gridTemplateColumns: isRow ? 'repeat(3, minmax(0, 1fr))' : '1fr',
+              display: isRow ? 'flex' : 'grid',
+              gridTemplateColumns: isRow ? undefined : '1fr',
               gap: isRow ? CARD_GAP : 16,
+              width: isRow ? 'max-content' : undefined,
               marginTop: isMobile ? '2.5rem' : '3rem',
+              willChange: isRow ? 'transform' : undefined,
             }}
           >
             {PROMISES.map((promise, idx) => (
               <div
                 key={idx}
-                ref={(el) => { cardRefs.current[idx] = el }}
                 data-promise-idx={idx}
                 style={{
-                  position: 'relative',
-                  zIndex: idx + 1,
-                  aspectRatio: isRow ? '1 / 1' : undefined,
+                  width: isRow ? CARD_SIZE : undefined,
+                  height: isRow ? CARD_SIZE : undefined,
+                  flexShrink: 0,
                   background: CARD_BG,
+                  color: 'black',
                   borderRadius: CARD_RADIUS,
-                  padding: isRow ? '1.25rem' : '1.75rem',
+                  padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   gap: '1rem',
-                  transition: 'transform 550ms cubic-bezier(0.22, 1, 0.36, 1)',
-                  willChange: isRow ? 'transform' : undefined,
-                  boxShadow: isRow ? '0 12px 32px rgba(0, 0, 0, 0.45)' : undefined,
                 }}
               >
                 <img
                   src={TICK_URL}
                   alt=""
-                  width={32}
-                  height={32}
-                  style={{ width: isRow ? '30px' : '36px', height: isRow ? '30px' : '36px' }}
+                  width={36}
+                  height={36}
+                  style={{ width: '36px', height: '36px' }}
                 />
                 <div>
-                  <div className="font-semibold text-white" style={{ fontSize: isRow ? '15px' : '20px', lineHeight: 1.25, marginBottom: '0.4rem' }}>
+                  <div className="text-lg font-semibold" style={{ lineHeight: '23px', marginBottom: '5px' }}>
                     {promise.title}
                   </div>
-                  <div className="text-white font-normal" style={{ fontSize: isRow ? '12.5px' : '16px', lineHeight: 1.4, opacity: 0.85 }}>
+                  <div style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
                     {promise.desc}
                   </div>
                 </div>
