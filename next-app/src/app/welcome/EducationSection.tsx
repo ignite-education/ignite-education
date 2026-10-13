@@ -13,6 +13,11 @@ import { useState, useEffect, useRef } from 'react'
 const VIDEO_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide.mp4'
 const VIDEO_WIDTH = 510
+// The sticky navbar (see WelcomeScrollManager / Navbar) is 65px tall and sits
+// in flow above this section. On desktop the section is pulled up under it by
+// that amount and the video panel spans the section's full height, so the
+// footage shows through the bar's translucent blur.
+const NAVBAR_HEIGHT = 65
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 16
@@ -216,12 +221,25 @@ export default function EducationSection() {
       disableRemotePlayback
       aria-hidden="true"
       tabIndex={-1}
-      style={{
+      style={isRow ? {
+        // Desktop: a panel the full height of the section (navbar included),
+        // flush to the right gutter.
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        right: '2.5rem',
+        width: isWide ? VIDEO_WIDTH : 440,
+        height: '100%',
+        objectFit: 'cover',
+        background: '#111',
+        pointerEvents: 'none',
+        zIndex: 1,
+      } : {
         display: 'block',
-        // Desktop: a fixed-width, roughly square box. Mobile: full width at
-        // the clip's own aspect.
-        width: isMobile ? '100%' : isTablet ? 300 : isWide ? VIDEO_WIDTH : 440,
-        height: isMobile ? 'auto' : isTablet ? 'min(55vh, 440px)' : 'min(72vh, 680px)',
+        // Tablet: a fixed box beside the text. Mobile: full width at the
+        // clip's own aspect.
+        width: isMobile ? '100%' : 300,
+        height: isMobile ? 'auto' : 'min(55vh, 440px)',
         aspectRatio: isMobile ? '648 / 720' : undefined,
         maxWidth: '100%',
         objectFit: 'cover',
@@ -238,8 +256,14 @@ export default function EducationSection() {
       className="relative auth-section-2"
       style={{
         background: 'black',
-        paddingTop: isMobile ? '6rem' : '4vh',
+        marginTop: isRow ? -NAVBAR_HEIGHT : undefined,
+        paddingTop: isMobile ? '6rem' : isRow ? `calc(4vh + ${NAVBAR_HEIGHT}px)` : '4vh',
         paddingBottom: isMobile ? '4rem' : '4vh',
+        // Keep the section as tall as the video box used to make it.
+        minHeight: isRow ? `calc(min(72vh, 680px) + 8vh + ${NAVBAR_HEIGHT}px)` : undefined,
+        display: isRow ? 'flex' : undefined,
+        flexDirection: isRow ? 'column' : undefined,
+        justifyContent: isRow ? 'center' : undefined,
         // Section 3's heading sits at the left of a centred 72rem block (gutter
         // px-8 md:px-10) plus a 2rem inset. Reproduce that exact left edge here
         // so the two headings line up, while the content runs to the right
@@ -321,12 +345,19 @@ export default function EducationSection() {
           </div>
         </div>
 
-        {/* Right column: portrait video (below the text on mobile). Sits above
-            the card row so the cards slide in from behind it. */}
-        <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end', position: 'relative', zIndex: 1 }}>
-          {video}
-        </div>
+        {/* Right column. On desktop this only reserves the video's width: the
+            panel itself is absolutely positioned on the section so it can run
+            the full height, and it paints above the card row so the cards
+            slide out from behind it. */}
+        {isRow ? (
+          <div style={{ width: isWide ? VIDEO_WIDTH : 440 }} aria-hidden="true" />
+        ) : (
+          <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end', position: 'relative', zIndex: 1 }}>
+            {video}
+          </div>
+        )}
       </div>
+      {isRow && video}
 
     </section>
   )
