@@ -263,8 +263,8 @@ export default function EducationSection() {
         marginTop: isRow ? -NAVBAR_HEIGHT : undefined,
         paddingTop: isMobile ? '6rem' : isRow ? `calc(4vh + ${NAVBAR_HEIGHT}px)` : '4vh',
         paddingBottom: isMobile ? '4rem' : '4vh',
-        // Keep the section as tall as the video box used to make it.
-        minHeight: isRow ? `calc(min(72vh, 680px) + 8vh + ${NAVBAR_HEIGHT}px)` : undefined,
+        // Section height on desktop (content is centred inside it).
+        minHeight: isRow ? `calc(min(78vh, 740px) + 8vh + ${NAVBAR_HEIGHT}px)` : undefined,
         display: isRow ? 'flex' : undefined,
         flexDirection: isRow ? 'column' : undefined,
         justifyContent: isRow ? 'center' : undefined,
