@@ -16,12 +16,12 @@ const VIDEO_WIDTH = 510
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 16
-// Cards match the course cards in section 3: #F6F6F6, black text, 18px
-// semibold title, 0.85rem body, 249px square on desktop.
+// Cards take their look from the course cards in section 3 (#F6F6F6, black
+// text, 0.85rem body) but are a touch smaller with a larger 20px title.
 const CARD_BG = '#F6F6F6'
 const CARD_RADIUS = 16
 const CARD_GAP = 20
-const CARD_SIZE = 249
+const CARD_SIZE = 224
 // Desktop only: the row of three fixed-size cards can be wider than the left
 // column, in which case its tail runs under the video. As the row scrolls up
 // the viewport it shifts left by exactly that overflow, settling once its top
@@ -294,7 +294,7 @@ export default function EducationSection() {
                   background: CARD_BG,
                   color: 'black',
                   borderRadius: CARD_RADIUS,
-                  padding: '20px',
+                  padding: '18px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -304,12 +304,12 @@ export default function EducationSection() {
                 <img
                   src={TICK_URL}
                   alt=""
-                  width={36}
-                  height={36}
-                  style={{ width: '36px', height: '36px' }}
+                  width={32}
+                  height={32}
+                  style={{ width: '32px', height: '32px' }}
                 />
                 <div>
-                  <div className="text-lg font-semibold" style={{ lineHeight: '23px', marginBottom: '5px' }}>
+                  <div className="font-semibold" style={{ fontSize: '20px', lineHeight: '25px', marginBottom: '6px' }}>
                     {promise.title}
                   </div>
                   <div style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
