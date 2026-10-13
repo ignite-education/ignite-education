@@ -451,6 +451,17 @@ optimized. SVGs still need `unoptimized` — the optimizer rejects SVG unless
 `dangerouslyAllowSVG` is set. An `/images/:path*` rewrite exists as a backstop
 so `next-app/public` resolves on the apex, but Supabase remains the convention.
 
+**Video follows the same rule.** The background clip behind section 2 of
+`/welcome` (`EducationSection.tsx`) is a muted, audio-stripped 720p/30fps MP4 in
+the same `assets` bucket, uploaded with `node --env-file=.env
+scripts/upload-asset.mjs <file> <bucket-path>` (one-year `cacheControl`, so bump
+the filename when replacing). The `<video>` element is **never in the SSR HTML**:
+an `IntersectionObserver` mounts it half a viewport before the section, a second
+one calls `play()` at 30% visibility, and it has no `loop`/poster so the browser
+holds the final frame after `ended`. `prefers-reduced-motion` and `saveData`
+skip it entirely, leaving the original black background. Initial load, LCP and
+CLS are unchanged because nothing is fetched until the user scrolls.
+
 **Corollary — the default OG image lives in the ROOT `public/`.** `og-image.png`
 is referenced by both apps, so it sits at repo-root `public/og-image.png` and is
 served from the apex project's own filesystem (checked before rewrites). Putting
