@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import SiteJsonLd from "@/components/SiteJsonLd";
 import { SITE_URL, SITE_NAME, BRAND_SUFFIX, DEFAULT_OG_IMAGE, GA_MEASUREMENT_ID } from "@/lib/siteConfig";
 import "./globals.css";
@@ -99,6 +100,15 @@ export default function RootLayout({
             }
           `}
         </Script>
+
+        {/*
+          Vercel Web Analytics. The script and beacons are same-origin
+          (/_vercel/insights/*), so on the apex they are served by — and
+          attributed to — the root "ignite-education" project, where Analytics
+          is enabled. Hit directly on next.ignite.education the script 404s
+          harmlessly unless Analytics is also switched on for that project.
+        */}
+        <Analytics />
       </body>
     </html>
   );
