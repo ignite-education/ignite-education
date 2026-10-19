@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const API_URL = 'https://ignite-education-api.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
 const useChat = () => {
   const [chatMessages, setChatMessages] = useState([]);
