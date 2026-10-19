@@ -155,6 +155,10 @@ const ProgressGraph = ({
     })
   );
 
+  // Completion comes from `lesson_completions`; a score is extra. A completed
+  // lesson can legitimately have no score — the checkpoint is skipped when a
+  // lesson has no question bank or the checkpoint route fails open, and every
+  // completion before checkpoints shipped predates scoring altogether.
   const userScoreOf = (lesson) => {
     const r = userLessonScores[lesson.key];
     if (!r || !(r.total > 0) || !completedSet.has(lesson.key)) return null;
@@ -307,17 +311,18 @@ const ProgressGraph = ({
       >
         {modules.map((mod, m) => (
           <React.Fragment key={`mod-${m}`}>
-            {/* One rect per lesson: pink (your score) once completed, otherwise
-                grey (the course average). Brightness encodes whichever it is. */}
+            {/* One rect per lesson: pink once completed, otherwise grey (the
+                course average). Brightness encodes the score; a completed lesson
+                with no score shows at full pink rather than falling back to grey. */}
             {mod.lessons.map((lesson, l) => {
               const uScore = userScoreOf(lesson);
-              const isDone = uScore !== null;
+              const isDone = completedSet.has(lesson.key);
               // Row index only — the bottom lesson of every module goes first,
               // then the row above it, with no left-to-right sweep.
               const delay = l * ROW_STAGGER;
               const isHovered = hovered?.m === m && hovered?.l === l;
               const blockColor = isDone
-                ? shade(PINK_RGB, uScore)
+                ? shade(PINK_RGB, uScore ?? 100)
                 : shade(GREY_RGB, effectiveGlobalScores[lesson.key]);
               return (
                 <div
