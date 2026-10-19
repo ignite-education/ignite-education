@@ -26,7 +26,7 @@ const formatUpcomingTime = (dateStr) => {
 
   const day = date.getDate();
   const month = date.toLocaleDateString('en-GB', { month: 'short' });
-  return `${day}-${month} at ${timeStr}`;
+  return `${day} ${month} at ${timeStr}`;
 };
 
 const OfficeHoursCard = ({ coaches, courseId }) => {

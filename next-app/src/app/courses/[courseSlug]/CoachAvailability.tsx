@@ -12,7 +12,7 @@ const formatUpcomingTime = (dateStr: string) => {
   const h = hour % 12 || 12
   const day = date.getDate()
   const month = date.toLocaleDateString('en-GB', { month: 'short' })
-  return `${day}-${month} at ${h}${period}`
+  return `${day} ${month} at ${h}${period}`
 }
 
 const DEFAULT_SIZE = 80
