@@ -339,8 +339,10 @@ export default function EducationSection() {
           <div
             className="auth-promises-list"
             style={{
-              // One row of three on tablet and desktop, stacked on mobile; in
-              // each, the tick sits to the left of the title and description.
+              // One row of three on tablet and desktop, stacked on mobile. In
+              // each, the tick sits to the left of the title (centred on its
+              // two lines) and the description runs underneath from the
+              // column's left edge.
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
@@ -359,10 +361,9 @@ export default function EducationSection() {
                   flex: isMobile ? undefined : '1 1 0',
                   minWidth: 0,
                   display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
                   textAlign: 'left',
-                  gap: isMobile ? '1.25rem' : '0.875rem',
                   opacity: showPromise ? 1 : 0,
                   transform: showPromise ? 'translateY(0)' : 'translateY(15px)',
                   // Delay lives inside the shorthand: React warns when `transition`
@@ -370,20 +371,20 @@ export default function EducationSection() {
                   transition: `opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${promiseDelay}ms, transform 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${promiseDelay}ms`,
                 }}
               >
-                <img
-                  src={TICK_URL}
-                  alt=""
-                  width={42}
-                  height={42}
-                  style={{ width: isMobile ? '42px' : '32px', height: isMobile ? '42px' : '32px', flexShrink: 0, marginTop: isMobile ? '-2px' : '-1px' }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="text-xl font-semibold text-white mb-2" style={{ whiteSpace: 'pre-line' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '1rem' : '0.75rem', marginBottom: '0.5rem' }}>
+                  <img
+                    src={TICK_URL}
+                    alt=""
+                    width={42}
+                    height={42}
+                    style={{ width: isMobile ? '36px' : '32px', height: isMobile ? '36px' : '32px', flexShrink: 0 }}
+                  />
+                  <div className="text-xl font-semibold text-white" style={{ whiteSpace: 'pre-line' }}>
                     {promise.title}
                   </div>
-                  <div className="text-base text-white font-normal">
-                    {promise.desc}
-                  </div>
+                </div>
+                <div className="text-base text-white font-normal">
+                  {promise.desc}
                 </div>
               </div>
             )
