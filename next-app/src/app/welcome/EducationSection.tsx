@@ -36,7 +36,7 @@ const VIDEO_RADIUS = 8
 // The <video> is server-rendered with preload="auto" so its first frame is
 // already there when the user reaches the section (the clip is fetched during
 // page load at the browser's lowest priority). Playback starts only once the
-// section scrolls into view and plays once, holding on its last frame.
+// section scrolls into view, then loops.
 
 // Desktop only: delay before the first promise fades up (after the heading
 // has typed), and the gap between each one and the next.
@@ -241,6 +241,7 @@ export default function EducationSection() {
       muted
       playsInline
       preload="auto"
+      loop
       disablePictureInPicture
       disableRemotePlayback
       aria-hidden="true"
