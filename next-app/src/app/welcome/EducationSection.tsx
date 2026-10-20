@@ -340,9 +340,8 @@ export default function EducationSection() {
             className="auth-promises-list"
             style={{
               // One row of three on tablet and desktop, stacked on mobile. In
-              // each, the tick sits to the left of the title (centred on its
-              // two lines) and the description runs underneath from the
-              // column's left edge.
+              // each, the tick sits above the title, then the description,
+              // all left-aligned.
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
@@ -362,7 +361,7 @@ export default function EducationSection() {
                   minWidth: 0,
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'stretch',
+                  alignItems: 'flex-start',
                   textAlign: 'left',
                   opacity: showPromise ? 1 : 0,
                   transform: showPromise ? 'translateY(0)' : 'translateY(15px)',
@@ -371,17 +370,15 @@ export default function EducationSection() {
                   transition: `opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${promiseDelay}ms, transform 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${promiseDelay}ms`,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '1rem' : '0.75rem', marginBottom: '0.5rem' }}>
-                  <img
-                    src={TICK_URL}
-                    alt=""
-                    width={42}
-                    height={42}
-                    style={{ width: isMobile ? '36px' : '32px', height: isMobile ? '36px' : '32px', flexShrink: 0 }}
-                  />
-                  <div className="text-xl font-semibold text-white" style={{ whiteSpace: 'pre-line' }}>
-                    {promise.title}
-                  </div>
+                <img
+                  src={TICK_URL}
+                  alt=""
+                  width={42}
+                  height={42}
+                  style={{ width: isMobile ? '36px' : '32px', height: isMobile ? '36px' : '32px', flexShrink: 0, marginBottom: '1rem' }}
+                />
+                <div className="text-xl font-semibold text-white mb-2" style={{ whiteSpace: 'pre-line' }}>
+                  {promise.title}
                 </div>
                 <div className="text-base text-white font-normal">
                   {promise.desc}
