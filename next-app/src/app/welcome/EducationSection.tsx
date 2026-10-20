@@ -159,7 +159,7 @@ export default function EducationSection() {
     const desktopLines = [
       { text: 'Education should be ', highlights: [] as string[] },
       { text: 'accessible, personalised ', highlights: ['accessible', 'personalised'] },
-      { text: 'and integrated for everyone', highlights: ['integrated'] }
+      { text: 'and integrated for everyone.', highlights: ['integrated'] }
     ]
 
     // Mobile line breaks
@@ -168,7 +168,7 @@ export default function EducationSection() {
       { text: 'be accessible,', highlights: ['accessible,'] },
       { text: 'personalised and', highlights: ['personalised'] },
       { text: 'integrated for', highlights: ['integrated'] },
-      { text: 'everyone', highlights: [] as string[] }
+      { text: 'everyone.', highlights: [] as string[] }
     ]
 
     const renderLines = (lines: typeof desktopLines) => {
