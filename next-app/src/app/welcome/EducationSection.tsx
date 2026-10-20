@@ -30,7 +30,8 @@ const VIDEO_RADIUS = 8
 // section scrolls into view, then loops.
 
 const PROMISES = [
-  { title: 'Built by Industry Experts', desc: 'Our courses are built with industry experts to ensure you get the latest area expertise.' },
+  // '\n' in a title is an explicit line break (rendered with pre-line).
+  { title: 'Built by\nIndustry Experts', desc: 'Our courses are built with industry experts to ensure you get the latest area expertise.' },
   { title: 'Ignite is Free', desc: 'All of our courses are free. Always have been and always will be.' },
   { title: 'No Educational Prerequisite', desc: 'You don\u2019t need any experience to study. Our curricula is built for all backgrounds.' },
 ]
@@ -308,7 +309,7 @@ export default function EducationSection() {
                   style={{ width: isMobile ? '42px' : '36px', height: isMobile ? '42px' : '36px', flexShrink: 0, marginTop: isMobile ? '-2px' : 0 }}
                 />
                 <div>
-                  <div className="text-xl font-semibold text-white mb-2">
+                  <div className="text-xl font-semibold text-white mb-2" style={{ whiteSpace: 'pre-line' }}>
                     {promise.title}
                   </div>
                   <div className="text-base text-white font-normal">
