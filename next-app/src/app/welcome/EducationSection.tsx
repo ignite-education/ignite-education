@@ -13,10 +13,10 @@ import { useState, useEffect, useRef } from 'react'
 // cache-control, so the same path would keep the old bytes.
 const VIDEO_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide-v4.mp4'
-// Panel width on wide desktops; 10% under the column it sits in so the clip
+// Panel width on wide desktops; ~80% of the column it sits in so the clip
 // floats inside the section rather than filling it edge to edge.
-const VIDEO_WIDTH = 459
-const VIDEO_WIDTH_NARROW = 396
+const VIDEO_WIDTH = 413
+const VIDEO_WIDTH_NARROW = 356
 // Vertical padding of the section on desktop; the video panel is inset by
 // the same amount top and bottom.
 const SECTION_PAD_Y = '4vh'
@@ -197,7 +197,7 @@ export default function EducationSection() {
       aria-hidden="true"
       tabIndex={-1}
       style={isRow ? {
-        // Desktop: a box against the left gutter, 90% of the section's
+        // Desktop: a box against the left gutter, 81% of the section's
         // content height and centred vertically within it.
         position: 'absolute',
         top: '50%',
@@ -205,7 +205,7 @@ export default function EducationSection() {
         left: '2.5rem',
         width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW,
         // Explicit: a replaced element needs a height to be cropped by cover.
-        height: `calc(0.9 * (100% - 2 * ${SECTION_PAD_Y}))`,
+        height: `calc(0.81 * (100% - 2 * ${SECTION_PAD_Y}))`,
         objectFit: 'cover',
         borderRadius: VIDEO_RADIUS,
         background: '#111',
@@ -213,10 +213,10 @@ export default function EducationSection() {
         zIndex: 1,
       } : {
         display: 'block',
-        // Tablet: a fixed box beside the text. Mobile: 90% width, centred,
+        // Tablet: a fixed box beside the text. Mobile: 81% width, centred,
         // at the clip's own aspect.
-        width: isMobile ? '90%' : 270,
-        height: isMobile ? 'auto' : 'min(49.5vh, 396px)',
+        width: isMobile ? '81%' : 243,
+        height: isMobile ? 'auto' : 'min(44.5vh, 356px)',
         margin: isMobile ? '0 auto' : undefined,
         aspectRatio: isMobile ? '1042 / 900' : undefined,
         maxWidth: '100%',
