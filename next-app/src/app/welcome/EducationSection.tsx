@@ -340,8 +340,7 @@ export default function EducationSection() {
             className="auth-promises-list"
             style={{
               // One row of three on tablet and desktop (tick above the text,
-              // everything centred); stacked on mobile with the tick beside
-              // the text.
+              // left-aligned); stacked on mobile with the tick beside the text.
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
@@ -361,8 +360,8 @@ export default function EducationSection() {
                   minWidth: 0,
                   display: 'flex',
                   flexDirection: isMobile ? 'row' : 'column',
-                  alignItems: isMobile ? 'flex-start' : 'center',
-                  textAlign: isMobile ? 'left' : 'center',
+                  alignItems: 'flex-start',
+                  textAlign: 'left',
                   gap: isMobile ? '1.25rem' : '1rem',
                   opacity: showPromise ? 1 : 0,
                   transform: showPromise ? 'translateY(0)' : 'translateY(15px)',
