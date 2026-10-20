@@ -22,7 +22,7 @@ const VIDEO_WIDTH_NARROW = 396
 const SECTION_PAD_Y = '4vh'
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
-const VIDEO_RADIUS = 10
+const VIDEO_RADIUS = 8
 // Cards take their look from the course cards in section 3 (#F6F6F6, black
 // text, 0.85rem body) but are a touch smaller with a larger 20px title.
 const CARD_BG = '#F6F6F6'
