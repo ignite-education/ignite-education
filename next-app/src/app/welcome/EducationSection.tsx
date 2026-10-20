@@ -13,13 +13,16 @@ import { useState, useEffect, useRef } from 'react'
 // cache-control, so the same path would keep the old bytes.
 const VIDEO_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide-v4.mp4'
-const VIDEO_WIDTH = 510
+// Panel width on wide desktops; 10% under the column it sits in so the clip
+// floats inside the section rather than filling it edge to edge.
+const VIDEO_WIDTH = 459
+const VIDEO_WIDTH_NARROW = 396
 // Vertical padding of the section on desktop; the video panel is inset by
 // the same amount top and bottom.
 const SECTION_PAD_Y = '4vh'
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
-const VIDEO_RADIUS = 16
+const VIDEO_RADIUS = 10
 // Cards take their look from the course cards in section 3 (#F6F6F6, black
 // text, 0.85rem body) but are a touch smaller with a larger 20px title.
 const CARD_BG = '#F6F6F6'
@@ -221,15 +224,15 @@ export default function EducationSection() {
       aria-hidden="true"
       tabIndex={-1}
       style={isRow ? {
-        // Desktop: a box inset by the section padding top and bottom and by
-        // the gutter on the right, spanning the section's content height.
+        // Desktop: a box against the right gutter, 90% of the section's
+        // content height and centred vertically within it.
         position: 'absolute',
-        top: SECTION_PAD_Y,
-        bottom: SECTION_PAD_Y,
+        top: '50%',
+        transform: 'translateY(-50%)',
         right: '2.5rem',
-        width: isWide ? VIDEO_WIDTH : 440,
-        // Explicit: a replaced element ignores `bottom` when height is auto.
-        height: `calc(100% - 2 * ${SECTION_PAD_Y})`,
+        width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW,
+        // Explicit: a replaced element needs a height to be cropped by cover.
+        height: `calc(0.9 * (100% - 2 * ${SECTION_PAD_Y}))`,
         objectFit: 'cover',
         borderRadius: VIDEO_RADIUS,
         background: '#111',
@@ -237,10 +240,11 @@ export default function EducationSection() {
         zIndex: 1,
       } : {
         display: 'block',
-        // Tablet: a fixed box beside the text. Mobile: full width at the
-        // clip's own aspect.
-        width: isMobile ? '100%' : 300,
-        height: isMobile ? 'auto' : 'min(55vh, 440px)',
+        // Tablet: a fixed box beside the text. Mobile: 90% width, centred,
+        // at the clip's own aspect.
+        width: isMobile ? '90%' : 270,
+        height: isMobile ? 'auto' : 'min(49.5vh, 396px)',
+        margin: isMobile ? '0 auto' : undefined,
         aspectRatio: isMobile ? '1042 / 900' : undefined,
         maxWidth: '100%',
         objectFit: 'cover',
@@ -350,7 +354,7 @@ export default function EducationSection() {
             the full height, and it paints above the card row so the cards
             slide out from behind it. */}
         {isRow ? (
-          <div style={{ width: isWide ? VIDEO_WIDTH : 440 }} aria-hidden="true" />
+          <div style={{ width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW }} aria-hidden="true" />
         ) : (
           <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end', position: 'relative', zIndex: 1 }}>
             {video}
