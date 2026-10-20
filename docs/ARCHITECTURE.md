@@ -462,7 +462,7 @@ trims the sides to the panel), and on the right the heading (typed in character 
 the section is visible, same hook and speed as section 3's title, with a
 hidden copy of the full text for crawlers) and a single
 row of three ticked promises (tick above centred text; stacked on mobile;
-each fades up on its own IntersectionObserver, staggered 1s on desktop).
+each fades up on its own IntersectionObserver, on desktop the first waits 0.8s and each next one 1.4s more).
 On desktop the video box is absolutely positioned against the 4.5rem left
 gutter at 88% of the section's content height, centred vertically; on tablet
 and mobile the video is an in-flow rounded box and everything stacks (video

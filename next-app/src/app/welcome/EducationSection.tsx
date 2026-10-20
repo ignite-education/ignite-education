@@ -38,6 +38,11 @@ const VIDEO_RADIUS = 8
 // page load at the browser's lowest priority). Playback starts only once the
 // section scrolls into view and plays once, holding on its last frame.
 
+// Desktop only: delay before the first promise fades up (after the heading
+// has typed), and the gap between each one and the next.
+const PROMISE_DELAY = 800
+const PROMISE_STAGGER = 1400
+
 const PROMISES = [
   // '\n' in a title is an explicit line break (rendered with pre-line).
   { title: 'Built by\nIndustry Experts', desc: 'Our courses are built with industry experts to ensure you get the latest area expertise.' },
@@ -116,7 +121,8 @@ export default function EducationSection() {
   })
 
   // Each promise fades up independently once it crosses 40% from the bottom
-  // of the viewport (30% on mobile); desktop staggers them by 1s. None
+  // of the viewport (30% on mobile); desktop waits PROMISE_DELAY before the
+  // first and staggers the rest by PROMISE_STAGGER. None
   // of them shows until the heading has fully typed out (see showPromise).
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -342,6 +348,7 @@ export default function EducationSection() {
           >
             {PROMISES.map((promise, idx) => {
               const showPromise = typingComplete && visiblePromises.has(idx)
+              const promiseDelay = isMobile ? 0 : PROMISE_DELAY + idx * PROMISE_STAGGER
               return (
               <div
                 key={idx}
@@ -359,7 +366,7 @@ export default function EducationSection() {
                   transform: showPromise ? 'translateY(0)' : 'translateY(15px)',
                   // Delay lives inside the shorthand: React warns when `transition`
                   // and `transitionDelay` are set together on the same element.
-                  transition: `opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 1000}ms, transform 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 1000}ms`,
+                  transition: `opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${promiseDelay}ms, transform 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${promiseDelay}ms`,
                 }}
               >
                 <img
