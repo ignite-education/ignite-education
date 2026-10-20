@@ -308,7 +308,9 @@ export default function EducationSection() {
                   height={42}
                   style={{ width: isMobile ? '42px' : '36px', height: isMobile ? '42px' : '36px', flexShrink: 0, marginTop: isMobile ? '-2px' : 0 }}
                 />
-                <div>
+                {/* Text sits a little narrower than its column so the lines
+                    wrap tighter under the tick. */}
+                <div style={{ maxWidth: isMobile ? undefined : '85%' }}>
                   <div className="text-xl font-semibold text-white mb-2" style={{ whiteSpace: 'pre-line' }}>
                     {promise.title}
                   </div>
