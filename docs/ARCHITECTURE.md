@@ -517,6 +517,23 @@ but not before.
 Supabase storage origin serves `x-robots-tag: none`, so a logo hosted there is
 noindex and can never reach a Knowledge Panel.
 
+### Vercel Web Analytics on proxied pages
+
+Web Analytics is enabled on the **root** Vercel project only. Both the Vite SPA
+(`src/main.jsx`) and the Next app (`next-app/src/app/layout.tsx`) mount
+`<Analytics />`, and because the script and beacons are same-origin
+(`/_vercel/insights/*`), every page on the apex — proxied Next pages included —
+reports to that one dashboard.
+
+The trap: Vercel injects `NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH` (a hashed,
+per-project path such as `/549e87113840e5d7`) into every Next build, and
+`@vercel/analytics/next` v2 silently prefers it over `/_vercel/insights`. That
+path only exists on `next.ignite.education`, so on the apex the script 404s
+and public-page views vanish while the SPA's keep flowing. The Next layout
+therefore pins `scriptSrc` and `endpoint` to the plain paths in production.
+If `/welcome` or `/courses` ever drop out of the Analytics "Pages" panel while
+`/progress` stays, check that pin first.
+
 ### SEO traps worth knowing
 
 Three non-obvious failure modes, all of which shipped to production undetected:
@@ -680,6 +697,7 @@ null is a first-class state, not an error:
 |---------|---------|---------|
 | **Supabase** | PostgreSQL database + Auth + Storage | All apps + API |
 | **Vercel** | Hosting & CDN for all 3 frontend apps | Vite SPA, Next.js, Admin |
+| **Vercel Web Analytics** | Page views for the apex, root project only — see "Vercel Web Analytics on proxied pages" | Vite SPA + Next.js |
 | **Render** | Hosting for Express API + cron jobs | Backend |
 | **Anthropic Claude** | AI tutoring, question generation, flashcards, content generation (Haiku 4.5) | API |
 | **Stripe** | Payments & subscriptions | API + Vite SPA |
