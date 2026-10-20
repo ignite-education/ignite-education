@@ -329,8 +329,8 @@ export default function EducationSection() {
         {/* Right column: heading + promises. Sits 2rem below the top of the
             video on tablet and desktop. */}
         <div style={{ minWidth: 0, paddingTop: isMobile ? 0 : isRow ? `calc(${VIDEO_TOP_OFFSET} + 2rem)` : '2rem' }}>
-          {/* A step up from "The best courses." in section 3 (2.5rem / 2.1rem). */}
-          <h2 className="font-bold" style={{ fontSize: isMobile ? '2.25rem' : '2.75rem', lineHeight: '1.2' }}>
+          {/* Two steps up from "The best courses." in section 3 (2.5rem / 2.1rem). */}
+          <h2 className="font-bold" style={{ fontSize: isMobile ? '2.4rem' : '3rem', lineHeight: '1.2' }}>
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
               {renderHeading()}
             </span>
