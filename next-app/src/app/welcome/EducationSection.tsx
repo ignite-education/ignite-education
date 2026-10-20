@@ -263,7 +263,8 @@ export default function EducationSection() {
       >
         {/* Left column: heading + promises */}
         <div style={{ minWidth: 0 }}>
-          <h2 className="text-[2.125rem] md:text-[2.75rem] font-bold leading-tight">
+          {/* Same size and line height as "The best courses." in section 3. */}
+          <h2 className="font-bold" style={{ fontSize: isMobile ? '2.1rem' : '2.5rem', lineHeight: '1.2' }}>
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
               {renderHeading()}
             </span>
