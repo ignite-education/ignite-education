@@ -458,8 +458,9 @@ so `next-app/public` resolves on the apex, but Supabase remains the convention.
 **Video follows the same rule.** Section 2 of `/welcome` (`EducationSection.tsx`)
 is a two-column layout on black: heading and three 212px promise cards in the
 course-card style (#F6F6F6, black text) on the left, and on the right a
-510px-wide panel looping an 810x900 centre-crop of the office clip (muted,
-audio-stripped, ~1.4 MB, rounded corners). On desktop the box is absolutely
+510px-wide panel looping the office clip as cropped in iMovie, scaled to
+1042x900 (muted, audio-stripped, ~1.8 MB, rounded corners; object-fit cover
+trims the sides to the panel). On desktop the box is absolutely
 positioned to span the section's content height, inset by the section's 4vh
 padding top and bottom and the 2.5rem gutter on the right; on tablet and mobile
 the video is an in-flow rounded box and everything stacks. On

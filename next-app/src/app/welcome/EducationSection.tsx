@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-// Clip for the right column: a centred 9:10 crop of the office footage from
-// the 1080p export, encoded at 810x900 / CRF 23, 30fps, no audio (~1.5 MB).
-// The panel is up to ~550px wide, so this keeps Retina upscaling small; the
-// panel is taller than 9:10, so object-fit cover trims the sides a little. Hosted in the public Supabase `assets`
+// Clip for the right column: the office footage as cropped in iMovie
+// (1250x1080 export), scaled to 1042x900 / CRF 23, 30fps, no audio (~1.8 MB).
+// No further crop is applied at encode time; the clip is wider than the
+// desktop panel, so object-fit cover trims the sides and keeps the centre.
+// Hosted in the public Supabase `assets`
 // bucket like every other welcome-page image — see "Static images on public
 // pages" in docs/ARCHITECTURE.md. Upload a replacement with
 // scripts/upload-asset.mjs and bump the filename: the bucket serves a one-year
 // cache-control, so the same path would keep the old bytes.
 const VIDEO_URL =
-  'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide-v3.mp4'
+  'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/welcome-education-portrait-wide-v4.mp4'
 const VIDEO_WIDTH = 510
 // Vertical padding of the section on desktop; the video panel is inset by
 // the same amount top and bottom.
@@ -240,7 +241,7 @@ export default function EducationSection() {
         // clip's own aspect.
         width: isMobile ? '100%' : 300,
         height: isMobile ? 'auto' : 'min(55vh, 440px)',
-        aspectRatio: isMobile ? '648 / 720' : undefined,
+        aspectRatio: isMobile ? '1042 / 900' : undefined,
         maxWidth: '100%',
         objectFit: 'cover',
         borderRadius: VIDEO_RADIUS,
