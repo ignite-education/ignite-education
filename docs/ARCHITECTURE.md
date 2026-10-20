@@ -461,7 +461,7 @@ is a two-column layout on black: on the left a 413px-wide panel looping the offi
 trims the sides to the panel), and on the right the heading and a single
 row of three ticked promises (tick above centred text; stacked on mobile;
 each fades up on its own IntersectionObserver, staggered 600ms on desktop).
-On desktop the video box is absolutely positioned against the 2.5rem left
+On desktop the video box is absolutely positioned against the 4.5rem left
 gutter at 81% of the section's content height, centred vertically; on tablet
 and mobile the video is an in-flow rounded box and everything stacks (video
 below the text on mobile). The section's right padding mirrors the left edge

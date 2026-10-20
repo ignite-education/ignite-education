@@ -20,6 +20,8 @@ const VIDEO_WIDTH_NARROW = 356
 // Vertical padding of the section on desktop; the video panel is inset by
 // the same amount top and bottom.
 const SECTION_PAD_Y = '4vh'
+// Gutter between the section's left edge and the video (tablet and desktop).
+const VIDEO_GUTTER_LEFT = '4.5rem'
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 8
@@ -202,7 +204,7 @@ export default function EducationSection() {
         position: 'absolute',
         top: '50%',
         transform: 'translateY(-50%)',
-        left: '2.5rem',
+        left: VIDEO_GUTTER_LEFT,
         width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW,
         // Explicit: a replaced element needs a height to be cropped by cover.
         height: `calc(0.81 * (100% - 2 * ${SECTION_PAD_Y}))`,
@@ -241,10 +243,10 @@ export default function EducationSection() {
         display: isRow ? 'flex' : undefined,
         flexDirection: isRow ? 'column' : undefined,
         justifyContent: isRow ? 'center' : undefined,
-        // Video on the left against the 2.5rem gutter; the text column ends
+        // Video on the left against its gutter; the text column ends
         // where section 3's centred 72rem block (plus its 2rem inset) does,
         // mirroring the left edge section 3's heading sits on.
-        paddingLeft: isMobile ? '2rem' : '2.5rem',
+        paddingLeft: isMobile ? '2rem' : VIDEO_GUTTER_LEFT,
         paddingRight: isMobile ? '2rem' : 'calc(max((100% - 72rem) / 2, 2.5rem) + 2rem)',
         overflow: 'hidden',
       }}
