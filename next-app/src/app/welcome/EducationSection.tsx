@@ -23,18 +23,6 @@ const SECTION_PAD_Y = '4vh'
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 8
-// Cards take their look from the course cards in section 3 (#F6F6F6, black
-// text, 0.85rem body) but are a touch smaller with a larger 20px title.
-const CARD_BG = '#F6F6F6'
-const CARD_RADIUS = 16
-const CARD_GAP = 20
-const CARD_SIZE = 212
-// Desktop only: the row of three fixed-size cards can be wider than the left
-// column, in which case its tail runs under the video. As the row scrolls up
-// the viewport it shifts left by exactly that overflow, settling once its top
-// reaches ROW_SETTLE_AT of the viewport height, so every card ends up clear
-// of the video. A row that fits does not move.
-const ROW_SETTLE_AT = 0.3
 
 // The <video> is server-rendered with preload="auto" so its first frame is
 // already there when the user reaches the section (the clip is fetched during
@@ -54,8 +42,8 @@ export default function EducationSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [shouldPlay, setShouldPlay] = useState(false)
-  const leftColRef = useRef<HTMLDivElement>(null)
-  const cardsRowRef = useRef<HTMLDivElement>(null)
+  const [visiblePromises, setVisiblePromises] = useState<Set<number>>(new Set())
+  const promiseRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     const update = () => {
@@ -76,46 +64,30 @@ export default function EducationSection() {
     }
   }, [])
 
-  // Scroll-linked shift for an overflowing row (desktop only). Written
-  // straight to the DOM from a RAF-throttled passive scroll listener.
   const isRow = !isMobile && !isTablet
+
+  // Each promise fades up independently once it crosses 40% from the bottom
+  // of the viewport (30% on mobile); desktop staggers them by 600ms.
   useEffect(() => {
-    const row = cardsRowRef.current
-    const col = leftColRef.current
-    if (!row || !col) return
-    if (!isRow || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      row.style.transform = 'none'
-      return
-    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = Number((entry.target as HTMLElement).dataset.promiseIdx)
+            setVisiblePromises((prev) => new Set(prev).add(idx))
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { rootMargin: isMobile ? '0px 0px -30% 0px' : '0px 0px -40% 0px', threshold: 0 }
+    )
 
-    let rafId: number | null = null
-    const update = () => {
-      rafId = null
-      const overflow = Math.max(0, row.scrollWidth - col.clientWidth)
-      if (overflow === 0) {
-        row.style.transform = 'none'
-        return
-      }
-      const vh = window.innerHeight
-      const top = row.getBoundingClientRect().top
-      const raw = (vh - top) / (vh - vh * ROW_SETTLE_AT)
-      const p = Math.min(1, Math.max(0, raw))
-      const eased = 1 - Math.pow(1 - p, 2)
-      row.style.transform = `translate3d(${(-eased * overflow).toFixed(1)}px, 0, 0)`
-    }
-    const schedule = () => {
-      if (rafId === null) rafId = requestAnimationFrame(update)
-    }
+    promiseRefs.current.forEach((el) => {
+      if (el) observer.observe(el)
+    })
 
-    update()
-    window.addEventListener('scroll', schedule, { passive: true })
-    window.addEventListener('resize', schedule)
-    return () => {
-      window.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
-      if (rafId !== null) cancelAnimationFrame(rafId)
-    }
-  }, [isRow])
+    return () => observer.disconnect()
+  }, [isMobile])
 
   // One-shot observer: start playback once ~30% of the video is on screen,
   // then disconnect so the clip plays exactly once per page view.
@@ -288,59 +260,51 @@ export default function EducationSection() {
           rowGap: '3rem',
         }}
       >
-        {/* Left column: heading + promise cards */}
-        <div ref={leftColRef} style={{ minWidth: 0 }}>
+        {/* Left column: heading + promises */}
+        <div style={{ minWidth: 0 }}>
           <h2 className="text-4xl md:text-5xl font-bold leading-tight">
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
               {renderHeading()}
             </span>
           </h2>
 
-          {/* Promises: three square cards in the course-card style. On desktop
-              the row is fixed-size and may overflow under the video; the
-              effect above shifts it left on scroll (see ROW_SETTLE_AT). */}
           <div
-            ref={cardsRowRef}
             className="auth-promises-list"
             style={{
-              display: isRow ? 'flex' : 'grid',
-              gridTemplateColumns: isRow ? undefined : '1fr',
-              gap: isRow ? CARD_GAP : 16,
-              width: isRow ? 'max-content' : undefined,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: isMobile ? '2.25rem' : '2rem',
               marginTop: isMobile ? '3rem' : '4rem',
-              willChange: isRow ? 'transform' : undefined,
             }}
           >
             {PROMISES.map((promise, idx) => (
               <div
                 key={idx}
+                ref={(el) => { promiseRefs.current[idx] = el }}
                 data-promise-idx={idx}
                 style={{
-                  width: isRow ? CARD_SIZE : undefined,
-                  height: isRow ? CARD_SIZE : undefined,
-                  flexShrink: 0,
-                  background: CARD_BG,
-                  color: 'black',
-                  borderRadius: CARD_RADIUS,
-                  padding: isRow ? '16px' : '18px',
                   display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: '0.75rem',
+                  alignItems: 'flex-start',
+                  gap: '1.25rem',
+                  opacity: visiblePromises.has(idx) ? 1 : 0,
+                  transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(15px)',
+                  // Delay lives inside the shorthand: React warns when `transition`
+                  // and `transitionDelay` are set together on the same element.
+                  transition: `opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 600}ms, transform 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 600}ms`,
                 }}
               >
                 <img
                   src={TICK_URL}
                   alt=""
-                  width={32}
-                  height={32}
-                  style={{ width: isRow ? '28px' : '32px', height: isRow ? '28px' : '32px' }}
+                  width={42}
+                  height={42}
+                  style={{ width: '42px', height: '42px', flexShrink: 0, marginTop: '-2px' }}
                 />
                 <div>
-                  <div className="font-semibold" style={{ fontSize: '20px', lineHeight: '25px', marginBottom: '6px' }}>
+                  <div className="text-xl font-semibold text-white mb-2">
                     {promise.title}
                   </div>
-                  <div style={{ fontSize: isRow ? '0.8rem' : '0.85rem', lineHeight: 1.35 }}>
+                  <div className="text-base text-white font-normal">
                     {promise.desc}
                   </div>
                 </div>
@@ -350,9 +314,7 @@ export default function EducationSection() {
         </div>
 
         {/* Right column. On desktop this only reserves the video's width: the
-            panel itself is absolutely positioned on the section so it can run
-            the full height, and it paints above the card row so the cards
-            slide out from behind it. */}
+            panel itself is absolutely positioned on the section. */}
         {isRow ? (
           <div style={{ width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW }} aria-hidden="true" />
         ) : (

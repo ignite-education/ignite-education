@@ -456,17 +456,15 @@ optimized. SVGs still need `unoptimized` — the optimizer rejects SVG unless
 so `next-app/public` resolves on the apex, but Supabase remains the convention.
 
 **Video follows the same rule.** Section 2 of `/welcome` (`EducationSection.tsx`)
-is a two-column layout on black: heading and three 212px promise cards in the
-course-card style (#F6F6F6, black text) on the left, and on the right a
+is a two-column layout on black: heading and three ticked promises on the
+left (each fades up on its own IntersectionObserver, staggered 600ms on
+desktop), and on the right a
 459px-wide panel looping the office clip as cropped in iMovie, scaled to
 1042x900 (muted, audio-stripped, ~1.8 MB, 8px corners; object-fit cover
 trims the sides to the panel). On desktop the box is absolutely
 positioned against the 2.5rem right gutter at 90% of the section's content
 height, centred vertically; on tablet and mobile
-the video is an in-flow rounded box and everything stacks. On
-desktop the fixed-size card row can be wider than the left column, so its tail
-sits under the video; a scroll-linked transform shifts the row left by exactly
-that overflow as it rises up the viewport, and a row that fits never moves. The section's left padding is computed to put the heading on the same
+the video is an in-flow rounded box and everything stacks. The section's left padding is computed to put the heading on the same
 x as "The best courses." in section 3 (centred 72rem block + 2rem inset). The clip lives in the same `assets` bucket,
 uploaded with `node --env-file=.env scripts/upload-asset.mjs <file>
 <bucket-path>` (one-year `cacheControl`, so bump the filename when replacing).
