@@ -31,9 +31,9 @@ const VIDEO_RADIUS = 8
 
 const PROMISES = [
   // '\n' in a title is an explicit line break (rendered with pre-line).
-  { title: 'Built by\nIndustry Experts', desc: 'Our courses are built with industry experts' },
-  { title: 'Ignite\nis Free', desc: 'All of our courses are free.' },
-  { title: 'No Educational Prerequisite', desc: 'Our curricula is built for all backgrounds.' },
+  { title: 'Built by\nIndustry Experts', desc: 'Our courses are built with industry experts to ensure you get the latest area expertise.' },
+  { title: 'Ignite\nis Free', desc: 'All of our courses are free. Always have been and always will be.' },
+  { title: 'No Educational Prerequisite', desc: 'You don\u2019t need any experience to study. Our curricula is built for all backgrounds.' },
 ]
 
 export default function EducationSection() {
