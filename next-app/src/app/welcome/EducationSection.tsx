@@ -271,9 +271,11 @@ export default function EducationSection() {
           <div
             className="auth-promises-list"
             style={{
+              // One row of three on tablet and desktop (tick above the text);
+              // stacked on mobile with the tick beside the text.
               display: 'flex',
-              flexDirection: 'column',
-              gap: isMobile ? '2.25rem' : '2rem',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: isMobile ? '2.25rem' : '1.5rem',
               marginTop: isMobile ? '3rem' : '4rem',
             }}
           >
@@ -283,9 +285,12 @@ export default function EducationSection() {
                 ref={(el) => { promiseRefs.current[idx] = el }}
                 data-promise-idx={idx}
                 style={{
+                  flex: isMobile ? undefined : '1 1 0',
+                  minWidth: 0,
                   display: 'flex',
+                  flexDirection: isMobile ? 'row' : 'column',
                   alignItems: 'flex-start',
-                  gap: '1.25rem',
+                  gap: isMobile ? '1.25rem' : '1rem',
                   opacity: visiblePromises.has(idx) ? 1 : 0,
                   transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(15px)',
                   // Delay lives inside the shorthand: React warns when `transition`
@@ -298,7 +303,7 @@ export default function EducationSection() {
                   alt=""
                   width={42}
                   height={42}
-                  style={{ width: '42px', height: '42px', flexShrink: 0, marginTop: '-2px' }}
+                  style={{ width: isMobile ? '42px' : '36px', height: isMobile ? '42px' : '36px', flexShrink: 0, marginTop: isMobile ? '-2px' : 0 }}
                 />
                 <div>
                   <div className="text-xl font-semibold text-white mb-2">
