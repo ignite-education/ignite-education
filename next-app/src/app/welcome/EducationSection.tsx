@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import useTypingAnimation from '@/hooks/useTypingAnimation'
 
 // Clip for the right column: the office footage as cropped in iMovie
 // (1250x1080 export), scaled to 1042x900 / CRF 23, 30fps, no audio (~1.8 MB).
@@ -38,6 +39,21 @@ const PROMISES = [
   { title: 'No Educational Prerequisite', desc: 'You don\u2019t need any experience to study. Our curricula is built for all backgrounds.' },
 ]
 
+// Heading, typed in character by character like "The best courses." in
+// section 3. Both line layouts spell the same string, so one animation
+// index drives either; the pauses sit on the desktop line breaks.
+const HEADING_DESKTOP_LINES = ['Education should be', 'accessible, personalised', 'and integrated for everyone.']
+const HEADING_MOBILE_LINES = ['Education should', 'be accessible,', 'personalised and', 'integrated for', 'everyone.']
+const HEADING_TEXT = HEADING_DESKTOP_LINES.join(' ')
+const HEADING_HIGHLIGHTS = ['accessible', 'personalised', 'integrated'].map((word) => {
+  const start = HEADING_TEXT.indexOf(word)
+  return { start, end: start + word.length }
+})
+const HEADING_PAUSES = [
+  { after: HEADING_DESKTOP_LINES[0].length, duration: 700 },
+  { after: HEADING_DESKTOP_LINES[0].length + 1 + HEADING_DESKTOP_LINES[1].length, duration: 700 },
+]
+
 export default function EducationSection() {
   const [isMobile, setIsMobile] = useState(false)
   const [isTablet, setIsTablet] = useState(false)
@@ -45,6 +61,7 @@ export default function EducationSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [shouldPlay, setShouldPlay] = useState(false)
+  const [typingEnabled, setTypingEnabled] = useState(false)
   const [visiblePromises, setVisiblePromises] = useState<Set<number>>(new Set())
   const promiseRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -68,6 +85,31 @@ export default function EducationSection() {
   }, [])
 
   const isRow = !isMobile && !isTablet
+
+  // Start typing the heading once 30% of the section is on screen (same
+  // trigger as section 3).
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTypingEnabled(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [])
+
+  const { isComplete: typingComplete, charIndex } = useTypingAnimation(HEADING_TEXT, {
+    charDelay: 75,
+    startDelay: 0,
+    pausePoints: HEADING_PAUSES,
+    enabled: typingEnabled,
+  })
 
   // Each promise fades up independently once it crosses 40% from the bottom
   // of the viewport (30% on mobile); desktop staggers them by 600ms.
@@ -128,63 +170,68 @@ export default function EducationSection() {
     })
   }, [shouldPlay])
 
-  // Render the heading with pink highlighted words and explicit line breaks
-  const renderHeading = () => {
-    // Desktop line breaks (md+)
-    const desktopLines = [
-      { text: 'Education should be ', highlights: [] as string[] },
-      { text: 'accessible, personalised ', highlights: ['accessible', 'personalised'] },
-      { text: 'and integrated for everyone.', highlights: ['integrated'] }
-    ]
+  // Render the heading typed up to charIndex. Untyped characters are kept in
+  // the flow as transparent text so the block never reflows; highlighted
+  // words turn pink as they are typed; the cursor sits after the last typed
+  // character until the animation completes.
+  const renderTypedHeading = (lines: string[]) => {
+    const isPink = (g: number) => HEADING_HIGHLIGHTS.some((h) => g >= h.start && g < h.end)
+    const out: React.ReactNode[] = []
+    let lineStart = 0
+    let cursorPlaced = false
 
-    // Mobile line breaks
-    const mobileLines = [
-      { text: 'Education should', highlights: [] as string[] },
-      { text: 'be accessible,', highlights: ['accessible,'] },
-      { text: 'personalised and', highlights: ['personalised'] },
-      { text: 'integrated for', highlights: ['integrated'] },
-      { text: 'everyone.', highlights: [] as string[] }
-    ]
-
-    const renderLines = (lines: typeof desktopLines) => {
-      return lines.map((line, lineIdx) => {
-        const result: React.ReactNode[] = []
-        let remaining = line.text
-
-        for (const word of line.highlights) {
-          const start = remaining.indexOf(word)
-          if (start > 0) {
-            result.push(<span key={`${lineIdx}-pre-${word}`}>{remaining.slice(0, start)}</span>)
-          }
-          // Strip trailing comma/punctuation from highlight class, keep it in text
-          const cleanWord = word.replace(/[,.]$/, '')
-          const trailingPunct = word.slice(cleanWord.length)
-          result.push(
-            <span key={`${lineIdx}-${word}`}><span className="text-[#EF0B72]">{cleanWord}</span>{trailingPunct}</span>
-          )
-          remaining = remaining.slice(start + word.length)
-        }
-
-        if (remaining) {
-          result.push(<span key={`${lineIdx}-end`}>{remaining}</span>)
-        }
-
-        return (
-          <span key={lineIdx}>
-            {lineIdx > 0 && <br />}
-            {result}
+    lines.forEach((line, lineIdx) => {
+      const runs: React.ReactNode[] = []
+      let i = 0
+      while (i < line.length) {
+        const g = lineStart + i
+        const typed = g < charIndex
+        const pink = isPink(g)
+        let j = i + 1
+        while (j < line.length && lineStart + j < charIndex === typed && isPink(lineStart + j) === pink) j++
+        runs.push(
+          <span key={`${lineIdx}-${i}`} style={{ color: typed ? (pink ? '#EF0B72' : 'white') : 'transparent' }}>
+            {line.slice(i, j)}
           </span>
         )
-      })
-    }
+        if (!cursorPlaced && !typingComplete && typed && lineStart + j === charIndex) {
+          runs.push(<span key="cursor" className="animate-blink font-thin" style={{ color: 'white', marginLeft: '-0.1em' }}>|</span>)
+          cursorPlaced = true
+        }
+        i = j
+      }
+      if (!cursorPlaced && !typingComplete && charIndex <= lineStart) {
+        runs.unshift(<span key="cursor" className="animate-blink font-thin" style={{ color: 'white', marginLeft: '-0.1em' }}>|</span>)
+        cursorPlaced = true
+      }
+      out.push(
+        <span key={lineIdx}>
+          {lineIdx > 0 && <br />}
+          {runs}
+        </span>
+      )
+      lineStart += line.length + 1
+    })
 
-    return (
-      <>
-        <span className="hidden md:inline">{renderLines(desktopLines)}</span>
-        <span className="md:hidden">{renderLines(mobileLines)}</span>
-      </>
-    )
+    return out
   }
+
+  const renderHeading = () => (
+    <>
+      {/*
+        The typed text starts empty and only fills once the client-side
+        IntersectionObserver fires, so the server HTML would carry a headless
+        heading. The hidden span gives crawlers and screen readers the real
+        text; the visible spans carry the typing effect (same pattern as
+        LearningModelSection.tsx).
+      */}
+      <span style={{ visibility: 'hidden', position: 'absolute' }} aria-hidden="true">
+        {HEADING_TEXT}
+      </span>
+      <span className="hidden md:inline" aria-hidden="true">{renderTypedHeading(HEADING_DESKTOP_LINES)}</span>
+      <span className="md:hidden" aria-hidden="true">{renderTypedHeading(HEADING_MOBILE_LINES)}</span>
+    </>
+  )
 
   const video = (
     <video
