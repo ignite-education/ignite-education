@@ -112,7 +112,8 @@ export default function EducationSection() {
   })
 
   // Each promise fades up independently once it crosses 40% from the bottom
-  // of the viewport (30% on mobile); desktop staggers them by 600ms.
+  // of the viewport (30% on mobile); desktop staggers them by 600ms. None
+  // of them shows until the heading has fully typed out (see showPromise).
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -340,7 +341,9 @@ export default function EducationSection() {
               marginTop: isMobile ? '3rem' : '4rem',
             }}
           >
-            {PROMISES.map((promise, idx) => (
+            {PROMISES.map((promise, idx) => {
+              const showPromise = typingComplete && visiblePromises.has(idx)
+              return (
               <div
                 key={idx}
                 ref={(el) => { promiseRefs.current[idx] = el }}
@@ -353,8 +356,8 @@ export default function EducationSection() {
                   alignItems: isMobile ? 'flex-start' : 'center',
                   textAlign: isMobile ? 'left' : 'center',
                   gap: isMobile ? '1.25rem' : '1rem',
-                  opacity: visiblePromises.has(idx) ? 1 : 0,
-                  transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(15px)',
+                  opacity: showPromise ? 1 : 0,
+                  transform: showPromise ? 'translateY(0)' : 'translateY(15px)',
                   // Delay lives inside the shorthand: React warns when `transition`
                   // and `transitionDelay` are set together on the same element.
                   transition: `opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 600}ms, transform 3.5s cubic-bezier(0.16, 1, 0.3, 1) ${isMobile ? 0 : idx * 600}ms`,
@@ -378,7 +381,8 @@ export default function EducationSection() {
                   </div>
                 </div>
               </div>
-            ))}
+            )
+            })}
           </div>
         </div>
       </div>
