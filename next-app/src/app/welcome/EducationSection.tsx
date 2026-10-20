@@ -31,7 +31,7 @@ const VIDEO_TOP_OFFSET = `calc(${(1 - VIDEO_H) / 2} * ${CONTENT_H})`
 const VIDEO_GUTTER_LEFT = '4.5rem'
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
-const VIDEO_RADIUS = 8
+const VIDEO_RADIUS = 6
 
 // The <video> is server-rendered with preload="auto" so its first frame is
 // already there when the user reaches the section (the clip is fetched during

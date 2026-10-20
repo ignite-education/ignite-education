@@ -457,7 +457,7 @@ so `next-app/public` resolves on the apex, but Supabase remains the convention.
 
 **Video follows the same rule.** Section 2 of `/welcome` (`EducationSection.tsx`)
 is a two-column layout on black: on the left a 380px-wide panel looping the office clip as cropped in iMovie, scaled to
-1042x900 (muted, audio-stripped, ~1.8 MB, 8px corners; object-fit cover
+1042x900 (muted, audio-stripped, ~1.8 MB, 6px corners; object-fit cover
 trims the sides to the panel), and on the right the heading (typed in character by character once 30% of
 the section is visible, same hook and speed as section 3's title, with a
 hidden copy of the full text for crawlers) and a single
