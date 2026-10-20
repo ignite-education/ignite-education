@@ -50,8 +50,8 @@ const HEADING_HIGHLIGHTS = ['accessible', 'personalised', 'integrated'].map((wor
   return { start, end: start + word.length }
 })
 const HEADING_PAUSES = [
-  { after: HEADING_DESKTOP_LINES[0].length, duration: 700 },
-  { after: HEADING_DESKTOP_LINES[0].length + 1 + HEADING_DESKTOP_LINES[1].length, duration: 700 },
+  { after: HEADING_DESKTOP_LINES[0].length, duration: 1000 },
+  { after: HEADING_DESKTOP_LINES[0].length + 1 + HEADING_DESKTOP_LINES[1].length, duration: 1000 },
 ]
 
 export default function EducationSection() {
@@ -173,13 +173,11 @@ export default function EducationSection() {
 
   // Render the heading typed up to charIndex. Untyped characters are kept in
   // the flow as transparent text so the block never reflows; highlighted
-  // words turn pink as they are typed; the cursor sits after the last typed
-  // character until the animation completes.
+  // words turn pink as they are typed. No cursor, as in section 3.
   const renderTypedHeading = (lines: string[]) => {
     const isPink = (g: number) => HEADING_HIGHLIGHTS.some((h) => g >= h.start && g < h.end)
     const out: React.ReactNode[] = []
     let lineStart = 0
-    let cursorPlaced = false
 
     lines.forEach((line, lineIdx) => {
       const runs: React.ReactNode[] = []
@@ -195,15 +193,7 @@ export default function EducationSection() {
             {line.slice(i, j)}
           </span>
         )
-        if (!cursorPlaced && !typingComplete && typed && lineStart + j === charIndex) {
-          runs.push(<span key="cursor" className="animate-blink font-thin" style={{ color: 'white', marginLeft: '-0.1em' }}>|</span>)
-          cursorPlaced = true
-        }
         i = j
-      }
-      if (!cursorPlaced && !typingComplete && charIndex <= lineStart) {
-        runs.unshift(<span key="cursor" className="animate-blink font-thin" style={{ color: 'white', marginLeft: '-0.1em' }}>|</span>)
-        cursorPlaced = true
       }
       out.push(
         <span key={lineIdx}>
