@@ -52,7 +52,7 @@ const PROMISES = [
 
 // Heading, typed in character by character like "The best courses." in
 // section 3. Both line layouts spell the same string, so one animation
-// index drives either; the one pause sits on the comma.
+// index drives either; it pauses on the comma and again after 'personalised'.
 const HEADING_DESKTOP_LINES = ['Education should be', 'accessible, personalised', 'and integrated for everyone.']
 const HEADING_MOBILE_LINES = ['Education should', 'be accessible,', 'personalised and', 'integrated for', 'everyone.']
 const HEADING_TEXT = HEADING_DESKTOP_LINES.join(' ')
@@ -60,7 +60,10 @@ const HEADING_HIGHLIGHTS = ['accessible', 'personalised', 'integrated'].map((wor
   const start = HEADING_TEXT.indexOf(word)
   return { start, end: start + word.length }
 })
-const HEADING_PAUSES = [{ after: HEADING_TEXT.indexOf(',') + 1, duration: 1000 }]
+const HEADING_PAUSES = [
+  { after: HEADING_TEXT.indexOf(',') + 1, duration: 600 },
+  { after: HEADING_TEXT.indexOf('personalised') + 'personalised'.length, duration: 400 },
+]
 
 export default function EducationSection() {
   const [isMobile, setIsMobile] = useState(false)
