@@ -263,7 +263,7 @@ export default function EducationSection() {
       >
         {/* Left column: heading + promises */}
         <div style={{ minWidth: 0 }}>
-          <h2 className="text-[2.125rem] md:text-[2.75rem] font-bold leading-tight text-center">
+          <h2 className="text-[2.125rem] md:text-[2.75rem] font-bold leading-tight">
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
               {renderHeading()}
             </span>
