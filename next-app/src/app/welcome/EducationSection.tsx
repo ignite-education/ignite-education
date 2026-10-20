@@ -21,6 +21,12 @@ const VIDEO_WIDTH_NARROW = 328
 // Vertical padding of the section on desktop; the video panel is inset by
 // the same amount top and bottom.
 const SECTION_PAD_Y = '4vh'
+// Height of the section's content box on desktop. The video panel takes
+// VIDEO_H of it, centred, and the text column is padded down by the same
+// offset so the heading's top lines up with the video's top.
+const CONTENT_H = 'min(78vh, 740px)'
+const VIDEO_H = 0.88
+const VIDEO_TOP_OFFSET = `calc(${(1 - VIDEO_H) / 2} * ${CONTENT_H})`
 // Gutter between the section's left edge and the video (tablet and desktop).
 const VIDEO_GUTTER_LEFT = '4.5rem'
 const TICK_URL =
@@ -233,7 +239,7 @@ export default function EducationSection() {
       aria-hidden="true"
       tabIndex={-1}
       style={isRow ? {
-        // Desktop: a box against the left gutter, 88% of the section's
+        // Desktop: a box against the left gutter, VIDEO_H of the section's
         // content height and centred vertically within it.
         position: 'absolute',
         top: '50%',
@@ -241,7 +247,7 @@ export default function EducationSection() {
         left: VIDEO_GUTTER_LEFT,
         width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW,
         // Explicit: a replaced element needs a height to be cropped by cover.
-        height: `calc(0.88 * (100% - 2 * ${SECTION_PAD_Y}))`,
+        height: `calc(${VIDEO_H} * (100% - 2 * ${SECTION_PAD_Y}))`,
         objectFit: 'cover',
         borderRadius: VIDEO_RADIUS,
         background: '#111',
@@ -273,7 +279,7 @@ export default function EducationSection() {
         paddingTop: isMobile ? '6rem' : SECTION_PAD_Y,
         paddingBottom: isMobile ? '4rem' : SECTION_PAD_Y,
         // Section height on desktop (content is centred inside it).
-        minHeight: isRow ? `calc(min(78vh, 740px) + 2 * ${SECTION_PAD_Y})` : undefined,
+        minHeight: isRow ? `calc(${CONTENT_H} + 2 * ${SECTION_PAD_Y})` : undefined,
         display: isRow ? 'flex' : undefined,
         flexDirection: isRow ? 'column' : undefined,
         justifyContent: isRow ? 'center' : undefined,
@@ -291,7 +297,12 @@ export default function EducationSection() {
           display: isMobile ? 'flex' : 'grid',
           flexDirection: 'column',
           gridTemplateColumns: isMobile ? undefined : 'auto minmax(0, 1fr)',
-          alignItems: isMobile ? 'stretch' : 'center',
+          // Tablet and desktop: columns start at the top so the heading
+          // lines up with the top of the video. On desktop the grid is the
+          // full content height and the text column is padded down to the
+          // video's top edge.
+          alignItems: isMobile ? 'stretch' : 'start',
+          height: isRow ? CONTENT_H : undefined,
           columnGap: isTablet ? '2.5rem' : '3.5rem',
           rowGap: '3rem',
         }}
@@ -308,7 +319,7 @@ export default function EducationSection() {
         )}
 
         {/* Right column: heading + promises */}
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0, paddingTop: isRow ? VIDEO_TOP_OFFSET : 0 }}>
           {/* Same size and line height as "The best courses." in section 3. */}
           <h2 className="font-bold" style={{ fontSize: isMobile ? '2.1rem' : '2.5rem', lineHeight: '1.2' }}>
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
