@@ -339,8 +339,8 @@ export default function EducationSection() {
           <div
             className="auth-promises-list"
             style={{
-              // One row of three on tablet and desktop (tick above the text,
-              // left-aligned); stacked on mobile with the tick beside the text.
+              // One row of three on tablet and desktop, stacked on mobile; in
+              // each, the tick sits to the left of the title and description.
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
@@ -359,10 +359,10 @@ export default function EducationSection() {
                   flex: isMobile ? undefined : '1 1 0',
                   minWidth: 0,
                   display: 'flex',
-                  flexDirection: isMobile ? 'row' : 'column',
+                  flexDirection: 'row',
                   alignItems: 'flex-start',
                   textAlign: 'left',
-                  gap: isMobile ? '1.25rem' : '1rem',
+                  gap: isMobile ? '1.25rem' : '0.875rem',
                   opacity: showPromise ? 1 : 0,
                   transform: showPromise ? 'translateY(0)' : 'translateY(15px)',
                   // Delay lives inside the shorthand: React warns when `transition`
@@ -375,11 +375,9 @@ export default function EducationSection() {
                   alt=""
                   width={42}
                   height={42}
-                  style={{ width: isMobile ? '42px' : '36px', height: isMobile ? '42px' : '36px', flexShrink: 0, marginTop: isMobile ? '-2px' : 0 }}
+                  style={{ width: isMobile ? '42px' : '32px', height: isMobile ? '42px' : '32px', flexShrink: 0, marginTop: isMobile ? '-2px' : '-1px' }}
                 />
-                {/* Text sits a little narrower than its column so the lines
-                    wrap tighter under the tick. */}
-                <div style={{ maxWidth: isMobile ? undefined : '85%' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="text-xl font-semibold text-white mb-2" style={{ whiteSpace: 'pre-line' }}>
                     {promise.title}
                   </div>
