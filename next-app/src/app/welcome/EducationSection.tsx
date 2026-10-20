@@ -325,9 +325,9 @@ export default function EducationSection() {
           </div>
         )}
 
-        {/* Right column: heading + promises. Sits a touch (1rem) below the
-            top of the video on tablet and desktop. */}
-        <div style={{ minWidth: 0, paddingTop: isMobile ? 0 : isRow ? `calc(${VIDEO_TOP_OFFSET} + 1rem)` : '1rem' }}>
+        {/* Right column: heading + promises. Sits 2rem below the top of the
+            video on tablet and desktop. */}
+        <div style={{ minWidth: 0, paddingTop: isMobile ? 0 : isRow ? `calc(${VIDEO_TOP_OFFSET} + 2rem)` : '2rem' }}>
           {/* A step up from "The best courses." in section 3 (2.5rem / 2.1rem). */}
           <h2 className="font-bold" style={{ fontSize: isMobile ? '2.25rem' : '2.75rem', lineHeight: '1.2' }}>
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
@@ -344,7 +344,7 @@ export default function EducationSection() {
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
-              marginTop: isMobile ? '3.5rem' : '5.5rem',
+              marginTop: isMobile ? '3rem' : '4.5rem',
             }}
           >
             {PROMISES.map((promise, idx) => {
