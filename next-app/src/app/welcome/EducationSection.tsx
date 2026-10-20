@@ -197,12 +197,12 @@ export default function EducationSection() {
       aria-hidden="true"
       tabIndex={-1}
       style={isRow ? {
-        // Desktop: a box against the right gutter, 90% of the section's
+        // Desktop: a box against the left gutter, 90% of the section's
         // content height and centred vertically within it.
         position: 'absolute',
         top: '50%',
         transform: 'translateY(-50%)',
-        right: '2.5rem',
+        left: '2.5rem',
         width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW,
         // Explicit: a replaced element needs a height to be cropped by cover.
         height: `calc(0.9 * (100% - 2 * ${SECTION_PAD_Y}))`,
@@ -241,12 +241,11 @@ export default function EducationSection() {
         display: isRow ? 'flex' : undefined,
         flexDirection: isRow ? 'column' : undefined,
         justifyContent: isRow ? 'center' : undefined,
-        // Section 3's heading sits at the left of a centred 72rem block (gutter
-        // px-8 md:px-10) plus a 2rem inset. Reproduce that exact left edge here
-        // so the two headings line up, while the content runs to the right
-        // gutter so the 510px video and the three cards have room.
-        paddingLeft: isMobile ? '2rem' : 'calc(max((100% - 72rem) / 2, 2.5rem) + 2rem)',
-        paddingRight: isMobile ? '2rem' : '2.5rem',
+        // Video on the left against the 2.5rem gutter; the text column ends
+        // where section 3's centred 72rem block (plus its 2rem inset) does,
+        // mirroring the left edge section 3's heading sits on.
+        paddingLeft: isMobile ? '2rem' : '2.5rem',
+        paddingRight: isMobile ? '2rem' : 'calc(max((100% - 72rem) / 2, 2.5rem) + 2rem)',
         overflow: 'hidden',
       }}
     >
@@ -255,13 +254,24 @@ export default function EducationSection() {
         style={{
           display: isMobile ? 'flex' : 'grid',
           flexDirection: 'column',
-          gridTemplateColumns: isMobile ? undefined : 'minmax(0, 1fr) auto',
+          gridTemplateColumns: isMobile ? undefined : 'auto minmax(0, 1fr)',
           alignItems: isMobile ? 'stretch' : 'center',
           columnGap: isTablet ? '2.5rem' : '3.5rem',
           rowGap: '3rem',
         }}
       >
-        {/* Left column: heading + promises */}
+        {/* Left column: the video. On desktop this only reserves the video's
+            width: the panel itself is absolutely positioned on the section.
+            On mobile it stacks below the text (order: 2). */}
+        {isRow ? (
+          <div style={{ width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW }} aria-hidden="true" />
+        ) : (
+          <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-start', position: 'relative', zIndex: 1, order: isMobile ? 2 : undefined }}>
+            {video}
+          </div>
+        )}
+
+        {/* Right column: heading + promises */}
         <div style={{ minWidth: 0 }}>
           {/* Same size and line height as "The best courses." in section 3. */}
           <h2 className="font-bold" style={{ fontSize: isMobile ? '2.1rem' : '2.5rem', lineHeight: '1.2' }}>
@@ -323,16 +333,6 @@ export default function EducationSection() {
             ))}
           </div>
         </div>
-
-        {/* Right column. On desktop this only reserves the video's width: the
-            panel itself is absolutely positioned on the section. */}
-        {isRow ? (
-          <div style={{ width: isWide ? VIDEO_WIDTH : VIDEO_WIDTH_NARROW }} aria-hidden="true" />
-        ) : (
-          <div style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end', position: 'relative', zIndex: 1 }}>
-            {video}
-          </div>
-        )}
       </div>
       {isRow && video}
     </section>
