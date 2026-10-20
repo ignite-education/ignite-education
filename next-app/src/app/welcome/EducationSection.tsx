@@ -380,7 +380,8 @@ export default function EducationSection() {
                 <div className="text-xl font-semibold text-white mb-2" style={{ whiteSpace: 'pre-line' }}>
                   {promise.title}
                 </div>
-                <div className="text-base text-white font-normal">
+                {/* Description wraps a little tighter than its column. */}
+                <div className="text-base text-white font-normal" style={{ maxWidth: isMobile ? undefined : '82%' }}>
                   {promise.desc}
                 </div>
               </div>
