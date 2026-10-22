@@ -278,7 +278,7 @@ export default function EducationSection() {
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
-              marginTop: isMobile ? '2.5rem' : '3.5rem',
+              marginTop: isMobile ? '3rem' : '4.25rem',
             }}
           >
             {PROMISES.map((promise, idx) => {
