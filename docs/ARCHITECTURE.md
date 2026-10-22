@@ -527,11 +527,15 @@ Web Analytics is enabled on the **root** Vercel project only. Both the Vite SPA
 reports to that one dashboard.
 
 The trap: Vercel injects `NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH` (a hashed,
-per-project path such as `/549e87113840e5d7`) into every Next build, and
-`@vercel/analytics/next` v2 silently prefers it over `/_vercel/insights`. That
-path only exists on `next.ignite.education`, so on the apex the script 404s
-and public-page views vanish while the SPA's keep flowing. The Next layout
-therefore pins `scriptSrc` and `endpoint` to the plain paths in production.
+per-project path such as `/549e87113840e5d7`) and
+`NEXT_PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG` (view/event/session endpoints
+under that path) into every Next build, and `@vercel/analytics/next` v2
+silently prefers them over `/_vercel/insights`. That path only exists on
+`next.ignite.education`, so on the apex the script 404s and the view beacon
+405s, and public-page views vanish while the SPA's keep flowing. The Next
+layout therefore pins `scriptSrc`, `endpoint` **and** `viewEndpoint`,
+`eventEndpoint`, `sessionEndpoint` to the plain paths in production — pinning
+`endpoint` alone is not enough, the script uses the specific endpoints first.
 If `/welcome` or `/courses` ever drop out of the Analytics "Pages" panel while
 `/progress` stays, check that pin first.
 

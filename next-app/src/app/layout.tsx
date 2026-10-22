@@ -108,16 +108,26 @@ export default function RootLayout({
           is enabled. Hit directly on next.ignite.education the script 404s
           harmlessly unless Analytics is also switched on for that project.
 
-          scriptSrc/endpoint are pinned because Vercel injects
-          NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH (a per-project hashed
-          path like /549e87113840e5d7) into the Next build. That path only
-          exists on next.ignite.education, so on the apex the script 404s and
-          public-page views never reach the root project. In dev the package's
-          debug script is left in charge.
+          Every URL is pinned because Vercel injects
+          NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH and
+          NEXT_PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG (a per-project hashed
+          path like /549e87113840e5d7, plus view/event/session endpoints under
+          it) into the Next build, and the package prefers those over
+          /_vercel/insights. That path only exists on next.ignite.education, so
+          on the apex the beacons 405 and public-page views never reach the
+          root project. viewEndpoint etc. must be set as well as endpoint: the
+          script uses the specific ones first. In dev the package's debug
+          script is left in charge.
         */}
         <Analytics
           {...(process.env.NODE_ENV === "production"
-            ? { scriptSrc: "/_vercel/insights/script.js", endpoint: "/_vercel/insights" }
+            ? {
+                scriptSrc: "/_vercel/insights/script.js",
+                endpoint: "/_vercel/insights",
+                viewEndpoint: "/_vercel/insights/view",
+                eventEndpoint: "/_vercel/insights/event",
+                sessionEndpoint: "/_vercel/insights/session",
+              }
             : {})}
         />
       </body>
