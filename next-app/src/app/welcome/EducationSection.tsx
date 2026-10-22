@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import useTypingAnimation from '@/hooks/useTypingAnimation'
 
 // Clip for the right column: the office footage as cropped in iMovie
 // (1250x1080 export), scaled to 1042x900 / CRF 23, 30fps, no audio (~1.8 MB).
@@ -38,8 +37,8 @@ const VIDEO_RADIUS = 6
 // page load at the browser's lowest priority). Playback starts only once the
 // section scrolls into view, then loops.
 
-// Desktop only: delay before the first promise fades up (after the heading
-// has typed), and the gap between each one and the next.
+// Desktop only: delay before the first promise fades up once it scrolls
+// into view, and the gap between each one and the next.
 const PROMISE_DELAY = 800
 const PROMISE_STAGGER = 1400
 
@@ -50,20 +49,11 @@ const PROMISES = [
   { title: 'No Educational Prerequisite', desc: 'You don\u2019t need any experience to study. Our curricula is built for all backgrounds.' },
 ]
 
-// Heading, typed in character by character like "The best courses." in
-// section 3. Both line layouts spell the same string, so one animation
-// index drives either; it pauses on the comma and again after 'personalised'.
+// Heading, shown in full (no typing animation). Both line layouts spell
+// the same string; the highlighted words are pink.
 const HEADING_DESKTOP_LINES = ['Education should be', 'accessible, personalised', 'and integrated for everyone.']
 const HEADING_MOBILE_LINES = ['Education should', 'be accessible,', 'personalised and', 'integrated for', 'everyone.']
-const HEADING_TEXT = HEADING_DESKTOP_LINES.join(' ')
-const HEADING_HIGHLIGHTS = ['accessible', 'personalised', 'integrated'].map((word) => {
-  const start = HEADING_TEXT.indexOf(word)
-  return { start, end: start + word.length }
-})
-const HEADING_PAUSES = [
-  { after: HEADING_TEXT.indexOf(',') + 1, duration: 600 },
-  { after: HEADING_TEXT.indexOf('personalised') + 'personalised'.length, duration: 400 },
-]
+const HEADING_HIGHLIGHTS = ['accessible', 'personalised', 'integrated']
 
 export default function EducationSection() {
   const [isMobile, setIsMobile] = useState(false)
@@ -72,7 +62,6 @@ export default function EducationSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [shouldPlay, setShouldPlay] = useState(false)
-  const [typingEnabled, setTypingEnabled] = useState(false)
   const [visiblePromises, setVisiblePromises] = useState<Set<number>>(new Set())
   const promiseRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -97,36 +86,9 @@ export default function EducationSection() {
 
   const isRow = !isMobile && !isTablet
 
-  // Start typing the heading once 30% of the section is on screen (same
-  // trigger as section 3).
-  useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setTypingEnabled(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.3 }
-    )
-    observer.observe(section)
-    return () => observer.disconnect()
-  }, [])
-
-  const { isComplete: typingComplete, charIndex } = useTypingAnimation(HEADING_TEXT, {
-    charDelay: 75,
-    // A beat after the section comes into view before the first character.
-    startDelay: 500,
-    pausePoints: HEADING_PAUSES,
-    enabled: typingEnabled,
-  })
-
   // Each promise fades up independently once it crosses 40% from the bottom
   // of the viewport (30% on mobile); desktop waits PROMISE_DELAY before the
-  // first and staggers the rest by PROMISE_STAGGER. None
-  // of them shows until the heading has fully typed out (see showPromise).
+  // first and staggers the rest by PROMISE_STAGGER.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -184,56 +146,24 @@ export default function EducationSection() {
     })
   }, [shouldPlay])
 
-  // Render the heading typed up to charIndex. Untyped characters are kept in
-  // the flow as transparent text so the block never reflows; highlighted
-  // words turn pink as they are typed. No cursor, as in section 3.
-  const renderTypedHeading = (lines: string[]) => {
-    const isPink = (g: number) => HEADING_HIGHLIGHTS.some((h) => g >= h.start && g < h.end)
-    const out: React.ReactNode[] = []
-    let lineStart = 0
-
-    lines.forEach((line, lineIdx) => {
-      const runs: React.ReactNode[] = []
-      let i = 0
-      while (i < line.length) {
-        const g = lineStart + i
-        const typed = g < charIndex
-        const pink = isPink(g)
-        let j = i + 1
-        while (j < line.length && lineStart + j < charIndex === typed && isPink(lineStart + j) === pink) j++
-        runs.push(
-          <span key={`${lineIdx}-${i}`} style={{ color: typed ? (pink ? '#EF0B72' : 'white') : 'transparent' }}>
-            {line.slice(i, j)}
-          </span>
-        )
-        i = j
-      }
-      out.push(
-        <span key={lineIdx}>
-          {lineIdx > 0 && <br />}
-          {runs}
-        </span>
-      )
-      lineStart += line.length + 1
-    })
-
-    return out
-  }
+  // Heading lines with the highlighted words in pink. Each line is split
+  // on word boundaries so a highlight never spans a line's punctuation.
+  const renderHeadingLines = (lines: string[]) =>
+    lines.map((line, lineIdx) => (
+      <span key={lineIdx}>
+        {lineIdx > 0 && <br />}
+        {line.split(/(\b\w+\b)/).map((part, i) =>
+          HEADING_HIGHLIGHTS.includes(part)
+            ? <span key={i} style={{ color: '#EF0B72' }}>{part}</span>
+            : part
+        )}
+      </span>
+    ))
 
   const renderHeading = () => (
     <>
-      {/*
-        The typed text starts empty and only fills once the client-side
-        IntersectionObserver fires, so the server HTML would carry a headless
-        heading. The hidden span gives crawlers and screen readers the real
-        text; the visible spans carry the typing effect (same pattern as
-        LearningModelSection.tsx).
-      */}
-      <span style={{ visibility: 'hidden', position: 'absolute' }} aria-hidden="true">
-        {HEADING_TEXT}
-      </span>
-      <span className="hidden md:inline" aria-hidden="true">{renderTypedHeading(HEADING_DESKTOP_LINES)}</span>
-      <span className="md:hidden" aria-hidden="true">{renderTypedHeading(HEADING_MOBILE_LINES)}</span>
+      <span className="hidden md:inline">{renderHeadingLines(HEADING_DESKTOP_LINES)}</span>
+      <span className="md:hidden">{renderHeadingLines(HEADING_MOBILE_LINES)}</span>
     </>
   )
 
@@ -344,7 +274,7 @@ export default function EducationSection() {
             style={{
               // One row of three on tablet and desktop, stacked on mobile. In
               // each, the tick sits above the title, then the description,
-              // all left-aligned.
+              // all centred.
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
@@ -352,7 +282,7 @@ export default function EducationSection() {
             }}
           >
             {PROMISES.map((promise, idx) => {
-              const showPromise = typingComplete && visiblePromises.has(idx)
+              const showPromise = visiblePromises.has(idx)
               const promiseDelay = isMobile ? 0 : PROMISE_DELAY + idx * PROMISE_STAGGER
               return (
               <div
@@ -364,8 +294,8 @@ export default function EducationSection() {
                   minWidth: 0,
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  textAlign: 'left',
+                  alignItems: 'center',
+                  textAlign: 'center',
                   opacity: showPromise ? 1 : 0,
                   transform: showPromise ? 'translateY(0)' : 'translateY(15px)',
                   // Delay lives inside the shorthand: React warns when `transition`
