@@ -155,7 +155,10 @@ export default async function CoursePage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="flex flex-col min-h-screen bg-white">
+      {/* Black page background: the themed bar is a translucent tint over
+          whatever sits behind it, so this keeps it black (not grey) at the
+          very top where it has only the page behind it, as on /welcome. */}
+      <div className="flex flex-col min-h-screen bg-black">
         <div className="flex-1">
           {/* Sticky bar that tints light or dark to match the section beneath
               it (black hero, grey curriculum, white content, black footer),
@@ -203,19 +206,21 @@ export default async function CoursePage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="max-w-4xl mx-auto px-6 pt-8 pb-4 md:pb-12 flex justify-center" data-nav-theme="white">
-            <div className="w-full" style={{ maxWidth: '762px' }}>
-              {/* Matches CourseCurriculum's grid so every heading shares one left edge */}
-              <div className="lg:-mx-24">
-                {!isComingSoon && (
-                  <FeedbackSection courseTitle={course.title} />
-                )}
+          <div className="bg-white" data-nav-theme="white">
+            <div className="max-w-4xl mx-auto px-6 pt-8 pb-4 md:pb-12 flex justify-center">
+              <div className="w-full" style={{ maxWidth: '762px' }}>
+                {/* Matches CourseCurriculum's grid so every heading shares one left edge */}
+                <div className="lg:-mx-24">
+                  {!isComingSoon && (
+                    <FeedbackSection courseTitle={course.title} />
+                  )}
 
-                {coaches.length > 0 && (
-                  <CourseLeaders coaches={coaches} courseTitle={course.title} />
-                )}
+                  {coaches.length > 0 && (
+                    <CourseLeaders coaches={coaches} courseTitle={course.title} />
+                  )}
 
-                <FAQSection faqs={COURSE_FAQS} />
+                  <FAQSection faqs={COURSE_FAQS} />
+                </div>
               </div>
             </div>
           </div>
