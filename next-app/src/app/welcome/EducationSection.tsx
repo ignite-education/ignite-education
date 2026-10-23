@@ -34,6 +34,9 @@ const VIDEO_GUTTER_LEFT = '4.5rem'
 // Gap between the video column and the text column, in px.
 const COLUMN_GAP_TABLET = 40
 const COLUMN_GAP_DESKTOP = 56
+// Width cap on each promise's description: wraps every one of them to three
+// or four lines at any viewport, with text-wrap: balance evening the lines.
+const PROMISE_DESC_MAX_WIDTH = 220
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 6
@@ -45,8 +48,8 @@ const VIDEO_RADIUS = 6
 
 // Desktop only: delay before the first promise fades up once it scrolls
 // into view, and the gap between each one and the next.
-const PROMISE_DELAY = 800
-const PROMISE_STAGGER = 1400
+const PROMISE_DELAY = 500
+const PROMISE_STAGGER = 1200
 
 const PROMISES = [
   // '\n' in a title is an explicit line break (rendered with pre-line).
@@ -341,8 +344,11 @@ export default function EducationSection() {
                 <div className="text-xl font-semibold text-white mb-2" style={{ whiteSpace: 'pre-line' }}>
                   {promise.title}
                 </div>
-                {/* Description wraps a little tighter than its column. */}
-                <div className="text-base text-white font-normal" style={{ maxWidth: isMobile ? undefined : '82%' }}>
+                {/* Three or four even lines (see PROMISE_DESC_MAX_WIDTH). */}
+                <div
+                  className="text-base text-white font-normal"
+                  style={{ maxWidth: `min(100%, ${PROMISE_DESC_MAX_WIDTH}px)`, textWrap: 'balance' }}
+                >
                   {promise.desc}
                 </div>
               </div>

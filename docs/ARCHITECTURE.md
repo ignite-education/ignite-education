@@ -460,10 +460,11 @@ is a two-column layout on black: on the left a 380px-wide panel looping the offi
 1042x900 (muted, audio-stripped, ~1.8 MB, 6px corners; object-fit cover
 trims the sides to the panel), and on the right the heading (shown in full,
 no typing animation) and a single
-row of three ticked promises (tick above a two-line title of even lines and a description, all centred;
+row of three ticked promises (tick above a two-line title of even lines and a description capped at
+220px wide with text-wrap: balance so it is always three or four even lines, all centred;
 on tablet and desktop the row reaches past the text column's right edge so it is centred in the space
 to the right of the video, the same distance from the section's right edge as from the video; stacked on mobile;
-each fades up on its own IntersectionObserver, on desktop the first waits 0.8s and each next one 1.4s more).
+each fades up on its own IntersectionObserver, on desktop the first waits 0.5s and each next one 1.2s more).
 On tablet and desktop the section is pinned to section 3's height (666px:
 3rem vertical padding around a 570px content box, the height of section 3's
 course-card block) with the content centred vertically.
