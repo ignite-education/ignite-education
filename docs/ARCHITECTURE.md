@@ -461,7 +461,7 @@ is a two-column layout on black: on the left a 380px-wide panel looping the offi
 trims the sides to the panel), and on the right the centred heading (shown in full,
 no typing animation) and a single
 row of three ticked promises (tick above a two-line title of even lines and a description capped at
-220px wide with text-wrap: balance so it is always three or four even lines, all centred;
+235px wide with text-wrap: balance so it is three even lines on desktop and four on tablet, all centred;
 on tablet and desktop the whole text column reaches past the section's right padding so heading and
 promises are centred in the space to the right of the video, the same distance from the section's
 right edge as from the video; stacked on mobile;

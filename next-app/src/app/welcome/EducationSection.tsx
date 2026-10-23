@@ -35,8 +35,11 @@ const VIDEO_GUTTER_LEFT = '4.5rem'
 const COLUMN_GAP_TABLET = 40
 const COLUMN_GAP_DESKTOP = 56
 // Width cap on each promise's description: wraps every one of them to three
-// or four lines at any viewport, with text-wrap: balance evening the lines.
-const PROMISE_DESC_MAX_WIDTH = 220
+// lines on desktop (four where the column is narrower, on tablet), with
+// text-wrap: balance evening the lines. Measured at 16px Geist: below 230px
+// the first description needs four lines, and from 250px the second fits in
+// two, so 235px sits midway between the two cliffs.
+const PROMISE_DESC_MAX_WIDTH = 235
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 6
