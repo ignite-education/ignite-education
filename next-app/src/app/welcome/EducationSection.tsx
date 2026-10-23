@@ -17,13 +17,16 @@ const VIDEO_URL =
 // floats inside the section rather than filling it edge to edge.
 const VIDEO_WIDTH = 380
 const VIDEO_WIDTH_NARROW = 328
-// Vertical padding of the section on desktop; the video panel is inset by
-// the same amount top and bottom.
-const SECTION_PAD_Y = '4vh'
-// Height of the section's content box on desktop. The video panel takes
-// VIDEO_H of it, centred, and the text column is padded down by the same
-// offset so the heading's top lines up with the video's top.
-const CONTENT_H = 'min(78vh, 740px)'
+// Vertical padding of the section on tablet and desktop: section 3's, so the
+// two sections are the same height. The video panel is inset by the same
+// amount top and bottom.
+const SECTION_PAD_Y = '3rem'
+// Height of the section's content box on tablet and desktop: the height of
+// section 3's course-card block (30px scroll padding + two 249px cards +
+// 12px gap + 30px), so the two sections are both 666px tall. The video panel
+// takes VIDEO_H of it, centred, and the text column is padded down by the
+// same offset so the heading's top lines up with the video's top.
+const CONTENT_H = '570px'
 const VIDEO_H = 0.88
 const VIDEO_TOP_OFFSET = `calc(${(1 - VIDEO_H) / 2} * ${CONTENT_H})`
 // Gutter between the section's left edge and the video (tablet and desktop).
@@ -219,11 +222,12 @@ export default function EducationSection() {
         background: 'black',
         paddingTop: isMobile ? '6rem' : SECTION_PAD_Y,
         paddingBottom: isMobile ? '4rem' : SECTION_PAD_Y,
-        // Section height on desktop (content is centred inside it).
-        minHeight: isRow ? `calc(${CONTENT_H} + 2 * ${SECTION_PAD_Y})` : undefined,
-        display: isRow ? 'flex' : undefined,
-        flexDirection: isRow ? 'column' : undefined,
-        justifyContent: isRow ? 'center' : undefined,
+        // Section height on tablet and desktop: section 3's (content is
+        // centred inside it).
+        minHeight: isMobile ? undefined : `calc(${CONTENT_H} + 2 * ${SECTION_PAD_Y})`,
+        display: isMobile ? undefined : 'flex',
+        flexDirection: isMobile ? undefined : 'column',
+        justifyContent: isMobile ? undefined : 'center',
         // Video on the left against its gutter; the text column ends
         // where section 3's centred 72rem block (plus its 2rem inset) does,
         // mirroring the left edge section 3's heading sits on.
