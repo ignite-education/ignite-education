@@ -284,9 +284,20 @@ export default function EducationSection() {
           </div>
         )}
 
-        {/* Right column: heading + promises. Sits 2rem below the top of the
-            video on tablet and desktop. */}
-        <div style={{ minWidth: 0, paddingTop: isMobile ? 0 : isRow ? `calc(${VIDEO_TOP_OFFSET} + 2rem)` : '2rem' }}>
+        {/* Right column: heading + promises, both centred. Sits 2rem below
+            the top of the video on tablet and desktop, where the column
+            ends well inside the section's right padding: it reaches past
+            that padding to sit the same distance from the section's right
+            edge as from the video, so the heading and promises are centred
+            in the space to the right of the video. */}
+        <div
+          style={{
+            minWidth: 0,
+            paddingTop: isMobile ? 0 : isRow ? `calc(${VIDEO_TOP_OFFSET} + 2rem)` : '2rem',
+            marginRight: isMobile ? undefined : -Math.max(sectionPadRight - columnGap, 0),
+            textAlign: 'center',
+          }}
+        >
           {/* Two steps up from "The best courses." in section 3 (2.5rem / 2.1rem). */}
           <h2 className="font-bold" style={{ fontSize: isMobile ? '2.4rem' : '3rem', lineHeight: '1.2' }}>
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
@@ -304,12 +315,6 @@ export default function EducationSection() {
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
               marginTop: isMobile ? '3rem' : '4.25rem',
-              // Tablet and desktop: the text column ends well inside the
-              // section's right padding, so the row reaches past the column
-              // to sit the same distance from the section's right edge as it
-              // does from the video. That centres the three promises in the
-              // space to the right of the video.
-              marginRight: isMobile ? undefined : -Math.max(sectionPadRight - columnGap, 0),
             }}
           >
             {PROMISES.map((promise, idx) => {
