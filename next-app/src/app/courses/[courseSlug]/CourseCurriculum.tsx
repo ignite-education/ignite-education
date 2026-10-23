@@ -25,7 +25,7 @@ export default function CourseCurriculum({
   const lessons = isLessonsOnly ? (moduleStructure[0]?.lessons || []) : []
 
   return (
-    <div className="curriculum-section bg-[#F6F6F6]">
+    <div className="curriculum-section bg-[#F6F6F6]" data-nav-theme="white">
       {/* Full-bleed grey background; content stays at the original width */}
       <div className="max-w-4xl mx-auto px-6 py-8 md:py-10 flex justify-center">
         <div className="w-full" style={{ maxWidth: '762px' }}>

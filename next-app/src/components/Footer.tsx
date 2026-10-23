@@ -6,7 +6,7 @@ interface FooterProps {
 
 export default function Footer({ className = '' }: FooterProps) {
   return (
-    <footer className={`bg-black pb-8 ${className}`}>
+    <footer className={`bg-black pb-8 ${className}`} data-nav-theme="black">
       <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-10 lg:gap-0 px-6 lg:pl-[48px] lg:pr-10 py-8">
         {/* Left Side - Logo & Company Info */}
         <div className="flex flex-col items-start gap-6">

@@ -16,7 +16,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
     <>
       {/* data-course-hero: EnrollmentRail measures this band to centre itself
           and to find the black/grey boundary for its text clip. */}
-      <div className="bg-black relative" data-course-hero>
+      <div className="bg-black relative" data-course-hero data-nav-theme="black">
         <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center pt-[25px] md:pt-[60px]">
           <div className="w-full" style={{ maxWidth: '762px' }}>
             {/* Matches CourseCurriculum's grid so the hero shares its left edge.

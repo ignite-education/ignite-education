@@ -12,7 +12,7 @@ import {
   generateSpeakableSchema,
 } from '@/lib/structuredData'
 import type { FAQ } from '@/types/course'
-import Navbar from '@/components/Navbar'
+import ThemedNavbar from '@/components/ThemedNavbar'
 import CourseHero from './CourseHero'
 import CourseCurriculum from './CourseCurriculum'
 import EnrollmentRail from './EnrollmentRail'
@@ -157,9 +157,10 @@ export default async function CoursePage({ params }: PageProps) {
 
       <div className="flex flex-col min-h-screen bg-white">
         <div className="flex-1">
-          <div className="sticky top-0 z-50">
-            <Navbar variant="black" />
-          </div>
+          {/* Sticky bar that tints light or dark to match the section beneath
+              it (black hero, grey curriculum, white content, black footer),
+              the same bar as /welcome. Sections are tagged data-nav-theme. */}
+          <ThemedNavbar initialTheme="black" />
 
           {/* Hero and Content share one positioning context so the desktop
               enrollment rail can stay stuck across both, then release. */}
@@ -202,7 +203,7 @@ export default async function CoursePage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="max-w-4xl mx-auto px-6 pt-8 pb-4 md:pb-12 flex justify-center">
+          <div className="max-w-4xl mx-auto px-6 pt-8 pb-4 md:pb-12 flex justify-center" data-nav-theme="white">
             <div className="w-full" style={{ maxWidth: '762px' }}>
               {/* Matches CourseCurriculum's grid so every heading shares one left edge */}
               <div className="lg:-mx-24">
