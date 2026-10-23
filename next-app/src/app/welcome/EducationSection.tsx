@@ -31,6 +31,9 @@ const VIDEO_H = 0.88
 const VIDEO_TOP_OFFSET = `calc(${(1 - VIDEO_H) / 2} * ${CONTENT_H})`
 // Gutter between the section's left edge and the video (tablet and desktop).
 const VIDEO_GUTTER_LEFT = '4.5rem'
+// Gap between the video column and the text column, in px.
+const COLUMN_GAP_TABLET = 40
+const COLUMN_GAP_DESKTOP = 56
 const TICK_URL =
   'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png'
 const VIDEO_RADIUS = 6
@@ -47,9 +50,10 @@ const PROMISE_STAGGER = 1400
 
 const PROMISES = [
   // '\n' in a title is an explicit line break (rendered with pre-line).
-  { title: 'Built by\nIndustry Experts', desc: 'Our courses are built with industry experts to ensure you get the latest area expertise.' },
+  // Every title is two lines of about the same length.
+  { title: 'Built by\nExperts', desc: 'Our courses are built with industry experts to ensure you get the latest area expertise.' },
   { title: 'Ignite\nis Free', desc: 'All of our courses are free. Always have been and always will be.' },
-  { title: 'No Educational Prerequisite', desc: 'You don\u2019t need any experience to study. Our curricula is built for all backgrounds.' },
+  { title: 'No Educational\nPrerequisite', desc: 'You don\u2019t need any experience to study. Our curricula is built for all backgrounds.' },
 ]
 
 // Heading, shown in full (no typing animation). Both line layouts spell
@@ -67,6 +71,9 @@ export default function EducationSection() {
   const [shouldPlay, setShouldPlay] = useState(false)
   const [visiblePromises, setVisiblePromises] = useState<Set<number>>(new Set())
   const promiseRefs = useRef<(HTMLDivElement | null)[]>([])
+  // The section's right padding, read from the rendered element so the
+  // promises row can reach past it (see marginRight below).
+  const [sectionPadRight, setSectionPadRight] = useState(0)
 
   useEffect(() => {
     const update = () => {
@@ -88,6 +95,17 @@ export default function EducationSection() {
   }, [])
 
   const isRow = !isMobile && !isTablet
+  const columnGap = isTablet ? COLUMN_GAP_TABLET : COLUMN_GAP_DESKTOP
+
+  useEffect(() => {
+    const el = sectionRef.current
+    if (!el) return
+    const read = () => setSectionPadRight(parseFloat(getComputedStyle(el).paddingRight) || 0)
+    read()
+    const observer = new ResizeObserver(read)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isMobile])
 
   // Each promise fades up independently once it crosses 40% from the bottom
   // of the viewport (30% on mobile); desktop waits PROMISE_DELAY before the
@@ -248,7 +266,7 @@ export default function EducationSection() {
           // video's top edge.
           alignItems: isMobile ? 'stretch' : 'start',
           height: isRow ? CONTENT_H : undefined,
-          columnGap: isTablet ? '2.5rem' : '3.5rem',
+          columnGap: `${columnGap}px`,
           rowGap: '3rem',
         }}
       >
@@ -283,6 +301,12 @@ export default function EducationSection() {
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '2.25rem' : '1.5rem',
               marginTop: isMobile ? '3rem' : '4.25rem',
+              // Tablet and desktop: the text column ends well inside the
+              // section's right padding, so the row reaches past the column
+              // to sit the same distance from the section's right edge as it
+              // does from the video. That centres the three promises in the
+              // space to the right of the video.
+              marginRight: isMobile ? undefined : -Math.max(sectionPadRight - columnGap, 0),
             }}
           >
             {PROMISES.map((promise, idx) => {
